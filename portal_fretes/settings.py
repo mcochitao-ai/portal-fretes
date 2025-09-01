@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-*#e7x*=8hinxzo9(wk436ehc2u6qhn@lo_*1^gu%bpr)i@a3vz
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['portal-de-fretes.onrender.com']
 
 
 # Application definition
