@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Meus Fretes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6fb; margin: 0; }
+        .header { background: #1a237e; color: #fff; padding: 28px 0 18px 0; text-align: center; box-shadow: 0 2px 8px #0001; }
+        .header h1 { margin: 0; font-size: 2rem; }
+        .container { max-width: 900px; margin: 32px auto; padding: 0 16px; }
+        .actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+        .btn { background: #3949ab; color: #fff; padding: 10px 24px; border: none; border-radius: 4px; font-size: 1rem; text-decoration: none; transition: background 0.2s; cursor: pointer; }
+        .btn:hover { background: #1a237e; }
+        .fretes-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+        .frete-card { background: #fff; border-radius: 10px; box-shadow: 0 2px 8px #0002; padding: 24px 20px 18px 20px; display: flex; flex-direction: column; gap: 8px; position: relative; }
+        .frete-card .id { position: absolute; top: 16px; right: 20px; font-size: 0.9rem; color: #7986cb; }
+        .frete-card .label { font-weight: 600; color: #3949ab; margin-right: 4px; }
+        .frete-card .desc { color: #333; margin-bottom: 8px; }
+        .frete-card .footer { margin-top: 10px; display: flex; justify-content: flex-end; }
+        .empty { text-align: center; color: #888; margin-top: 60px; font-size: 1.2rem; }
+        @media (max-width: 600px) { .header h1 { font-size: 1.5rem; } .container { padding: 0 4px; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Meus Fretes</h1>
+        <div class="user">Olá, {{ request.user.username }} | <a href="/logout/" style="color:#fff;text-decoration:underline;">Sair</a></div>
+    </div>
+    <div class="container">
+        <div class="actions">
+            <span style="font-size:1.2rem;font-weight:500;">Minhas Solicitações</span>
+            <a href="/solicitar-frete/" class="btn">Solicitar novo frete</a>
+        </div>
+        {% if fretes %}
+            <div class="fretes-list">
+                {% for frete in fretes %}
+                    <div class="frete-card">
+                        <div class="id">#{{ frete.id }}</div>
+                        <div><span class="label">Data:</span> {{ frete.data_criacao|date:'d/m/Y H:i' }}</div>
+                        <div class="desc"><span class="label">Descrição:</span> {{ frete.descricao }}</div>
+                        <div><span class="label">Transportadora:</span> {% if frete.transportadora_selecionada %}{{ frete.transportadora_selecionada.nome }}{% else %}Nenhuma{% endif %}</div>
+                        <div class="footer">
+                            <a href="/frete/{{ frete.id }}/" class="btn" style="font-size:0.95rem;padding:7px 18px;">Ver detalhes</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty">Você ainda não solicitou nenhum frete.</div>
+        {% endif %}
+        <div style="text-align:center;margin-top:32px;">
+            <a href="/" style="color:#3949ab;text-decoration:underline;font-weight:500;">&larr; Voltar para todos os fretes</a>
+        </div>
+    </div>
+</body>
+</html>

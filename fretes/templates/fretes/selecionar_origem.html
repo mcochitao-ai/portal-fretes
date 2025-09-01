@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Solicitar Frete</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        .form-container { max-width: 500px; margin: 40px auto; background: #fff; padding: 32px; border-radius: 8px; box-shadow: 0 2px 8px #0001; }
+        h2 { text-align: center; margin-bottom: 24px; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; }
+        select, input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        button { width: 100%; background: #007bff; color: #fff; border: none; padding: 10px; border-radius: 4px; font-size: 16px; }
+        button:hover { background: #0056b3; }
+        #map { width: 100%; height: 300px; margin-top: 16px; border-radius: 8px; }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+    <div class="form-container">
+    <h2>Solicitar Frete</h2>
+        <form method="get" id="form-origem" action="/selecionar-destino/">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="origem">Loja de Origem</label>
+                <input type="text" id="pesquisa_origem" placeholder="Pesquisar loja..." style="margin-bottom:8px;">
+                <select name="origem_id" id="origem_select" required>
+                    <option value="">Selecione uma loja</option>
+                    {% for id, nome, lat, lng in lojas_choices %}
+                        <option value="{{ id }}" data-lat="{{ lat }}" data-lng="{{ lng }}">{{ nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="id_horario_coleta">Horário de Coleta</label>
+                <input type="datetime-local" name="horario_coleta" id="id_horario_coleta" required>
+            </div>
+            <div id="map"></div>
+        <div class="form-group">
+            <label>Endereço</label>
+            <input type="text" id="origem_endereco" readonly>
+        </div>
+        <div class="form-group">
+            <label>Número</label>
+            <input type="text" id="origem_numero" readonly>
+        </div>
+        <div class="form-group">
+            <label>Município</label>
+            <input type="text" id="origem_municipio" readonly>
+        </div>
+        <div class="form-group">
+            <label>Estado</label>
+            <input type="text" id="origem_estado" readonly>
+        </div>
+        <div class="form-group">
+            <label>Latitude</label>
+            <input type="text" id="origem_latitude" readonly>
+        </div>
+        <div class="form-group">
+            <label>Longitude</label>
+            <input type="text" id="origem_longitude" readonly>
+        </div>
+            <button type="submit" style="margin-top:18px; background:#007bff; color:#fff; border:none; border-radius:4px; padding:10px 0; font-size:1.1rem;">Avançar</button>
+        </form>
+    </div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var pesquisaInput = document.getElementById('pesquisa_origem');
+        var origemSelect = document.getElementById('origem_select');
+        // Pesquisa
+        pesquisaInput.addEventListener('input', function() {
+            var filtro = this.value.toLowerCase();
+            for (var i = 0; i < origemSelect.options.length; i++) {
+                var option = origemSelect.options[i];
+                var texto = option.text.toLowerCase();
+                option.hidden = filtro && !texto.includes(filtro);
+            }
+            // Seleciona a primeira opção visível
+            for (var i = 0; i < origemSelect.options.length; i++) {
+                if (!origemSelect.options[i].hidden && origemSelect.options[i].value) {
+                    origemSelect.selectedIndex = i;
+                    origemSelect.dispatchEvent(new Event('change'));
+                    break;
+                }
+            }
+        });
+        // Mapa
+        var map = L.map('map').setView([-14.235, -51.925], 4); // Centro do Brasil
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+        }).addTo(map);
+        var marker;
+        function atualizarMapaECampos() {
+            var selected = origemSelect.options[origemSelect.selectedIndex];
+            var lat = selected.getAttribute('data-lat');
+            var lng = selected.getAttribute('data-lng');
+            var lojaId = origemSelect.value;
+            if (lat && lng && lat !== 'None' && lng !== 'None' && lat !== '' && lng !== '') {
+                if (marker) map.removeLayer(marker);
+                marker = L.marker([lat, lng]).addTo(map);
+                map.setView([lat, lng], 15);
+            } else {
+                if (marker) map.removeLayer(marker);
+                map.setView([-14.235, -51.925], 4);
+            }
+            // Preencher campos de endereço via AJAX
+            if (lojaId) {
+                fetch('/loja-info/' + lojaId + '/')
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('origem_endereco').value = data.endereco || '';
+                        document.getElementById('origem_numero').value = data.numero || '';
+                        document.getElementById('origem_municipio').value = data.municipio || '';
+                        document.getElementById('origem_estado').value = data.estado || '';
+                        document.getElementById('origem_latitude').value = data.latitude || '';
+                        document.getElementById('origem_longitude').value = data.longitude || '';
+                    });
+            } else {
+                document.getElementById('origem_endereco').value = '';
+                document.getElementById('origem_numero').value = '';
+                document.getElementById('origem_municipio').value = '';
+                document.getElementById('origem_estado').value = '';
+                document.getElementById('origem_latitude').value = '';
+                document.getElementById('origem_longitude').value = '';
+            }
+        }
+        origemSelect.addEventListener('change', atualizarMapaECampos);
+        atualizarMapaECampos();
+        pesquisaInput.addEventListener('input', function() {
+            setTimeout(atualizarMapaECampos, 100);
+        });
+
+        // Validação extra para garantir seleção antes de enviar
+        document.getElementById('form-origem').addEventListener('submit', function(e) {
+            if (!origemSelect.value || !document.getElementById('id_horario_coleta').value) {
+                alert('Selecione a loja de origem e o horário de coleta.');
+                e.preventDefault();
+            }
+        });
+    });
+    </script>
+</body>
+</html>

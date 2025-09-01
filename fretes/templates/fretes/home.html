@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Portal Transportes OFF</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f4f6fb;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background: #1a237e;
+            color: #fff;
+            padding: 32px 0 24px 0;
+            text-align: center;
+            box-shadow: 0 2px 8px #0001;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            letter-spacing: 1px;
+        }
+        .header .user {
+            margin-top: 8px;
+            font-size: 1rem;
+            opacity: 0.85;
+        }
+        .container {
+            max-width: 900px;
+            margin: 32px auto;
+            padding: 0 16px;
+        }
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+        .btn {
+            background: #3949ab;
+            color: #fff;
+            padding: 10px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background: #1a237e;
+        }
+        .fretes-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+        .frete-card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #0002;
+            padding: 24px 20px 18px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+        }
+        .frete-card .id {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            font-size: 0.9rem;
+            color: #7986cb;
+        }
+        .frete-card .label {
+            font-weight: 600;
+            color: #3949ab;
+            margin-right: 4px;
+        }
+        .frete-card .desc {
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .frete-card .footer {
+            margin-top: 10px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .empty {
+            text-align: center;
+            color: #888;
+            margin-top: 60px;
+            font-size: 1.2rem;
+        }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.5rem; }
+            .container { padding: 0 4px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+    <h1>Portal Transportes OFF</h1>
+        <div class="user">Olá, {{ request.user.username }} |
+            <a href="/logout/" style="color:#fff;text-decoration:underline;">Sair</a>
+        </div>
+    </div>
+    <div class="container">
+        {% if mensagem %}
+            <div style="background:#e0ffe0;color:#080;padding:10px 16px;border-radius:6px;margin-bottom:16px;text-align:center;">{{ mensagem }}</div>
+        {% endif %}
+        <div class="actions" style="justify-content:center; gap: 32px;">
+            <a href="/selecionar-origem/" class="btn" style="font-size:1.2rem;padding:18px 40px;">Solicitar Frete</a>
+            <a href="/meus-fretes/" class="btn" style="font-size:1.2rem;padding:18px 40px;">Meus Fretes</a>
+        </div>
+    </div>
+</body>
+</html>

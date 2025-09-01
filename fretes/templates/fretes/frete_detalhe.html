@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalhes do Frete #{{ frete.id }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6fb; margin: 0; }
+        .header { background: #1a237e; color: #fff; padding: 28px 0 18px 0; text-align: center; box-shadow: 0 2px 8px #0001; }
+        .header h1 { margin: 0; font-size: 2rem; }
+        .container { max-width: 600px; margin: 32px auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px #0002; padding: 32px 28px; }
+        .label { font-weight: 600; color: #3949ab; margin-right: 4px; }
+        .section { margin-bottom: 18px; }
+        .destinos-list { margin: 0; padding: 0 0 0 16px; }
+        .btn-voltar { display: inline-block; margin-top: 24px; color: #3949ab; text-decoration: none; font-weight: 500; }
+        .btn-voltar:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Detalhes do Frete #{{ frete.id }}</h1>
+    </div>
+    <div class="container">
+        <div class="section"><span class="label">Usuário:</span> {{ frete.usuario.username }}</div>
+        <div class="section"><span class="label">Data:</span> {{ frete.data_criacao|date:'d/m/Y H:i' }}</div>
+        <div class="section"><span class="label">Origem:</span> {{ frete.origem.nome }} ({{ frete.origem.endereco }}, {{ frete.origem.municipio }}-{{ frete.origem.estado }})</div>
+        <div class="section"><span class="label">Destinos:</span>
+            <ul class="destinos-list">
+                {% for destino in destinos %}
+                    <li>{{ destino.endereco }} ({{ destino.cidade }}-{{ destino.estado }}) - Volume: {{ destino.volume }}</li>
+                {% empty %}
+                    <li>Nenhum destino cadastrado.</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="section"><span class="label">Horário de Coleta:</span> {{ frete.horario_coleta|date:'d/m/Y H:i' }}</div>
+        <div class="section"><span class="label">Descrição:</span> {{ frete.descricao }}</div>
+        <form id="form-transportadora" method="post" style="margin-bottom:18px; display:flex; align-items:center; gap:12px;">
+            {% csrf_token %}
+            <span class="label">Selecionar Transportadora:</span>
+            <select id="transportadora-select" name="transportadora_id" style="padding:6px 10px; border-radius:4px; border:1px solid #ccc;">
+                <option value="">Selecione...</option>
+                {% for t in transportadoras %}
+                    <option value="{{ t.id }}" data-email="{{ t.email }}" {% if frete.transportadora_selecio                    git commit -m "Primeiro commit do portal de fretes"nada and t.id == frete.transportadora_selecionada.id %}selected{% endif %}>{{ t.nome }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" style="background:#3949ab; color:#fff; border:none; border-radius:4px; padding:7px 16px; cursor:pointer;">Salvar</button>
+        </form>
+        <button type="button" id="enviar-email" style="margin-bottom:18px; background:#3949ab; color:#fff; border:none; border-radius:4px; padding:7px 16px; cursor:pointer;">Enviar Cotação por E-mail</button>
+    <button type="button" id="enviar-email-mailto" style="margin-bottom:18px; background:#3949ab; color:#fff; border:none; border-radius:4px; padding:7px 16px; cursor:pointer; margin-left:8px;">Enviar pelo App de E-mail</button>
+        <div class="section"><span class="label">Transportadora Selecionada:</span> {% if frete.transportadora_selecionada %}{{ frete.transportadora_selecionada.nome }}{% else %}Nenhuma{% endif %}</div>
+        <script id="dados-frete-json" type="application/json">
+            {
+                "usuario": "{{ frete.usuario.username|escapejs }}",
+                "origem": "{{ frete.origem.nome|escapejs }} ({{ frete.origem.endereco|escapejs }}, {{ frete.origem.municipio|escapejs }}-{{ frete.origem.estado|escapejs }})",
+                "horario_coleta": "{{ frete.horario_coleta|date:'d/m/Y H:i' }}",
+                "descricao": "{{ frete.descricao|default_if_none:'-'|escapejs }}",
+                "destinos": [
+                {% for destino in destinos %}
+                    {"endereco": "{{ destino.endereco|escapejs }}", "cidade": "{{ destino.cidade|escapejs }}", "estado": "{{ destino.estado|escapejs }}", "volume": "{{ destino.volume|escapejs }}"}{% if not forloop.last %},{% endif %}
+                {% endfor %}
+                ]
+            }
+        </script>
+        <div style="background:#f8f8e1;border:1px solid #e6e6b0;padding:12px 16px;margin:18px 0 10px 0;border-radius:6px;color:#7a6a00;font-size:0.98em;">
+            <b>Atenção:</b> Se o botão de e-mail não abrir o e-mail pronto, é porque o Outlook Web não suporta essa função. <br>
+            <b>Solução:</b> Copie o texto abaixo e cole manualmente em um novo e-mail para a transportadora.<br>
+            <button onclick="copiarCorpoEmail()" style="margin:8px 0 6px 0;padding:5px 12px;border-radius:4px;border:1px solid #ccc;background:#fff;cursor:pointer;">Copiar corpo do e-mail</button>
+            <div id="corpo-email-preview" style="white-space:pre-line;background:#fffbe6;border:1px dashed #e6e6b0;padding:10px 12px;margin-top:4px;border-radius:4px;font-family:inherit;font-size:0.97em;"></div>
+        </div>
+        <a href="/" class="btn-voltar">&larr; Voltar</a>
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var btnOutlook = document.getElementById('enviar-email');
+            var btnMailto = document.getElementById('enviar-email-mailto');
+            var select = document.getElementById('transportadora-select');
+            if (!btnOutlook || !btnMailto || !select) return;
+            // Obter dados do frete do JSON embutido
+            var dadosFrete = JSON.parse(document.getElementById('dados-frete-json').textContent);
+            // Função única para montar o corpo do e-mail no formato solicitado
+            function montarCorpo() {
+                var br = '\n';
+                var br2 = '\n\n';
+                var corpo = '';
+                corpo += 'Solicitante: ' + dadosFrete.usuario + br2;
+                corpo += 'Origem: ' + dadosFrete.origem + br;
+                corpo += 'Horário de Coleta: ' + dadosFrete.horario_coleta + br2;
+                corpo += 'Destinos:' + br;
+                for (var i = 0; i < dadosFrete.destinos.length; i++) {
+                    var d = dadosFrete.destinos[i];
+                    corpo += '- ' + d.endereco + ' (' + d.cidade + '-' + d.estado + ') - Volume: ' + d.volume + br;
+                }
+                corpo += br2 + 'Descrição: ' + dadosFrete.descricao;
+                return corpo;
+            }
+            // Preencher visualização do corpo do e-mail ao carregar a página
+            var corpoPreview = document.getElementById('corpo-email-preview');
+            if (corpoPreview) corpoPreview.textContent = montarCorpo();
+            // Função global para copiar o corpo do e-mail
+            window.copiarCorpoEmail = function() {
+                var corpo = montarCorpo();
+                // Cria um textarea temporário para copiar o texto
+                var temp = document.createElement('textarea');
+                temp.value = corpo;
+                document.body.appendChild(temp);
+                temp.select();
+                document.execCommand('copy');
+                document.body.removeChild(temp);
+                alert('Corpo do e-mail copiado!');
+            }
+            btnOutlook.addEventListener('click', function() {
+                var selected = select.options[select.selectedIndex];
+                var email = selected.getAttribute('data-email');
+                if (!email) {
+                    alert('Selecione uma transportadora.');
+                    return;
+                }
+                var transportadoraNome = selected.textContent || selected.innerText;
+                var corpo = montarCorpo();
+                var subject = 'Solicitação de Cotação de Frete - ' + transportadoraNome;
+                var url = 'https://outlook.office.com/mail/deeplink/compose?popoutv2=1&to=' + encodeURIComponent(email) + '&subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(corpo) + '&bodyType=HTML';
+                window.open(url, '_blank');
+            });
+        // Função para copiar o corpo do e-mail da visualização
+        function copiarCorpoEmail() {
+            var corpo = montarCorpo();
+            var temp = document.createElement('textarea');
+            temp.value = corpo;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            alert('Corpo do e-mail copiado!');
+        }
+            btnMailto.addEventListener('click', function() {
+                var selected = select.options[select.selectedIndex];
+                var email = selected.getAttribute('data-email');
+                if (!email) {
+                    alert('Selecione uma transportadora.');
+                    return;
+                }
+                var transportadoraNome = selected.textContent || selected.innerText;
+                var corpo = montarCorpo();
+                var subject = 'Solicitação de Cotação de Frete - ' + transportadoraNome;
+                var url = 'mailto:' + email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(corpo);
+                window.location.href = url;
+            });
+        });
+        </script>
+    </div>
