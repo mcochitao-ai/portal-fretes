@@ -109,18 +109,21 @@
     }
     
     .login-form .form-control {
-        width: 100%;
-        padding: 1rem 1.5rem;
-        font-size: 1.1rem;
-        border: 2px solid #e2e8f0;
-        border-radius: 0.75rem;
-        background: white;
-        color: #1f2937;
-        transition: all 0.2s;
-        font-family: inherit;
-        text-align: center;
-        min-height: 3rem;
-        box-sizing: border-box;
+        width: 100% !important;
+        padding: 1.25rem 1.5rem !important;
+        font-size: 1.2rem !important;
+        border: 2px solid #e2e8f0 !important;
+        border-radius: 0.75rem !important;
+        background: white !important;
+        color: #1f2937 !important;
+        transition: all 0.2s !important;
+        font-family: inherit !important;
+        text-align: center !important;
+        min-height: 3.5rem !important;
+        height: 3.5rem !important;
+        box-sizing: border-box !important;
+        display: block !important;
+        margin: 0 !important;
     }
     
     .login-form .form-control:focus {
@@ -180,6 +183,29 @@
     
     .login-link:hover {
         text-decoration: underline;
+    }
+    
+    /* Force specific styling for input fields */
+    #id_username, #id_password {
+        width: 100% !important;
+        padding: 1.25rem 1.5rem !important;
+        font-size: 1.2rem !important;
+        border: 2px solid #e2e8f0 !important;
+        border-radius: 0.75rem !important;
+        background: white !important;
+        color: #1f2937 !important;
+        text-align: center !important;
+        min-height: 3.5rem !important;
+        height: 3.5rem !important;
+        box-sizing: border-box !important;
+        display: block !important;
+        margin: 0 !important;
+    }
+    
+    #id_username:focus, #id_password:focus {
+        outline: none !important;
+        border-color: #dc2626 !important;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
     }
     
     /* Responsive */
