@@ -4,65 +4,234 @@
 {% block title %}Criar Conta - Portal de Fretes{% endblock %}
 
 {% block content %}
-<div class="container-sm mt-8">
-    <div class="card animate-fade-in">
-        <div class="card-body p-8">
-            <div class="text-center mb-6">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">🚛</div>
-                <h1>Criar Conta</h1>
-                <p class="text-secondary">Junte-se ao Portal de Fretes</p>
-            </div>
+<div class="signup-container">
+    <div class="signup-card">
+        <div class="signup-header">
+            <div class="signup-icon">🚛</div>
+            <h1 class="signup-title">Criar Conta</h1>
+            <p class="signup-subtitle">Junte-se ao Portal de Fretes</p>
+        </div>
 
-            <form method="post" class="space-y-4">
-                {% csrf_token %}
-                
-                {% for field in form %}
-                    <div class="form-group">
-                        <label for="{{ field.id_for_label }}" class="form-label">
-                            {{ field.label }}
-                        </label>
-                        {{ field }}
-                        {% if field.help_text %}
-                            <div class="form-text">{{ field.help_text }}</div>
-                        {% endif %}
-                        {% if field.errors %}
-                            {% for error in field.errors %}
-                                <div class="form-error">{{ error }}</div>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
-                {% endfor %}
-                
-                <button type="submit" class="btn btn-primary btn-block btn-lg">
-                    Criar Conta
-                </button>
-            </form>
+        <form method="post" class="signup-form">
+            {% csrf_token %}
+            
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}" class="form-label">
+                        {{ field.label }}
+                    </label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <div class="form-text">{{ field.help_text }}</div>
+                    {% endif %}
+                    {% if field.errors %}
+                        {% for error in field.errors %}
+                            <div class="form-error">{{ error }}</div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            {% endfor %}
+            
+            <button type="submit" class="signup-btn">
+                Criar Conta
+            </button>
+        </form>
 
-            <div class="text-center mt-6">
-                <p class="text-secondary">
-                    Já tem conta? 
-                    <a href="/login/" class="text-primary hover:underline">Entrar</a>
-                </p>
-            </div>
+        <div class="signup-footer">
+            <p class="signup-text">
+                Já tem conta? 
+                <a href="/login/" class="signup-link">Entrar</a>
+            </p>
         </div>
     </div>
 </div>
 
 <style>
-    form input, form select, form textarea {
-        @apply form-control;
+    /* Signup Page Styles */
+    .signup-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        padding: 2rem 1rem;
     }
     
-    .space-y-4 > * + * {
-        margin-top: 1rem;
+    .signup-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+        width: 100%;
+        max-width: 450px;
+        padding: 2.5rem;
+        animation: fadeIn 0.3s ease-out;
     }
     
-    .hover\:underline:hover {
+    .signup-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .signup-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .signup-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+    
+    .signup-subtitle {
+        color: #6b7280;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+    
+    .signup-form {
+        margin-bottom: 1.5rem;
+    }
+    
+    .signup-form .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .signup-form .form-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        text-align: center;
+    }
+    
+    .signup-form .form-control {
+        width: 100% !important;
+        padding: 1.25rem 1.5rem !important;
+        font-size: 1.2rem !important;
+        border: 2px solid #e2e8f0 !important;
+        border-radius: 0.75rem !important;
+        background: white !important;
+        color: #1f2937 !important;
+        transition: all 0.2s !important;
+        font-family: inherit !important;
+        text-align: center !important;
+        min-height: 3.5rem !important;
+        height: 3.5rem !important;
+        box-sizing: border-box !important;
+        display: block !important;
+        margin: 0 !important;
+    }
+    
+    .signup-form .form-control:focus {
+        outline: none;
+        border-color: #dc2626;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    }
+    
+    .signup-btn {
+        width: 100%;
+        background: #dc2626;
+        color: white;
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 0.5rem;
+    }
+    
+    .signup-btn:hover {
+        background: #b91c1c;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+    
+    .form-text {
+        font-size: 0.8rem;
+        color: #6b7280;
+        margin-top: 0.5rem;
+        text-align: center;
+        line-height: 1.4;
+    }
+    
+    .form-error {
+        color: #dc2626;
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+        text-align: center;
+    }
+    
+    .signup-footer {
+        text-align: center;
+        padding-top: 1rem;
+        border-top: 1px solid #e2e8f0;
+    }
+    
+    .signup-text {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin: 0;
+    }
+    
+    .signup-link {
+        color: #dc2626;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .signup-link:hover {
         text-decoration: underline;
     }
     
-    .text-primary {
-        color: var(--primary-color);
+    /* Force specific styling for input fields */
+    #id_username, #id_password1, #id_password2 {
+        width: 100% !important;
+        padding: 1.25rem 1.5rem !important;
+        font-size: 1.2rem !important;
+        border: 2px solid #e2e8f0 !important;
+        border-radius: 0.75rem !important;
+        background: white !important;
+        color: #1f2937 !important;
+        text-align: center !important;
+        min-height: 3.5rem !important;
+        height: 3.5rem !important;
+        box-sizing: border-box !important;
+        display: block !important;
+        margin: 0 !important;
+    }
+    
+    #id_username:focus, #id_password1:focus, #id_password2:focus {
+        outline: none !important;
+        border-color: #dc2626 !important;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
+    }
+    
+    /* Responsive */
+    @media (max-width: 480px) {
+        .signup-container {
+            padding: 1rem;
+            min-height: 70vh;
+        }
+        
+        .signup-card {
+            padding: 1.5rem;
+            max-width: 100%;
+        }
+        
+        .signup-title {
+            font-size: 1.5rem;
+        }
+        
+        .signup-icon {
+            font-size: 2rem;
+        }
     }
 </style>
 {% endblock %}
