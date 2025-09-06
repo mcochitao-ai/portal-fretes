@@ -4,60 +4,199 @@
 {% block title %}Login - Portal de Fretes{% endblock %}
 
 {% block content %}
-<div class="container-sm mt-8">
-    <div class="card animate-fade-in">
-        <div class="card-body p-8">
-            <div class="text-center mb-6">
-                <div style="font-size: 4rem; margin-bottom: 1rem;">🚛</div>
-                <h1>Portal de Fretes</h1>
-                <p class="text-secondary">Faça login para acessar o sistema</p>
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-icon">🚛</div>
+            <h1 class="login-title">Portal de Fretes</h1>
+            <p class="login-subtitle">Faça login para acessar o sistema</p>
+        </div>
+
+        {% if form.errors %}
+            <div class="login-alert">
+                Usuário ou senha inválidos.
             </div>
+        {% endif %}
 
-            {% if form.errors %}
-                <div class="alert alert-danger">
-                    Usuário ou senha inválidos.
-                </div>
-            {% endif %}
-
-            <form method="post" class="space-y-4">
-                {% csrf_token %}
-                
-                <div class="form-group">
-                    <label for="id_username" class="form-label">Usuário</label>
-                    {{ form.username }}
-                </div>
-                
-                <div class="form-group">
-                    <label for="id_password" class="form-label">Senha</label>
-                    {{ form.password }}
-                </div>
-                
-                <button type="submit" class="btn btn-primary btn-block btn-lg">
-                    Entrar
-                </button>
-            </form>
-
-            <div class="text-center mt-6">
-                <p class="text-secondary">
-                    Não tem conta? 
-                    <a href="/signup/" class="text-primary hover:underline">Criar conta</a>
-                </p>
+        <form method="post" class="login-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_username" class="form-label">Usuário</label>
+                {{ form.username }}
             </div>
+            
+            <div class="form-group">
+                <label for="id_password" class="form-label">Senha</label>
+                {{ form.password }}
+            </div>
+            
+            <button type="submit" class="login-btn">
+                Entrar
+            </button>
+        </form>
+
+        <div class="login-footer">
+            <p class="login-text">
+                Não tem conta? 
+                <a href="/signup/" class="login-link">Criar conta</a>
+            </p>
         </div>
     </div>
 </div>
 
 <style>
-    #id_username, #id_password {
-        @apply form-control;
+    /* Login Page Styles */
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        padding: 2rem 1rem;
     }
     
-    .space-y-4 > * + * {
-        margin-top: 1rem;
+    .login-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+        width: 100%;
+        max-width: 400px;
+        padding: 2rem;
+        animation: fadeIn 0.3s ease-out;
     }
     
-    .hover\:underline:hover {
+    .login-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .login-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .login-title {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+    }
+    
+    .login-subtitle {
+        color: #6b7280;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+    
+    .login-form {
+        margin-bottom: 1.5rem;
+    }
+    
+    .login-form .form-group {
+        margin-bottom: 1.25rem;
+    }
+    
+    .login-form .form-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .login-form .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 0.5rem;
+        background: white;
+        color: #1f2937;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+    
+    .login-form .form-control:focus {
+        outline: none;
+        border-color: #dc2626;
+        box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    }
+    
+    .login-btn {
+        width: 100%;
+        background: #dc2626;
+        color: white;
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 0.5rem;
+    }
+    
+    .login-btn:hover {
+        background: #b91c1c;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+    
+    .login-alert {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+        padding: 0.875rem 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+        text-align: center;
+    }
+    
+    .login-footer {
+        text-align: center;
+        padding-top: 1rem;
+        border-top: 1px solid #e2e8f0;
+    }
+    
+    .login-text {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin: 0;
+    }
+    
+    .login-link {
+        color: #dc2626;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .login-link:hover {
         text-decoration: underline;
+    }
+    
+    /* Responsive */
+    @media (max-width: 480px) {
+        .login-container {
+            padding: 1rem;
+            min-height: 70vh;
+        }
+        
+        .login-card {
+            padding: 1.5rem;
+            max-width: 100%;
+        }
+        
+        .login-title {
+            font-size: 1.5rem;
+        }
+        
+        .login-icon {
+            font-size: 2rem;
+        }
     }
 </style>
 {% endblock %}
