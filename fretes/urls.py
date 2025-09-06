@@ -15,6 +15,7 @@ urlpatterns = [
     path('signup/', views.signup, name='signup'),
     path('login/', auth_views.LoginView.as_view(template_name='fretes/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='/login/'), name='logout'),
+    path('health/', views.health_check, name='health_check'),
     path('', views.home, name='home'),
     path('solicitar-frete/', views.selecionar_origem, name='solicitar_frete'),
 ]

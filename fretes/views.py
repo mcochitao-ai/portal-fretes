@@ -16,6 +16,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
+from django.http import JsonResponse
 
 from .models import Loja, FreteRequest, Destino, Transportadora
 
@@ -494,6 +495,15 @@ def meus_fretes_relatorio_excel(request):
     response['Content-Disposition'] = 'attachment; filename=fretes_relatorio.xlsx'
     wb.save(response)
     return response
+
+
+def health_check(request):
+    """Endpoint para verificação de saúde do sistema"""
+    return JsonResponse({
+        'status': 'ok',
+        'message': 'Portal de Fretes está funcionando',
+        'timestamp': timezone.now().isoformat()
+    })
 
 
 # Form classes
