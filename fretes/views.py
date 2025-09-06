@@ -8,6 +8,8 @@ from django import forms
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
+from django import forms
+from django.contrib.auth.models import User
 from django.db.models import Count, Sum
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -17,18 +19,29 @@ from django.views.decorators.http import require_POST
 
 from .models import Loja, FreteRequest, Destino, Transportadora
 
+# Formulário customizado para signup
+class CustomUserCreationForm(UserCreationForm):
+    username = forms.CharField(
+        max_length=30,
+        help_text="Obrigatório. 30 caracteres ou menos. Letras, números e @/./+/-/_ apenas.",
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    
+    class Meta:
+        model = User
+        fields = ("username", "password1", "password2")
 
 # Views principais
 def signup(request):
     """View para registro de novos usuários"""
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             auth_login(request, user)
             return redirect('home')
     else:
-        form = UserCreationForm()
+        form = CustomUserCreationForm()
     return render(request, 'fretes/signup.html', {'form': form})
 
 
