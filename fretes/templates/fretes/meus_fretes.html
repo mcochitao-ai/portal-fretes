@@ -1,57 +1,386 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Meus Fretes</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6fb; margin: 0; }
-        .header { background: #1a237e; color: #fff; padding: 28px 0 18px 0; text-align: center; box-shadow: 0 2px 8px #0001; }
-        .header h1 { margin: 0; font-size: 2rem; }
-        .container { max-width: 900px; margin: 32px auto; padding: 0 16px; }
-        .actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
-        .btn { background: #3949ab; color: #fff; padding: 10px 24px; border: none; border-radius: 4px; font-size: 1rem; text-decoration: none; transition: background 0.2s; cursor: pointer; }
-        .btn:hover { background: #1a237e; }
-        .fretes-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
-        .frete-card { background: #fff; border-radius: 10px; box-shadow: 0 2px 8px #0002; padding: 24px 20px 18px 20px; display: flex; flex-direction: column; gap: 8px; position: relative; }
-        .frete-card .id { position: absolute; top: 16px; right: 20px; font-size: 0.9rem; color: #7986cb; }
-        .frete-card .label { font-weight: 600; color: #3949ab; margin-right: 4px; }
-        .frete-card .desc { color: #333; margin-bottom: 8px; }
-        .frete-card .footer { margin-top: 10px; display: flex; justify-content: flex-end; }
-        .empty { text-align: center; color: #888; margin-top: 60px; font-size: 1.2rem; }
-        @media (max-width: 600px) { .header h1 { font-size: 1.5rem; } .container { padding: 0 4px; } }
-    </style>
-</head>
-<body>
-    <div class="header">
+{% extends 'fretes/base.html' %}
+{% load static %}
+{% load frete_filters %}
+
+{% block title %}Meus Fretes - Portal de Fretes Renner{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="header header-renner">
+    <div class="header-content">
         <h1>Meus Fretes</h1>
-        <div class="user">Olá, {{ request.user.username }} | <a href="/logout/" style="color:#fff;text-decoration:underline;">Sair</a></div>
+        <div class="subtitle">Gerencie todas as suas solicitações de frete</div>
     </div>
-    <div class="container">
-        <div class="actions">
-            <span style="font-size:1.2rem;font-weight:500;">Minhas Solicitações</span>
-            <a href="/solicitar-frete/" class="btn">Solicitar novo frete</a>
+</div>
+
+<!-- Main Content -->
+<div class="container mt-8">
+    <!-- Actions Bar -->
+    <div class="card mb-6">
+        <div class="card-body">
+            <div class="actions-header">
+                <div class="actions-title">
+                    <h3 class="text-lg font-semibold">Minhas Solicitações</h3>
+                    <p class="text-secondary">Filtre e gerencie seus fretes</p>
+                </div>
+                
+                <div class="actions-buttons">
+                    <a href="/selecionar-origem/" class="btn btn-primary">
+                        📦 Solicitar novo frete
+                    </a>
+                    
+                    <a href="/meus-fretes/relatorio-excel/?{% if status_selected %}status={{ status_selected }}{% endif %}" class="btn btn-success">
+                        📊 Gerar Relatório Excel
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Search Form -->
+            <div class="search-form-container">
+                <form method="get" class="search-form">
+                    <input type="text" 
+                           name="search" 
+                           value="{{ search_query }}" 
+                           placeholder="Pesquisar por ID, origem, destino..." 
+                           class="form-control search-input">
+                    <select name="status" class="form-control status-select">
+                        <option value="">Todos os status</option>
+                        <option value="pendente" {% if status_selected == 'pendente' %}selected{% endif %}>Pendente</option>
+                        <option value="cotacao_enviada" {% if status_selected == 'cotacao_enviada' %}selected{% endif %}>Cotação enviada</option>
+                        <option value="finalizado" {% if status_selected == 'finalizado' %}selected{% endif %}>Finalizado</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary">
+                        🔍 Pesquisar
+                    </button>
+                    {% if search_query or status_selected %}
+                        <a href="/meus-fretes/" class="btn btn-outline">
+                            ✕ Limpar
+                        </a>
+                    {% endif %}
+                </form>
+            </div>
         </div>
-        {% if fretes %}
-            <div class="fretes-list">
-                {% for frete in fretes %}
-                    <div class="frete-card">
-                        <div class="id">#{{ frete.id }}</div>
-                        <div><span class="label">Data:</span> {{ frete.data_criacao|date:'d/m/Y H:i' }}</div>
-                        <div class="desc"><span class="label">Descrição:</span> {{ frete.descricao }}</div>
-                        <div><span class="label">Transportadora:</span> {% if frete.transportadora_selecionada %}{{ frete.transportadora_selecionada.nome }}{% else %}Nenhuma{% endif %}</div>
-                        <div class="footer">
-                            <a href="/frete/{{ frete.id }}/" class="btn" style="font-size:0.95rem;padding:7px 18px;">Ver detalhes</a>
+    </div>
+
+    <!-- Search Results Info -->
+    {% if search_query %}
+        <div class="card mb-6">
+            <div class="card-body">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg">🔍</span>
+                    <span><strong>Resultados da pesquisa:</strong> "{{ search_query }}"</span>
+                    <span class="text-secondary">({{ fretes|length }} frete{{ fretes|length|pluralize }} encontrado{{ fretes|length|pluralize }})</span>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Fretes List -->
+    {% if fretes %}
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {% for frete in fretes %}
+                <div class="card animate-fade-in hover:shadow-lg transition-all duration-200">
+                    <div class="card-header">
+                        <div class="flex justify-between items-start">
+                            <div class="flex items-center gap-2">
+                                <span style="font-size: 1.5rem;">🚛</span>
+                                <span class="font-bold text-lg">#{{ frete.id }}</span>
+                            </div>
+                            {% if frete.status == 'pendente' %}
+                                <span class="badge badge-pending">⏳ Pendente</span>
+                            {% elif frete.status == 'cotacao_enviada' %}
+                                <span class="badge badge-sent">📤 Cotação Enviada</span>
+                            {% elif frete.status == 'finalizado' %}
+                                <span class="badge badge-completed">✅ Finalizado</span>
+                            {% endif %}
                         </div>
                     </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="empty">Você ainda não solicitou nenhum frete.</div>
-        {% endif %}
-        <div style="text-align:center;margin-top:32px;">
-            <a href="/" style="color:#3949ab;text-decoration:underline;font-weight:500;">&larr; Voltar para todos os fretes</a>
+                    
+                    <div class="card-body">
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2">
+                                <span class="text-secondary">📅</span>
+                                <span><strong>Data:</strong> {{ frete.data_criacao|date:'d/m/Y H:i' }}</span>
+                            </div>
+                            
+                            <div class="flex items-center gap-2">
+                                <span class="text-secondary">⏰</span>
+                                <span><strong>Coleta:</strong> {{ frete.horario_coleta|format_horario_coleta|default:'-' }}</span>
+                            </div>
+                            
+                            <div class="flex items-start gap-2">
+                                <span class="text-secondary">📍</span>
+                                <div>
+                                    <strong>Origem:</strong><br>
+                                    <span class="text-sm">{{ frete.origem.nome }}</span><br>
+                                    <span class="text-xs text-secondary">{{ frete.origem.municipio }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-2">
+                                <span class="text-secondary">🎯</span>
+                                <div>
+                                    <strong>Destinos:</strong><br>
+                                    {% for destino in frete.destinos.all %}
+                                        <span class="text-sm">{{ destino.loja }} ({{ destino.cidade }})</span>
+                                        {% if not forloop.last %}<br>{% endif %}
+                                    {% empty %}
+                                        <span class="text-sm text-secondary">Nenhum destino cadastrado</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-footer">
+                        <a href="/frete/{{ frete.id }}/" class="btn btn-outline btn-block">
+                            Ver detalhes
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
+    {% else %}
+        <div class="card text-center py-12">
+            <div class="text-6xl mb-4">📦</div>
+            {% if search_query %}
+                <h3 class="text-xl font-semibold mb-2">Nenhum frete encontrado</h3>
+                <p class="text-secondary mb-6">Não foram encontrados fretes para a pesquisa "{{ search_query }}".</p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="/meus-fretes/" class="btn btn-outline">
+                        Ver todos os fretes
+                    </a>
+                    <a href="/selecionar-origem/" class="btn btn-primary">
+                        Solicitar novo frete
+                    </a>
+                </div>
+            {% else %}
+                <h3 class="text-xl font-semibold mb-2">Nenhum frete encontrado</h3>
+                <p class="text-secondary mb-6">Você ainda não solicitou nenhum frete ou não há fretes com o status selecionado.</p>
+                <a href="/selecionar-origem/" class="btn btn-primary">
+                    Solicitar primeiro frete
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <!-- Back Link -->
+    <div class="text-center mt-8">
+        <a href="/" class="btn btn-outline">
+            ← Voltar para o início
+        </a>
     </div>
-</body>
-</html>
+</div>
+
+<style>
+.space-y-3 > * + * {
+    margin-top: 0.75rem;
+}
+
+.hover\:shadow-lg:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.transition-all {
+    transition: all 0.2s;
+}
+
+.duration-200 {
+    transition-duration: 200ms;
+}
+
+.text-6xl {
+    font-size: 3.75rem;
+}
+
+.text-xs {
+    font-size: 0.75rem;
+}
+
+.py-12 {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
+
+/* Header Renner Styles */
+.header-renner {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    padding: 3rem 0;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(220, 38, 38, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.header-renner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.2;
+}
+
+.header-content {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.header-renner h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 0.75rem;
+    color: white;
+    text-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    letter-spacing: -0.02em;
+}
+
+.header-renner .subtitle {
+    font-size: 1.5rem;
+    opacity: 0.95;
+    font-weight: 500;
+    margin-bottom: 2rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+
+.header-renner .user-greeting {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.header-renner .logout-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.header-renner .logout-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .header-renner {
+        padding: 2rem 0;
+    }
+    
+    .header-renner h1 {
+        font-size: 2.5rem;
+    }
+    
+    .header-renner .subtitle {
+        font-size: 1.25rem;
+    }
+    
+}
+
+@media (max-width: 480px) {
+    .header-renner h1 {
+        font-size: 2rem;
+    }
+    
+    .header-renner .subtitle {
+        font-size: 1rem;
+    }
+}
+
+/* Actions Header Layout */
+.actions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.actions-title h3 {
+    margin: 0;
+    color: #333;
+}
+
+.actions-title p {
+    margin: 0.25rem 0 0 0;
+    color: #666;
+}
+
+.actions-buttons {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+/* Search Form Layout */
+.search-form-container {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 1.5rem;
+}
+
+.search-form {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-input {
+    min-width: 250px;
+    flex: 1;
+}
+
+.status-select {
+    min-width: 150px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .actions-header {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+    }
+    
+    .actions-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .search-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .search-input,
+    .status-select {
+        min-width: auto;
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .actions-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .actions-buttons .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+</style>
+{% endblock %}

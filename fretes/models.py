@@ -1,4 +1,3 @@
-
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -34,7 +33,14 @@ class FreteRequest(models.Model):
 	descricao = models.TextField(blank=True)
 	transportadora_selecionada = models.ForeignKey(Transportadora, null=True, blank=True, on_delete=models.SET_NULL)
 	origem = models.ForeignKey(Loja, null=True, blank=True, on_delete=models.SET_NULL, related_name='fretes_origem')
-	horario_coleta = models.DateTimeField(null=True, blank=True)
+	horario_coleta = models.CharField(max_length=50, blank=True, null=True)
+	observacoes_origem = models.TextField(blank=True, null=True, verbose_name="Observações da Coleta")
+	STATUS_CHOICES = [
+		('pendente', 'Pendente'),
+		('cotacao_enviada', 'Cotação enviada'),
+		('finalizado', 'Finalizado'),
+	]
+	status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='pendente')
 
 	def __str__(self):
 		return f"Frete #{self.id} por {self.usuario.username}"
@@ -47,6 +53,9 @@ class Destino(models.Model):
 	estado = models.CharField(max_length=2)
 	cep = models.CharField(max_length=10)
 	volume = models.PositiveIntegerField(default=1)
+	loja = models.CharField(max_length=100, blank=True, null=True)  # Adicione esta linha
+	numero = models.CharField(max_length=20, blank=True, null=True)
+	observacao = models.TextField(blank=True, null=True)
 
 	def __str__(self):
 		return f"{self.endereco}, {self.cidade}-{self.estado} (Vol: {self.volume})"
