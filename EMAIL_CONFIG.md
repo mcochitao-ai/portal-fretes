@@ -68,3 +68,4 @@ send_mail(
 ✅ **Validação de Token**: Tokens expiram em 24 horas
 ✅ **Mensagens de Feedback**: Sucesso e erro para o usuário
 ✅ **Interface Responsiva**: Design consistente com o resto do sistema
+
