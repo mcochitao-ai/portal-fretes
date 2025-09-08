@@ -18,6 +18,14 @@
             </div>
         {% endif %}
 
+        {% if messages %}
+            {% for message in messages %}
+                <div class="login-alert {% if message.tags == 'error' %}login-alert-error{% else %}login-alert-success{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
         <form method="post" class="login-form">
             {% csrf_token %}
             
@@ -37,6 +45,9 @@
         </form>
 
         <div class="login-footer">
+            <p class="login-text">
+                <a href="/forgot-password/" class="login-link">Esqueci a senha</a>
+            </p>
             <p class="login-text">
                 Não tem conta? 
                 <a href="/signup/" class="login-link">Criar conta</a>
@@ -153,14 +164,23 @@
     }
     
     .login-alert {
-        background: #fef2f2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
         padding: 0.875rem 1rem;
         border-radius: 0.5rem;
         margin-bottom: 1.5rem;
         font-size: 0.875rem;
         text-align: center;
+    }
+    
+    .login-alert-error {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+    
+    .login-alert-success {
+        background: #f0fdf4;
+        color: #166534;
+        border: 1px solid #bbf7d0;
     }
     
     .login-footer {

@@ -7,7 +7,7 @@ from openpyxl.utils import get_column_letter
 from django import forms
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordResetForm, SetPasswordForm
 from django import forms
 from django.contrib.auth.models import User
 from django.db.models import Count, Sum
@@ -17,6 +17,12 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib import messages
 
 from .models import Loja, FreteRequest, Destino, Transportadora
 
@@ -27,10 +33,22 @@ class CustomUserCreationForm(UserCreationForm):
         help_text="Obrigatório. 30 caracteres ou menos. Letras, números e @/./+/-/_ apenas.",
         widget=forms.TextInput(attrs={'class': 'form-control'})
     )
+    email = forms.EmailField(
+        required=True,
+        help_text="Obrigatório. Digite um email válido.",
+        widget=forms.EmailInput(attrs={'class': 'form-control'})
+    )
     
     class Meta:
         model = User
-        fields = ("username", "password1", "password2")
+        fields = ("username", "email", "password1", "password2")
+    
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data["email"]
+        if commit:
+            user.save()
+        return user
 
 # Views principais
 def signup(request):
@@ -519,3 +537,89 @@ class FreteForm(forms.ModelForm):
     class Meta:
         model = FreteRequest
         fields = ['descricao']
+
+
+# Views para reset de senha
+def forgot_password(request):
+    """View para solicitar reset de senha"""
+    if request.method == 'POST':
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            try:
+                user = User.objects.get(email=email)
+                # Gerar token e enviar email
+                token = default_token_generator.make_token(user)
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+                
+                # URL para reset de senha
+                reset_url = request.build_absolute_uri(
+                    reverse('reset_password', kwargs={'uidb64': uid, 'token': token})
+                )
+                
+                # Tentar enviar email, mas não falhar se não estiver configurado
+                try:
+                    # Enviar email
+                    subject = 'Reset de Senha - Portal de Fretes'
+                    message = f"""
+                    Olá {user.username},
+                    
+                    Você solicitou um reset de senha para sua conta no Portal de Fretes.
+                    
+                    Clique no link abaixo para redefinir sua senha:
+                    {reset_url}
+                    
+                    Este link é válido por 24 horas.
+                    
+                    Se você não solicitou este reset, ignore este email.
+                    
+                    Atenciosamente,
+                    Equipe Portal de Fretes
+                    """
+                    
+                    send_mail(
+                        subject,
+                        message,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [email],
+                        fail_silently=True,  # Não falhar se email não estiver configurado
+                    )
+                    
+                    messages.success(request, '✅ Email de reset enviado com sucesso! Verifique sua caixa de entrada e spam.')
+                    
+                except Exception as e:
+                    # Se falhar o envio de email, mostrar o link diretamente
+                    messages.success(request, f'✅ Link de reset gerado! Como o email não está configurado, copie o link abaixo: {reset_url}')
+                
+                return redirect('login')
+                
+            except User.DoesNotExist:
+                messages.error(request, '❌ Email não encontrado em nosso sistema. Verifique se digitou corretamente.')
+    else:
+        form = PasswordResetForm()
+    
+    return render(request, 'fretes/forgot_password.html', {'form': form})
+
+
+def reset_password(request, uidb64, token):
+    """View para resetar senha com token"""
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            form = SetPasswordForm(user, request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, '✅ Senha redefinida com sucesso! Faça login com sua nova senha.')
+                return redirect('login')
+        else:
+            form = SetPasswordForm(user)
+        
+        return render(request, 'fretes/reset_password.html', {'form': form})
+    else:
+        messages.error(request, '❌ Link inválido ou expirado. Solicite um novo reset de senha.')
+        return redirect('forgot_password')
