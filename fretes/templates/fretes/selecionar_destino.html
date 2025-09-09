@@ -25,7 +25,7 @@
                 </div>
             {% endif %}
 
-            <form method="post" class="space-y-4">
+            <form method="post" enctype="multipart/form-data" class="space-y-4">
                 {% csrf_token %}
                 <input type="hidden" name="origem_id" value="{{ origem_id }}">
                 <input type="hidden" name="horario_coleta" value="{{ horario_coleta }}">
@@ -98,6 +98,12 @@ function atualizarCamposDestinos() {
                     <label class="form-label">Observações Específicas</label>
                     <textarea name="observacao_${id}" id="observacao_${id}" class="form-control" rows="2" placeholder="Informações específicas para este destino (ex: horário de entrega, contato, instruções especiais, etc.)"></textarea>
                 </div>
+                <div class="form-group mt-4">
+                    <label class="form-label">Anexo do Destino (Opcional)</label>
+                    <input type="file" name="anexo_destino_${id}" id="anexo_destino_${id}" class="form-control" accept=".xlsx,.xls,.pdf" onchange="validateFile(this)">
+                    <div class="form-text">Formatos aceitos: Excel (.xlsx, .xls) e PDF (.pdf). Tamanho máximo: 10MB</div>
+                    <div id="file-error-${id}" class="text-danger" style="display: none;"></div>
+                </div>
             </div>
         `;
         
@@ -118,6 +124,40 @@ function atualizarCamposDestinos() {
 
 document.getElementById('id_destino').addEventListener('change', atualizarCamposDestinos);
 document.addEventListener('DOMContentLoaded', atualizarCamposDestinos);
+
+// Validação de arquivo
+function validateFile(input) {
+    const file = input.files[0];
+    const errorDiv = input.parentNode.querySelector('.text-danger');
+    
+    if (!file) {
+        errorDiv.style.display = 'none';
+        return;
+    }
+    
+    // Verificar tamanho (10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB em bytes
+    if (file.size > maxSize) {
+        errorDiv.textContent = 'Arquivo muito grande. Tamanho máximo permitido: 10MB';
+        errorDiv.style.display = 'block';
+        input.value = '';
+        return;
+    }
+    
+    // Verificar extensão
+    const allowedExtensions = ['.xlsx', '.xls', '.pdf'];
+    const fileName = file.name.toLowerCase();
+    const hasValidExtension = allowedExtensions.some(ext => fileName.endsWith(ext));
+    
+    if (!hasValidExtension) {
+        errorDiv.textContent = 'Formato não permitido. Use apenas arquivos Excel (.xlsx, .xls) ou PDF (.pdf)';
+        errorDiv.style.display = 'block';
+        input.value = '';
+        return;
+    }
+    
+    errorDiv.style.display = 'none';
+}
 </script>
 
 <style>

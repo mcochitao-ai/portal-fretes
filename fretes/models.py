@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 # Modelo de Loja
 
@@ -35,6 +37,7 @@ class FreteRequest(models.Model):
 	origem = models.ForeignKey(Loja, null=True, blank=True, on_delete=models.SET_NULL, related_name='fretes_origem')
 	horario_coleta = models.CharField(max_length=50, blank=True, null=True)
 	observacoes_origem = models.TextField(blank=True, null=True, verbose_name="Observações da Coleta")
+	anexo_origem = models.FileField(upload_to='anexos/origem/', blank=True, null=True, verbose_name="Anexo da Origem", help_text="Arquivo Excel ou PDF relacionado à origem")
 	STATUS_CHOICES = [
 		('pendente', 'Pendente'),
 		('cotacao_enviada', 'Cotação enviada'),
@@ -56,6 +59,46 @@ class Destino(models.Model):
 	loja = models.CharField(max_length=100, blank=True, null=True)  # Adicione esta linha
 	numero = models.CharField(max_length=20, blank=True, null=True)
 	observacao = models.TextField(blank=True, null=True)
+	anexo_destino = models.FileField(upload_to='anexos/destino/', blank=True, null=True, verbose_name="Anexo do Destino", help_text="Arquivo Excel ou PDF relacionado ao destino")
 
 	def __str__(self):
 		return f"{self.endereco}, {self.cidade}-{self.estado} (Vol: {self.volume})"
+
+
+# Modelo de Perfil de Usuário para definir permissões
+class UserProfile(models.Model):
+	ACESSO_CHOICES = [
+		('limitado', 'Acesso Limitado - Apenas solicitar e ver lista'),
+		('completo', 'Acesso Completo - Pode editar e ver detalhes'),
+	]
+	
+	user = models.OneToOneField(User, on_delete=models.CASCADE)
+	tipo_acesso = models.CharField(max_length=20, choices=ACESSO_CHOICES, default='limitado', verbose_name="Tipo de Acesso")
+	is_master = models.BooleanField(default=False, verbose_name="Usuário Master", help_text="Pode ver todos os fretes de todos os usuários")
+	
+	def __str__(self):
+		return f"{self.user.username} - {self.get_tipo_acesso_display()}"
+	
+	def pode_editar_fretes(self):
+		"""Verifica se o usuário pode editar fretes"""
+		return self.tipo_acesso == 'completo'
+	
+	def pode_ver_detalhes_frete(self):
+		"""Verifica se o usuário pode ver detalhes dos fretes"""
+		return self.tipo_acesso == 'completo' or self.is_master
+	
+	def is_usuario_master(self):
+		"""Verifica se o usuário é master (pode ver todos os fretes)"""
+		return self.is_master
+
+
+# Signal para criar automaticamente o perfil quando um usuário é criado
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+	if created:
+		UserProfile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+	if hasattr(instance, 'userprofile'):
+		instance.userprofile.save()

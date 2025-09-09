@@ -12,6 +12,7 @@ urlpatterns = [
     path('meus-fretes/', views.meus_fretes, name='meus_fretes'),
     path('meus-fretes/relatorio-excel/', views.meus_fretes_relatorio_excel, name='meus_fretes_relatorio_excel'),
     path('frete/<int:frete_id>/', views.frete_detalhe, name='frete_detalhe'),
+    path('frete/<int:frete_id>/editar/', views.editar_frete, name='editar_frete'),
     path('signup/', views.signup, name='signup'),
     path('login/', auth_views.LoginView.as_view(template_name='fretes/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='/login/'), name='logout'),

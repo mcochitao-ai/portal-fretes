@@ -20,8 +20,13 @@
         <div class="card-body">
             <div class="actions-header">
                 <div class="actions-title">
-                    <h3 class="text-lg font-semibold">Minhas Solicitações</h3>
-                    <p class="text-secondary">Filtre e gerencie seus fretes</p>
+                    {% if user.userprofile.is_usuario_master %}
+                        <h3 class="text-lg font-semibold">🏆 Administração - Todos os Fretes</h3>
+                        <p class="text-secondary">Visualize e gerencie todos os fretes do sistema</p>
+                    {% else %}
+                        <h3 class="text-lg font-semibold">Minhas Solicitações</h3>
+                        <p class="text-secondary">Filtre e gerencie seus fretes</p>
+                    {% endif %}
                 </div>
                 
                 <div class="actions-buttons">
@@ -98,6 +103,13 @@
                     
                     <div class="card-body">
                         <div class="space-y-3">
+                            {% if user.userprofile.is_usuario_master %}
+                            <div class="flex items-center gap-2">
+                                <span class="text-secondary">👤</span>
+                                <span><strong>Criado por:</strong> {{ frete.usuario.username }}</span>
+                            </div>
+                            {% endif %}
+                            
                             <div class="flex items-center gap-2">
                                 <span class="text-secondary">📅</span>
                                 <span><strong>Data:</strong> {{ frete.data_criacao|date:'d/m/Y H:i' }}</span>
@@ -133,9 +145,22 @@
                     </div>
                     
                     <div class="card-footer">
-                        <a href="/frete/{{ frete.id }}/" class="btn btn-outline btn-block">
-                            Ver detalhes
-                        </a>
+                        <div class="d-flex gap-2">
+                            {% if user.userprofile.pode_ver_detalhes_frete %}
+                                <a href="/frete/{{ frete.id }}/" class="btn btn-outline flex-1">
+                                    Ver detalhes
+                                </a>
+                            {% else %}
+                                <span class="btn btn-outline flex-1 disabled" style="opacity: 0.5; cursor: not-allowed;">
+                                    Ver detalhes
+                                </span>
+                            {% endif %}
+                            {% if frete.status == 'pendente' and user.userprofile.pode_editar_fretes %}
+                                <a href="{% url 'editar_frete' frete.id %}" class="btn btn-warning">
+                                    ✏️
+                                </a>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
             {% endfor %}
@@ -381,6 +406,41 @@
         width: 100%;
         text-align: center;
     }
+}
+
+/* Edit button styles */
+.d-flex {
+    display: flex;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.flex-1 {
+    flex: 1 1 0%;
+}
+
+.btn-warning {
+    background-color: #3b82f6;
+    color: white;
+    border: 1px solid #3b82f6;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    text-decoration: none;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+}
+
+.btn-warning:hover {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    color: white;
+    text-decoration: none;
 }
 </style>
 {% endblock %}

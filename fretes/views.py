@@ -1,5 +1,6 @@
 # Imports organizados
 import json
+import os
 import openpyxl
 from datetime import timedelta
 from openpyxl.utils import get_column_letter
@@ -24,7 +25,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib import messages
 
-from .models import Loja, FreteRequest, Destino, Transportadora
+from .models import Loja, FreteRequest, Destino, Transportadora, UserProfile
 
 # Formulário customizado para signup
 class CustomUserCreationForm(UserCreationForm):
@@ -254,10 +255,46 @@ def selecionar_origem(request):
         loja_id = request.POST.get('origem')
         horario_coleta = request.POST.get('horario_coleta')
         observacoes_origem = request.POST.get('observacoes_origem', '')
+        anexo_origem = request.FILES.get('anexo_origem')
+        
         if loja_id and horario_coleta:
             # Codificar as observações para URL
             import urllib.parse
             observacoes_encoded = urllib.parse.quote(observacoes_origem)
+            
+            # Se há anexo, salvar temporariamente na sessão
+            if anexo_origem:
+                # Validar arquivo
+                if anexo_origem.size > 10 * 1024 * 1024:  # 10MB
+                    return render(request, 'fretes/selecionar_origem.html', {
+                        'lojas_choices': lojas_choices,
+                        'erro': 'Arquivo muito grande. Tamanho máximo permitido: 10MB'
+                    })
+                
+                allowed_extensions = ['.xlsx', '.xls', '.pdf']
+                file_extension = os.path.splitext(anexo_origem.name)[1].lower()
+                if file_extension not in allowed_extensions:
+                    return render(request, 'fretes/selecionar_origem.html', {
+                        'lojas_choices': lojas_choices,
+                        'erro': 'Formato não permitido. Use apenas arquivos Excel (.xlsx, .xls) ou PDF (.pdf)'
+                    })
+                
+                # Salvar arquivo temporariamente
+                import tempfile
+                import shutil
+                temp_dir = tempfile.mkdtemp()
+                temp_file_path = os.path.join(temp_dir, anexo_origem.name)
+                with open(temp_file_path, 'wb') as temp_file:
+                    for chunk in anexo_origem.chunks():
+                        temp_file.write(chunk)
+                
+                # Armazenar informações na sessão
+                request.session['anexo_origem_temp'] = {
+                    'path': temp_file_path,
+                    'name': anexo_origem.name,
+                    'size': anexo_origem.size
+                }
+            
             return redirect(f"{reverse('selecionar_destino')}?origem_id={loja_id}&horario_coleta={horario_coleta}&observacoes_origem={observacoes_encoded}")
     
     return render(request, 'fretes/selecionar_origem.html', {
@@ -320,6 +357,22 @@ def selecionar_destino(request):
                 observacoes_origem=observacoes_origem
             )
             
+            # Processar anexo da origem se existir
+            if 'anexo_origem_temp' in request.session:
+                anexo_info = request.session['anexo_origem_temp']
+                try:
+                    # Mover arquivo temporário para local definitivo
+                    from django.core.files import File
+                    with open(anexo_info['path'], 'rb') as temp_file:
+                        frete.anexo_origem.save(anexo_info['name'], File(temp_file), save=True)
+                    
+                    # Limpar arquivo temporário
+                    os.unlink(anexo_info['path'])
+                    os.rmdir(os.path.dirname(anexo_info['path']))
+                    del request.session['anexo_origem_temp']
+                except Exception as e:
+                    print(f"Erro ao processar anexo da origem: {e}")
+            
             # Criar os destinos
             for loja_id in destino_ids:
                 loja = Loja.objects.filter(id=loja_id).first()
@@ -334,7 +387,7 @@ def selecionar_destino(request):
                     
                     observacao = request.POST.get(f'observacao_{loja_id}', '')
                     
-                    Destino.objects.create(
+                    destino = Destino.objects.create(
                         frete=frete,
                         loja=loja.nome,
                         endereco=loja.endereco,
@@ -345,6 +398,19 @@ def selecionar_destino(request):
                         volume=volume,
                         observacao=observacao,
                     )
+                    
+                    # Processar anexo do destino se existir
+                    anexo_destino = request.FILES.get(f'anexo_destino_{loja_id}')
+                    if anexo_destino:
+                        # Validar arquivo
+                        if anexo_destino.size > 10 * 1024 * 1024:  # 10MB
+                            continue  # Pular este destino se arquivo for muito grande
+                        
+                        allowed_extensions = ['.xlsx', '.xls', '.pdf']
+                        file_extension = os.path.splitext(anexo_destino.name)[1].lower()
+                        if file_extension in allowed_extensions:
+                            destino.anexo_destino = anexo_destino
+                            destino.save()
             
             return redirect(f"{reverse('home')}?mensagem=Frete+enviado+com+sucesso")
     
@@ -360,10 +426,22 @@ def selecionar_destino(request):
 # Views para gerenciar fretes
 @login_required(login_url='/login/')
 def meus_fretes(request):
-    """Lista de fretes do usuário logado"""
+    """Lista de fretes do usuário logado (ou todos se for master)"""
     status = request.GET.get('status')
     search = request.GET.get('search', '').strip()
-    qs = FreteRequest.objects.filter(usuario=request.user)
+    
+    # Verificar se é usuário master
+    try:
+        user_profile = request.user.userprofile
+        if user_profile.is_usuario_master():
+            # Master vê todos os fretes
+            qs = FreteRequest.objects.all()
+        else:
+            # Usuário normal vê apenas seus fretes
+            qs = FreteRequest.objects.filter(usuario=request.user)
+    except UserProfile.DoesNotExist:
+        # Se não tem perfil, vê apenas seus fretes
+        qs = FreteRequest.objects.filter(usuario=request.user)
     
     # Filtro por status
     if status in ['pendente', 'cotacao_enviada', 'finalizado']:
@@ -393,6 +471,21 @@ def meus_fretes(request):
 def frete_detalhe(request, frete_id):
     """Detalhes de um frete específico"""
     frete = get_object_or_404(FreteRequest, id=frete_id)
+    
+    # Verificar se o usuário pode ver detalhes do frete
+    try:
+        user_profile = request.user.userprofile
+        if not user_profile.pode_ver_detalhes_frete():
+            # Se não é master e não é o dono do frete, negar acesso
+            if not user_profile.is_usuario_master() and frete.usuario != request.user:
+                messages.error(request, 'Você não tem permissão para visualizar detalhes dos fretes.')
+                return redirect('meus_fretes')
+    except UserProfile.DoesNotExist:
+        # Se não tem perfil e não é o dono do frete, negar acesso
+        if frete.usuario != request.user:
+            messages.error(request, 'Perfil de usuário não encontrado.')
+            return redirect('meus_fretes')
+    
     destinos = frete.destinos.all()
     transportadoras = Transportadora.objects.all()
     
@@ -408,6 +501,157 @@ def frete_detalhe(request, frete_id):
         'frete': frete,
         'destinos': destinos,
         'transportadoras': transportadoras
+    })
+
+
+@login_required(login_url='/login/')
+def editar_frete(request, frete_id):
+    """Editar um frete existente"""
+    frete = get_object_or_404(FreteRequest, id=frete_id)
+    
+    # Verificar se o usuário pode editar fretes
+    try:
+        user_profile = request.user.userprofile
+        if not user_profile.pode_editar_fretes():
+            # Se não é master e não é o dono do frete, negar acesso
+            if not user_profile.is_usuario_master() and frete.usuario != request.user:
+                messages.error(request, 'Você não tem permissão para editar fretes.')
+                return redirect('meus_fretes')
+    except UserProfile.DoesNotExist:
+        # Se não tem perfil e não é o dono do frete, negar acesso
+        if frete.usuario != request.user:
+            messages.error(request, 'Perfil de usuário não encontrado.')
+            return redirect('meus_fretes')
+    
+    # Verificar se o frete pode ser editado (apenas pendentes)
+    if frete.status != 'pendente':
+        return redirect('frete_detalhe', frete_id=frete_id)
+    
+    # Buscar todas as lojas para os selects
+    lojas_qs = Loja.objects.all()
+    
+    def loja_numero(loja):
+        try:
+            return int(loja.nome)
+        except (ValueError, TypeError):
+            return 0
+    
+    lojas_list = sorted(lojas_qs, key=loja_numero)
+    lojas_choices = [
+        (str(loja.id), loja.nome, loja.latitude, loja.longitude) 
+        for loja in lojas_list
+    ]
+    
+    # Buscar destinos existentes
+    destinos_existentes = frete.destinos.all()
+    
+    if request.method == 'POST':
+        # Processar dados do formulário
+        origem_id = request.POST.get('origem')
+        horario_coleta = request.POST.get('horario_coleta')
+        observacoes_origem = request.POST.get('observacoes_origem', '')
+        anexo_origem = request.FILES.get('anexo_origem')
+        
+        # Validar dados obrigatórios
+        if not origem_id or not horario_coleta:
+            return render(request, 'fretes/editar_frete.html', {
+                'frete': frete,
+                'lojas_choices': lojas_choices,
+                'destinos_existentes': destinos_existentes,
+                'erro': 'Origem e horário de coleta são obrigatórios.'
+            })
+        
+        # Atualizar dados básicos do frete
+        origem_loja = Loja.objects.filter(id=origem_id).first()
+        if origem_loja:
+            frete.origem = origem_loja
+            frete.horario_coleta = horario_coleta
+            frete.observacoes_origem = observacoes_origem
+            
+            # Processar novo anexo da origem se fornecido
+            if anexo_origem:
+                # Validar arquivo
+                if anexo_origem.size > 10 * 1024 * 1024:  # 10MB
+                    return render(request, 'fretes/editar_frete.html', {
+                        'frete': frete,
+                        'lojas_choices': lojas_choices,
+                        'destinos_existentes': destinos_existentes,
+                        'erro': 'Arquivo muito grande. Tamanho máximo permitido: 10MB'
+                    })
+                
+                allowed_extensions = ['.xlsx', '.xls', '.pdf']
+                file_extension = os.path.splitext(anexo_origem.name)[1].lower()
+                if file_extension not in allowed_extensions:
+                    return render(request, 'fretes/editar_frete.html', {
+                        'frete': frete,
+                        'lojas_choices': lojas_choices,
+                        'destinos_existentes': destinos_existentes,
+                        'erro': 'Formato não permitido. Use apenas arquivos Excel (.xlsx, .xls) ou PDF (.pdf)'
+                    })
+                
+                # Deletar anexo antigo se existir
+                if frete.anexo_origem:
+                    try:
+                        frete.anexo_origem.delete(save=False)
+                    except:
+                        pass
+                
+                # Salvar novo anexo
+                frete.anexo_origem = anexo_origem
+            
+            frete.save()
+            
+            # Processar destinos
+            destino_ids = request.POST.getlist('destino')
+            if destino_ids:
+                # Deletar destinos existentes
+                frete.destinos.all().delete()
+                
+                # Criar novos destinos
+                for loja_id in destino_ids:
+                    loja = Loja.objects.filter(id=loja_id).first()
+                    if loja:
+                        volume = request.POST.get(f'volume_{loja_id}', 1)
+                        try:
+                            volume = int(volume)
+                            if volume < 1:
+                                raise ValueError
+                        except (ValueError, TypeError):
+                            volume = 1
+                        
+                        observacao = request.POST.get(f'observacao_{loja_id}', '')
+                        
+                        destino = Destino.objects.create(
+                            frete=frete,
+                            loja=loja.nome,
+                            endereco=loja.endereco,
+                            numero=loja.numero,
+                            cidade=loja.municipio,
+                            estado=loja.estado,
+                            cep=loja.cep,
+                            volume=volume,
+                            observacao=observacao,
+                        )
+                        
+                        # Processar anexo do destino se existir
+                        anexo_destino = request.FILES.get(f'anexo_destino_{loja_id}')
+                        if anexo_destino:
+                            # Validar arquivo
+                            if anexo_destino.size > 10 * 1024 * 1024:  # 10MB
+                                continue  # Pular este destino se arquivo for muito grande
+                            
+                            allowed_extensions = ['.xlsx', '.xls', '.pdf']
+                            file_extension = os.path.splitext(anexo_destino.name)[1].lower()
+                            if file_extension in allowed_extensions:
+                                destino.anexo_destino = anexo_destino
+                                destino.save()
+            
+            return redirect('frete_detalhe', frete_id=frete_id)
+    
+    return render(request, 'fretes/editar_frete.html', {
+        'frete': frete,
+        'lojas_choices': lojas_choices,
+        'destinos_existentes': destinos_existentes
     })
 
 

@@ -10,7 +10,7 @@
             <h2>Selecione a Origem do Frete</h2>
         </div>
         <div class="card-body">
-            <form method="post" class="space-y-4">
+            <form method="post" enctype="multipart/form-data" class="space-y-4">
                 {% csrf_token %}
                 
                 <div class="form-group">
@@ -31,6 +31,13 @@
                 <div class="form-group">
                     <label for="id_observacoes_origem" class="form-label">Observações da Coleta</label>
                     <textarea name="observacoes_origem" id="id_observacoes_origem" class="form-control" rows="3" placeholder="Informe observações importantes para a coleta (ex: horário específico, local exato, contato, etc.)"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_anexo_origem" class="form-label">Anexo da Origem (Opcional)</label>
+                    <input type="file" name="anexo_origem" id="id_anexo_origem" class="form-control" accept=".xlsx,.xls,.pdf" onchange="validateFile(this)">
+                    <div class="form-text">Formatos aceitos: Excel (.xlsx, .xls) e PDF (.pdf). Tamanho máximo: 10MB</div>
+                    <div id="file-error" class="text-danger" style="display: none;"></div>
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-block btn-lg">
@@ -113,6 +120,40 @@ document.getElementById('id_origem').addEventListener('change', function() {
             }
         });
 });
+
+// Validação de arquivo
+function validateFile(input) {
+    const file = input.files[0];
+    const errorDiv = document.getElementById('file-error');
+    
+    if (!file) {
+        errorDiv.style.display = 'none';
+        return;
+    }
+    
+    // Verificar tamanho (10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB em bytes
+    if (file.size > maxSize) {
+        errorDiv.textContent = 'Arquivo muito grande. Tamanho máximo permitido: 10MB';
+        errorDiv.style.display = 'block';
+        input.value = '';
+        return;
+    }
+    
+    // Verificar extensão
+    const allowedExtensions = ['.xlsx', '.xls', '.pdf'];
+    const fileName = file.name.toLowerCase();
+    const hasValidExtension = allowedExtensions.some(ext => fileName.endsWith(ext));
+    
+    if (!hasValidExtension) {
+        errorDiv.textContent = 'Formato não permitido. Use apenas arquivos Excel (.xlsx, .xls) ou PDF (.pdf)';
+        errorDiv.style.display = 'block';
+        input.value = '';
+        return;
+    }
+    
+    errorDiv.style.display = 'none';
+}
 </script>
 
 <style>
