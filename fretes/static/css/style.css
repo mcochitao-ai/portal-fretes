@@ -351,6 +351,44 @@ p { margin-bottom: 1rem; }
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 
+.btn-warning {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  padding: 0.5rem;
+  min-height: auto;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: auto;
+  height: auto;
+  min-height: 2.5rem;
+}
+
+.btn-warning:hover {
+  background: #f1f5f9;
+  color: #475569;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-warning:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Botão de warning compacto (apenas ícone) */
+.btn-warning:has(svg:only-child) {
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.5rem;
+  min-height: auto;
+}
+
 .btn-sm {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
