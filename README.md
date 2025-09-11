@@ -152,7 +152,7 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 ## 👨‍💻 **Autor**
 
-**Marcos Cochitao**
+**Murilo Cochito**
 - GitHub: [@mcochitao-ai](https://github.com/mcochitao-ai)
 - LinkedIn: [Seu LinkedIn]
 
