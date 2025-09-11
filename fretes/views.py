@@ -430,16 +430,14 @@ def confirmar_frete(request):
         # Validar dados obrigatórios
         if not origem_id or not horario_coleta or not tipo_veiculo or not quem_paga_frete:
             print(f"DEBUG - Dados obrigatórios: origem_id={origem_id}, horario_coleta={horario_coleta}, tipo_veiculo={tipo_veiculo}, quem_paga_frete={quem_paga_frete}")
-            return render(request, 'fretes/confirmar_frete.html', {
-                'erro': 'Todos os campos obrigatórios devem ser preenchidos.'
-            })
+            # Redirecionar para seleção de origem se dados básicos estão faltando
+            return redirect('selecionar_origem')
         
         # Validar destino_ids
         if not destino_ids or (len(destino_ids) == 1 and not destino_ids[0]):
             print(f"DEBUG - Erro: destino_ids vazio ou inválido: {destino_ids}")
-            return render(request, 'fretes/confirmar_frete.html', {
-                'erro': 'Nenhum destino foi selecionado. Volte à tela anterior e selecione pelo menos um destino.'
-            })
+            # Redirecionar para seleção de destino se não há destinos
+            return redirect('selecionar_destino')
         
         # Buscar origem
         origem_loja = Loja.objects.filter(id=origem_id).first()
