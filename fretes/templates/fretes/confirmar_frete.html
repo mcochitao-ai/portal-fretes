@@ -22,27 +22,127 @@
                     <h4>📝 Resumo da Solicitação</h4>
                 </div>
                 <div class="card-body">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div><strong>Origem:</strong> {{ origem.nome }}</div>
-                        <div><strong>Horário de Coleta:</strong> {{ horario_coleta|format_horario_coleta }}</div>
-                        <div><strong>Tipo de Veículo:</strong> 
-                            {% if tipo_veiculo == 'carreta' %}🚛 Carreta
-                            {% elif tipo_veiculo == 'truck' %}🚚 Truck
-                            {% elif tipo_veiculo == 'vuc' %}🚐 VUC
-                            {% elif tipo_veiculo == 'toco' %}🚛 Toco
-                            {% elif tipo_veiculo == '3_4' %}🚛 3/4
-                            {% elif tipo_veiculo == 'van' %}🚐 Van
-                            {% else %}{{ tipo_veiculo|title }}{% endif %}
+                    <!-- Informações Gerais -->
+                    <div class="mb-6">
+                        <h5 class="text-lg font-semibold mb-3 text-gray-800">📋 Informações Gerais</h5>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex items-center gap-2">
+                                <span class="text-blue-600">🏢</span>
+                                <div>
+                                    <strong>Origem:</strong><br>
+                                    <span class="text-gray-700">{{ origem.nome }}</span><br>
+                                    <small class="text-gray-500">{{ origem.endereco }}, {{ origem.municipio }}/{{ origem.estado }}</small>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-green-600">⏰</span>
+                                <div>
+                                    <strong>Horário de Coleta:</strong><br>
+                                    <span class="text-gray-700">{{ horario_coleta|format_horario_coleta }}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-purple-600">🚛</span>
+                                <div>
+                                    <strong>Tipo de Veículo:</strong><br>
+                                    <span class="text-gray-700">
+                                        {% if tipo_veiculo == 'carreta' %}🚛 Carreta
+                                        {% elif tipo_veiculo == 'truck' %}🚚 Truck
+                                        {% elif tipo_veiculo == 'vuc' %}🚐 VUC
+                                        {% elif tipo_veiculo == 'toco' %}🚛 Toco
+                                        {% elif tipo_veiculo == '3_4' %}🚛 3/4
+                                        {% elif tipo_veiculo == 'van' %}🚐 Van
+                                        {% else %}{{ tipo_veiculo|title }}{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-orange-600">📍</span>
+                                <div>
+                                    <strong>Total de Destinos:</strong><br>
+                                    <span class="text-gray-700">{{ destinos_count }} loja(s)</span>
+                                </div>
+                            </div>
                         </div>
-                        <div><strong>Destinos:</strong> {{ destinos_count }} loja(s)</div>
                     </div>
-                    
+
+                    <!-- Observações da Origem -->
                     {% if observacoes_origem %}
-                        <div class="mt-4 p-3 bg-blue-50 border-l-4 border-blue-400 rounded">
-                            <h6 class="text-blue-800 font-semibold mb-1">📝 Observações da Coleta</h6>
-                            <p class="text-blue-700 text-sm">{{ observacoes_origem }}</p>
+                        <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-400 rounded">
+                            <h6 class="text-blue-800 font-semibold mb-2 flex items-center gap-2">
+                                📝 Observações da Coleta
+                            </h6>
+                            <p class="text-blue-700">{{ observacoes_origem }}</p>
                         </div>
                     {% endif %}
+
+                    <!-- Detalhes dos Destinos -->
+                    <div class="mb-4">
+                        <h5 class="text-lg font-semibold mb-3 text-gray-800">🏪 Destinos Selecionados</h5>
+                        <div class="space-y-4">
+                            {% for destino in destinos_info %}
+                                <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <h6 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                                🏪 {{ destino.loja }}
+                                            </h6>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                                <div>
+                                                    <strong class="text-gray-600">📍 Endereço:</strong><br>
+                                                    <span class="text-gray-700">{{ destino.endereco }}</span>
+                                                </div>
+                                                <div>
+                                                    <strong class="text-gray-600">🏙️ Cidade/Estado:</strong><br>
+                                                    <span class="text-gray-700">{{ destino.cidade }}/{{ destino.estado }}</span>
+                                                </div>
+                                                <div>
+                                                    <strong class="text-gray-600">📦 Volume:</strong><br>
+                                                    <span class="text-gray-700">
+                                                        {% for vol_data in volumes|split:',' %}
+                                                            {% if vol_data|split:':'|first == destino.id|stringformat:"s" %}
+                                                                {{ vol_data|split:':'|last }} unidade(s)
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <strong class="text-gray-600">📅 Data de Entrega:</strong><br>
+                                                    <span class="text-gray-700">
+                                                        {% for data_data in datas_entrega|split:',' %}
+                                                            {% if data_data|split:':'|first == destino.id|stringformat:"s" %}
+                                                                {% with data_str=data_data|split:':'|last %}
+                                                                    {% if data_str %}
+                                                                        {{ data_str|format_horario_coleta }}
+                                                                    {% else %}
+                                                                        Não especificada
+                                                                    {% endif %}
+                                                                {% endwith %}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Observações do Destino -->
+                                            {% for obs_data in observacoes_destinos|split:',' %}
+                                                {% if obs_data|split:':'|first == destino.id|stringformat:"s" %}
+                                                    {% with obs=obs_data|split:':'|last %}
+                                                        {% if obs %}
+                                                            <div class="mt-3 p-2 bg-yellow-50 border-l-2 border-yellow-300 rounded">
+                                                                <strong class="text-yellow-800 text-xs">📝 Observações:</strong>
+                                                                <p class="text-yellow-700 text-xs mt-1">{{ obs }}</p>
+                                                            </div>
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
 

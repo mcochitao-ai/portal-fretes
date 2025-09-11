@@ -42,3 +42,12 @@ def format_cep(value):
         return f"{cep_clean[:5]}-{cep_clean[5:]}"
     
     return cep_clean
+
+@register.filter
+def split(value, delimiter):
+    """
+    Divide uma string usando um delimitador.
+    """
+    if not value:
+        return []
+    return value.split(delimiter)
