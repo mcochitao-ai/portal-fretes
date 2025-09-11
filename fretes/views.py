@@ -431,10 +431,16 @@ def confirmar_frete(request):
         print(f"DEBUG - Dados recebidos: origem_id={origem_id}, destino_ids_str='{destino_ids_str}', destino_ids={destino_ids}, quem_paga_frete={quem_paga_frete}")
         
         # Validar dados obrigatórios
-        if not origem_id or not horario_coleta or not tipo_veiculo or not quem_paga_frete:
-            print(f"DEBUG - Dados obrigatórios: origem_id={origem_id}, horario_coleta={horario_coleta}, tipo_veiculo={tipo_veiculo}, quem_paga_frete={quem_paga_frete}")
+        if not origem_id or not horario_coleta or not tipo_veiculo:
+            print(f"DEBUG - Dados obrigatórios básicos: origem_id={origem_id}, horario_coleta={horario_coleta}, tipo_veiculo={tipo_veiculo}")
             # Redirecionar para seleção de origem se dados básicos estão faltando
             return redirect('selecionar_origem')
+        
+        # Validar quem_paga_frete separadamente
+        if not quem_paga_frete:
+            print(f"DEBUG - quem_paga_frete não selecionado: {quem_paga_frete}")
+            # Redirecionar para seleção de destino se quem paga não foi selecionado
+            return redirect('selecionar_destino')
         
         # Validar destino_ids
         if not destino_ids or (len(destino_ids) == 1 and not destino_ids[0]):
