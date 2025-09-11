@@ -135,6 +135,20 @@
                             </div>
                             {% endif %}
                             
+                            {% if frete.quem_paga_frete %}
+                            <div class="flex items-center gap-2">
+                                <span class="text-secondary">💳</span>
+                                <span><strong>Pagador:</strong> {{ frete.quem_paga_frete }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="flex items-center gap-2">
+                                <span class="text-secondary">🧾</span>
+                                <span><strong>NF:</strong> 
+                                    {% if frete.nota_fiscal_emitida %}✅ Emitida{% else %}❌ Pendente{% endif %}
+                                </span>
+                            </div>
+                            
                             <div class="flex items-start gap-2">
                                 <span class="text-secondary">📍</span>
                                 <div>

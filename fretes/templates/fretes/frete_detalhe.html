@@ -55,6 +55,14 @@
                                 {% else %}{{ frete.tipo_veiculo|title }}{% endif %}
                             </div>
                         {% endif %}
+                        {% if frete.quem_paga_frete %}
+                            <div><strong>Quem Paga o Frete:</strong> 💳 {{ frete.quem_paga_frete }}</div>
+                        {% endif %}
+                        {% if frete.nota_fiscal_emitida %}
+                            <div><strong>Nota Fiscal:</strong> ✅ Já foi emitida</div>
+                        {% else %}
+                            <div><strong>Nota Fiscal:</strong> ❌ Ainda não foi emitida</div>
+                        {% endif %}
                         <div><strong>Status:</strong> 
                             {% if frete.status == 'pendente' %}
                                 <span class="badge badge-pending">⏳ Pendente</span>
@@ -108,6 +116,32 @@
                                 </div>
                                 <div class="flex-shrink-0">
                                     <a href="{{ frete.anexo_origem.url }}" target="_blank" class="btn btn-sm btn-outline text-green-700 border-green-300 hover:bg-green-100">
+                                        📥 Baixar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if frete.anexo_nota_fiscal %}
+                        <div class="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                            <h5 class="text-yellow-800 font-semibold mb-2">🧾 Anexo da Nota Fiscal</h5>
+                            <div class="flex items-center space-x-3">
+                                <div class="flex-shrink-0">
+                                    {% if frete.anexo_nota_fiscal.name|slice:"-4:" == ".pdf" %}
+                                        <span class="text-red-600 text-2xl">📄</span>
+                                    {% elif frete.anexo_nota_fiscal.name|slice:"-5:" == ".xlsx" or frete.anexo_nota_fiscal.name|slice:"-4:" == ".xls" %}
+                                        <span class="text-green-600 text-2xl">📊</span>
+                                    {% else %}
+                                        <span class="text-gray-600 text-2xl">📎</span>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm text-yellow-700 font-medium truncate">{{ frete.anexo_nota_fiscal.name }}</p>
+                                    <p class="text-xs text-yellow-600">Nota fiscal anexada</p>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <a href="{{ frete.anexo_nota_fiscal.url }}" target="_blank" class="btn btn-sm btn-outline text-yellow-700 border-yellow-300 hover:bg-yellow-100">
                                         📥 Baixar
                                     </a>
                                 </div>

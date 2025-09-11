@@ -350,83 +350,49 @@ def selecionar_destino(request):
         elif not destino_ids:
             erro = 'Selecione pelo menos um destino.'
         else:
-            # Criar o frete
-            frete = FreteRequest.objects.create(
-                usuario=request.user,
-                origem=origem_loja,
-                descricao=descricao,
-                horario_coleta=horario_coleta,
-                tipo_veiculo=tipo_veiculo,
-                observacoes_origem=observacoes_origem
-            )
+            # Redirecionar para página de confirmação
+            import urllib.parse
             
-            # Processar anexo da origem se existir
-            if 'anexo_origem_temp' in request.session:
-                anexo_info = request.session['anexo_origem_temp']
-                try:
-                    # Mover arquivo temporário para local definitivo
-                    from django.core.files import File
-                    with open(anexo_info['path'], 'rb') as temp_file:
-                        frete.anexo_origem.save(anexo_info['name'], File(temp_file), save=True)
-                    
-                    # Limpar arquivo temporário
-                    os.unlink(anexo_info['path'])
-                    os.rmdir(os.path.dirname(anexo_info['path']))
-                    del request.session['anexo_origem_temp']
-                except Exception as e:
-                    print(f"Erro ao processar anexo da origem: {e}")
+            # Preparar dados dos destinos
+            volumes_data = []
+            observacoes_data = []
+            datas_entrega_data = []
             
-            # Criar os destinos
+            for loja_id in destino_ids:
+                volume = request.POST.get(f'volume_{loja_id}', 1)
+                observacao = request.POST.get(f'observacao_{loja_id}', '')
+                data_entrega = request.POST.get(f'data_entrega_{loja_id}', '')
+                
+                volumes_data.append(f"{loja_id}:{volume}")
+                observacoes_data.append(f"{loja_id}:{observacao}")
+                datas_entrega_data.append(f"{loja_id}:{data_entrega}")
+            
+            # Buscar informações dos destinos para exibição
+            destinos_info = []
             for loja_id in destino_ids:
                 loja = Loja.objects.filter(id=loja_id).first()
                 if loja:
-                    volume = request.POST.get(f'volume_{loja_id}', 1)
-                    try:
-                        volume = int(volume)
-                        if volume < 1:
-                            raise ValueError
-                    except (ValueError, TypeError):
-                        volume = 1
-                    
-                    observacao = request.POST.get(f'observacao_{loja_id}', '')
-                    data_entrega_str = request.POST.get(f'data_entrega_{loja_id}', '')
-                    
-                    # Processar data de entrega
-                    data_entrega = None
-                    if data_entrega_str:
-                        try:
-                            from django.utils.dateparse import parse_datetime
-                            data_entrega = parse_datetime(data_entrega_str)
-                        except (ValueError, TypeError):
-                            data_entrega = None
-                    
-                    destino = Destino.objects.create(
-                        frete=frete,
-                        loja=loja.nome,
-                        endereco=loja.endereco,
-                        numero=loja.numero,
-                        cidade=loja.municipio,
-                        estado=loja.estado,
-                        cep=loja.cep,
-                        volume=volume,
-                        data_entrega=data_entrega,
-                        observacao=observacao,
-                    )
-                    
-                    # Processar anexo do destino se existir
-                    anexo_destino = request.FILES.get(f'anexo_destino_{loja_id}')
-                    if anexo_destino:
-                        # Validar arquivo
-                        if anexo_destino.size > 10 * 1024 * 1024:  # 10MB
-                            continue  # Pular este destino se arquivo for muito grande
-                        
-                        allowed_extensions = ['.xlsx', '.xls', '.pdf']
-                        file_extension = os.path.splitext(anexo_destino.name)[1].lower()
-                        if file_extension in allowed_extensions:
-                            destino.anexo_destino = anexo_destino
-                            destino.save()
+                    destinos_info.append({
+                        'id': loja_id,
+                        'loja': loja.nome,
+                        'endereco': loja.endereco,
+                        'cidade': loja.municipio,
+                        'estado': loja.estado
+                    })
             
-            return redirect(f"{reverse('home')}?mensagem=Frete+enviado+com+sucesso")
+            return render(request, 'fretes/confirmar_frete.html', {
+                'origem': origem_loja,
+                'origem_id': origem_id,
+                'horario_coleta': horario_coleta,
+                'tipo_veiculo': tipo_veiculo,
+                'observacoes_origem': observacoes_origem,
+                'destino_ids': ','.join(destino_ids),
+                'volumes': ','.join(volumes_data),
+                'observacoes_destinos': ','.join(observacoes_data),
+                'datas_entrega': ','.join(datas_entrega_data),
+                'destinos_info': destinos_info,
+                'destinos_count': len(destino_ids)
+            })
     
     return render(request, 'fretes/selecionar_destino.html', {
         'lojas_choices': lojas_choices,
@@ -435,6 +401,131 @@ def selecionar_destino(request):
         'observacoes_origem': observacoes_origem,
         'erro': erro
     })
+
+
+@login_required(login_url='/login/')
+def confirmar_frete(request):
+    """Tela 3: Confirmação final e criação do frete"""
+    if request.method == 'POST':
+        # Processar dados da confirmação
+        origem_id = request.POST.get('origem_id')
+        horario_coleta = request.POST.get('horario_coleta')
+        tipo_veiculo = request.POST.get('tipo_veiculo')
+        observacoes_origem = request.POST.get('observacoes_origem', '')
+        destino_ids = request.POST.get('destino_ids', '').split(',')
+        volumes_data = request.POST.get('volumes', '').split(',')
+        observacoes_destinos = request.POST.get('observacoes_destinos', '').split(',')
+        datas_entrega_data = request.POST.get('datas_entrega', '').split(',')
+        
+        # Novos campos
+        nota_fiscal_emitida = request.POST.get('nota_fiscal_emitida') == 'true'
+        anexo_nota_fiscal = request.FILES.get('anexo_nota_fiscal')
+        quem_paga_frete = request.POST.get('quem_paga_frete')
+        
+        # Validar dados obrigatórios
+        if not origem_id or not horario_coleta or not tipo_veiculo or not quem_paga_frete:
+            return render(request, 'fretes/confirmar_frete.html', {
+                'erro': 'Todos os campos obrigatórios devem ser preenchidos.'
+            })
+        
+        # Buscar origem
+        origem_loja = Loja.objects.filter(id=origem_id).first()
+        if not origem_loja:
+            return render(request, 'fretes/confirmar_frete.html', {
+                'erro': 'Origem inválida.'
+            })
+        
+        # Criar o frete
+        frete = FreteRequest.objects.create(
+            usuario=request.user,
+            origem=origem_loja,
+            horario_coleta=horario_coleta,
+            tipo_veiculo=tipo_veiculo,
+            observacoes_origem=observacoes_origem,
+            nota_fiscal_emitida=nota_fiscal_emitida,
+            quem_paga_frete=quem_paga_frete
+        )
+        
+        # Processar anexo da origem se existir
+        if 'anexo_origem_temp' in request.session:
+            anexo_info = request.session['anexo_origem_temp']
+            try:
+                from django.core.files import File
+                with open(anexo_info['path'], 'rb') as temp_file:
+                    frete.anexo_origem.save(anexo_info['name'], File(temp_file), save=True)
+                
+                os.unlink(anexo_info['path'])
+                os.rmdir(os.path.dirname(anexo_info['path']))
+                del request.session['anexo_origem_temp']
+            except Exception as e:
+                print(f"Erro ao processar anexo da origem: {e}")
+        
+        # Processar anexo da nota fiscal se existir
+        if anexo_nota_fiscal:
+            # Validar arquivo
+            if anexo_nota_fiscal.size <= 10 * 1024 * 1024:  # 10MB
+                allowed_extensions = ['.pdf', '.xlsx', '.xls']
+                file_extension = os.path.splitext(anexo_nota_fiscal.name)[1].lower()
+                if file_extension in allowed_extensions:
+                    frete.anexo_nota_fiscal = anexo_nota_fiscal
+                    frete.save()
+        
+        # Criar os destinos
+        for loja_id in destino_ids:
+            if not loja_id:
+                continue
+                
+            loja = Loja.objects.filter(id=loja_id).first()
+            if loja:
+                # Buscar volume
+                volume = 1
+                for vol_data in volumes_data:
+                    if vol_data.startswith(f"{loja_id}:"):
+                        try:
+                            volume = int(vol_data.split(':', 1)[1])
+                            if volume < 1:
+                                volume = 1
+                        except (ValueError, TypeError):
+                            volume = 1
+                        break
+                
+                # Buscar observação
+                observacao = ''
+                for obs_data in observacoes_destinos:
+                    if obs_data.startswith(f"{loja_id}:"):
+                        observacao = obs_data.split(':', 1)[1]
+                        break
+                
+                # Buscar data de entrega
+                data_entrega = None
+                for data_data in datas_entrega_data:
+                    if data_data.startswith(f"{loja_id}:"):
+                        data_str = data_data.split(':', 1)[1]
+                        if data_str:
+                            try:
+                                from django.utils.dateparse import parse_datetime
+                                data_entrega = parse_datetime(data_str)
+                            except (ValueError, TypeError):
+                                data_entrega = None
+                        break
+                
+                destino = Destino.objects.create(
+                    frete=frete,
+                    loja=loja.nome,
+                    endereco=loja.endereco,
+                    numero=loja.numero,
+                    cidade=loja.municipio,
+                    estado=loja.estado,
+                    cep=loja.cep,
+                    volume=volume,
+                    data_entrega=data_entrega,
+                    observacao=observacao,
+                )
+        
+        return redirect(f"{reverse('home')}?mensagem=Frete+enviado+com+sucesso")
+    
+    # Se não for POST, redirecionar para seleção de origem
+    return redirect('selecionar_origem')
 
 
 # Views para gerenciar fretes

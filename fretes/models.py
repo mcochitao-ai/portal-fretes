@@ -49,6 +49,11 @@ class FreteRequest(models.Model):
 	]
 	tipo_veiculo = models.CharField(max_length=10, choices=TIPO_VEICULO_CHOICES, blank=True, null=True, verbose_name="Tipo de Veículo", help_text="Tipo de veículo necessário para o frete")
 	
+	# Campos para nota fiscal e pagamento
+	nota_fiscal_emitida = models.BooleanField(default=False, verbose_name="Nota Fiscal Emitida", help_text="Indica se a nota fiscal já foi emitida")
+	anexo_nota_fiscal = models.FileField(upload_to='anexos/nota_fiscal/', blank=True, null=True, verbose_name="Anexo da Nota Fiscal", help_text="Arquivo da nota fiscal (PDF, Excel)")
+	quem_paga_frete = models.CharField(max_length=100, blank=True, null=True, verbose_name="Quem Paga o Frete", help_text="Loja responsável pelo pagamento do frete")
+	
 	STATUS_CHOICES = [
 		('pendente', 'Pendente'),
 		('cotacao_enviada', 'Cotação enviada'),
