@@ -414,7 +414,8 @@ def confirmar_frete(request):
         horario_coleta = request.POST.get('horario_coleta')
         tipo_veiculo = request.POST.get('tipo_veiculo')
         observacoes_origem = request.POST.get('observacoes_origem', '')
-        destino_ids = request.POST.get('destino_ids', '').split(',')
+        destino_ids_str = request.POST.get('destino_ids', '')
+        destino_ids = destino_ids_str.split(',') if destino_ids_str else []
         volumes_data = request.POST.get('volumes', '').split(',')
         observacoes_destinos = request.POST.get('observacoes_destinos', '').split(',')
         datas_entrega_data = request.POST.get('datas_entrega', '').split(',')
@@ -424,11 +425,20 @@ def confirmar_frete(request):
         anexo_nota_fiscal = request.FILES.get('anexo_nota_fiscal')
         quem_paga_frete = request.POST.get('quem_paga_frete')
         
+        print(f"DEBUG - Dados recebidos: origem_id={origem_id}, destino_ids_str='{destino_ids_str}', destino_ids={destino_ids}, quem_paga_frete={quem_paga_frete}")
+        
         # Validar dados obrigatórios
         if not origem_id or not horario_coleta or not tipo_veiculo or not quem_paga_frete:
             print(f"DEBUG - Dados obrigatórios: origem_id={origem_id}, horario_coleta={horario_coleta}, tipo_veiculo={tipo_veiculo}, quem_paga_frete={quem_paga_frete}")
             return render(request, 'fretes/confirmar_frete.html', {
                 'erro': 'Todos os campos obrigatórios devem ser preenchidos.'
+            })
+        
+        # Validar destino_ids
+        if not destino_ids or (len(destino_ids) == 1 and not destino_ids[0]):
+            print(f"DEBUG - Erro: destino_ids vazio ou inválido: {destino_ids}")
+            return render(request, 'fretes/confirmar_frete.html', {
+                'erro': 'Nenhum destino foi selecionado. Volte à tela anterior e selecione pelo menos um destino.'
             })
         
         # Buscar origem
