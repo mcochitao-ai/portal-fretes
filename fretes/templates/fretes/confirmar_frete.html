@@ -146,7 +146,7 @@
                 </div>
             </div>
 
-            <form method="post" enctype="multipart/form-data" class="space-y-4">
+            <form method="post" action="{% url 'confirmar_frete' %}" enctype="multipart/form-data" class="space-y-4">
                 {% csrf_token %}
                 <input type="hidden" name="origem_id" value="{{ origem_id }}">
                 <input type="hidden" name="horario_coleta" value="{{ horario_coleta }}">
