@@ -44,6 +44,24 @@ def format_cep(value):
     return cep_clean
 
 @register.filter
+def format_data_entrega(value):
+    """
+    Converte string 'YYYY-MM-DDTHH:MM' para 'DD/MM/YYYY HH:MM'.
+    Específico para data de entrega.
+    """
+    if not value:
+        return 'Não especificada'
+    try:
+        # Aceita tanto 'YYYY-MM-DDTHH:MM' quanto 'YYYY-MM-DD HH:MM'
+        if 'T' in value:
+            dt = datetime.datetime.strptime(value, '%Y-%m-%dT%H:%M')
+        else:
+            dt = datetime.datetime.strptime(value, '%Y-%m-%d %H:%M')
+        return dt.strftime('%d/%m/%Y %H:%M')
+    except Exception:
+        return value
+
+@register.filter
 def split(value, delimiter):
     """
     Divide uma string usando um delimitador.
@@ -51,3 +69,21 @@ def split(value, delimiter):
     if not value:
         return []
     return value.split(delimiter)
+
+@register.filter
+def split_first(value, delimiter):
+    """
+    Divide uma string usando um delimitador e retorna apenas a primeira parte.
+    """
+    if not value:
+        return ''
+    return value.split(delimiter, 1)[0]
+
+@register.filter
+def split_last(value, delimiter):
+    """
+    Divide uma string usando um delimitador e retorna apenas a última parte.
+    """
+    if not value:
+        return ''
+    return value.split(delimiter, 1)[-1]

@@ -110,13 +110,9 @@
                                                     <strong class="text-gray-600">📅 Data de Entrega:</strong><br>
                                                     <span class="text-gray-700">
                                                         {% for data_data in datas_entrega|split:',' %}
-                                                            {% if data_data|split:':'|first == destino.id|stringformat:"s" %}
-                                                                {% with data_str=data_data|split:':'|last %}
-                                                                    {% if data_str %}
-                                                                        {{ data_str|format_horario_coleta }}
-                                                                    {% else %}
-                                                                        Não especificada
-                                                                    {% endif %}
+                                                            {% if data_data|split_first:':' == destino.id|stringformat:"s" %}
+                                                                {% with data_str=data_data|split_last:':' %}
+                                                                    {{ data_str|format_data_entrega }}
                                                                 {% endwith %}
                                                             {% endif %}
                                                         {% endfor %}

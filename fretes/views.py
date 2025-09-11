@@ -383,7 +383,6 @@ def selecionar_destino(request):
                         'estado': loja.estado
                     })
             
-            print(f"DEBUG - Renderizando confirmar_frete.html com dados: origem={origem_loja}, destino_ids={destino_ids}")
             return render(request, 'fretes/confirmar_frete.html', {
                 'origem': origem_loja,
                 'origem_id': origem_id,
