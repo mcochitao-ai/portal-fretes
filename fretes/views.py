@@ -380,6 +380,7 @@ def selecionar_destino(request):
                         'estado': loja.estado
                     })
             
+            print(f"DEBUG - Renderizando confirmar_frete.html com dados: origem={origem_loja}, destino_ids={destino_ids}")
             return render(request, 'fretes/confirmar_frete.html', {
                 'origem': origem_loja,
                 'origem_id': origem_id,
@@ -398,6 +399,7 @@ def selecionar_destino(request):
         'lojas_choices': lojas_choices,
         'origem_id': origem_id,
         'horario_coleta': horario_coleta,
+        'tipo_veiculo': tipo_veiculo,
         'observacoes_origem': observacoes_origem,
         'erro': erro
     })
@@ -424,6 +426,7 @@ def confirmar_frete(request):
         
         # Validar dados obrigatórios
         if not origem_id or not horario_coleta or not tipo_veiculo or not quem_paga_frete:
+            print(f"DEBUG - Dados obrigatórios: origem_id={origem_id}, horario_coleta={horario_coleta}, tipo_veiculo={tipo_veiculo}, quem_paga_frete={quem_paga_frete}")
             return render(request, 'fretes/confirmar_frete.html', {
                 'erro': 'Todos os campos obrigatórios devem ser preenchidos.'
             })
