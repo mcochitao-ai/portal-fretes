@@ -120,6 +120,21 @@
                                 <span><strong>Coleta:</strong> {{ frete.horario_coleta|format_horario_coleta|default:'-' }}</span>
                             </div>
                             
+                            {% if frete.tipo_veiculo %}
+                            <div class="flex items-center gap-2">
+                                <span class="text-secondary">🚛</span>
+                                <span><strong>Veículo:</strong> 
+                                    {% if frete.tipo_veiculo == 'carreta' %}🚛 Carreta
+                                    {% elif frete.tipo_veiculo == 'truck' %}🚚 Truck
+                                    {% elif frete.tipo_veiculo == 'vuc' %}🚐 VUC
+                                    {% elif frete.tipo_veiculo == 'toco' %}🚛 Toco
+                                    {% elif frete.tipo_veiculo == '3_4' %}🚛 3/4
+                                    {% elif frete.tipo_veiculo == 'van' %}🚐 Van
+                                    {% else %}{{ frete.tipo_veiculo|title }}{% endif %}
+                                </span>
+                            </div>
+                            {% endif %}
+                            
                             <div class="flex items-start gap-2">
                                 <span class="text-secondary">📍</span>
                                 <div>

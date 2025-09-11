@@ -254,10 +254,11 @@ def selecionar_origem(request):
     if request.method == 'POST':
         loja_id = request.POST.get('origem')
         horario_coleta = request.POST.get('horario_coleta')
+        tipo_veiculo = request.POST.get('tipo_veiculo')
         observacoes_origem = request.POST.get('observacoes_origem', '')
         anexo_origem = request.FILES.get('anexo_origem')
         
-        if loja_id and horario_coleta:
+        if loja_id and horario_coleta and tipo_veiculo:
             # Codificar as observações para URL
             import urllib.parse
             observacoes_encoded = urllib.parse.quote(observacoes_origem)
@@ -295,7 +296,7 @@ def selecionar_origem(request):
                     'size': anexo_origem.size
                 }
             
-            return redirect(f"{reverse('selecionar_destino')}?origem_id={loja_id}&horario_coleta={horario_coleta}&observacoes_origem={observacoes_encoded}")
+            return redirect(f"{reverse('selecionar_destino')}?origem_id={loja_id}&horario_coleta={horario_coleta}&tipo_veiculo={tipo_veiculo}&observacoes_origem={observacoes_encoded}")
     
     return render(request, 'fretes/selecionar_origem.html', {
         'lojas_choices': lojas_choices
@@ -307,6 +308,7 @@ def selecionar_destino(request):
     """Tela 2: Seleção de destino estruturada"""
     origem_id = request.GET.get('origem_id') or request.POST.get('origem_id')
     horario_coleta = request.GET.get('horario_coleta') or request.POST.get('horario_coleta')
+    tipo_veiculo = request.GET.get('tipo_veiculo') or request.POST.get('tipo_veiculo')
     observacoes_origem = request.GET.get('observacoes_origem') or request.POST.get('observacoes_origem', '')
     
     # Decodificar as observações se vieram da URL
@@ -354,6 +356,7 @@ def selecionar_destino(request):
                 origem=origem_loja,
                 descricao=descricao,
                 horario_coleta=horario_coleta,
+                tipo_veiculo=tipo_veiculo,
                 observacoes_origem=observacoes_origem
             )
             
@@ -560,16 +563,17 @@ def editar_frete(request, frete_id):
         # Processar dados do formulário
         origem_id = request.POST.get('origem')
         horario_coleta = request.POST.get('horario_coleta')
+        tipo_veiculo = request.POST.get('tipo_veiculo')
         observacoes_origem = request.POST.get('observacoes_origem', '')
         anexo_origem = request.FILES.get('anexo_origem')
         
         # Validar dados obrigatórios
-        if not origem_id or not horario_coleta:
+        if not origem_id or not horario_coleta or not tipo_veiculo:
             return render(request, 'fretes/editar_frete.html', {
                 'frete': frete,
                 'lojas_choices': lojas_choices,
                 'destinos_existentes': destinos_existentes,
-                'erro': 'Origem e horário de coleta são obrigatórios.'
+                'erro': 'Origem, horário de coleta e tipo de veículo são obrigatórios.'
             })
         
         # Atualizar dados básicos do frete
@@ -577,6 +581,7 @@ def editar_frete(request, frete_id):
         if origem_loja:
             frete.origem = origem_loja
             frete.horario_coleta = horario_coleta
+            frete.tipo_veiculo = tipo_veiculo
             frete.observacoes_origem = observacoes_origem
             
             # Processar novo anexo da origem se fornecido

@@ -44,6 +44,20 @@
                         </div>
                         
                         <div class="form-group">
+                            <label for="id_tipo_veiculo" class="form-label">Tipo de Veículo</label>
+                            <select name="tipo_veiculo" id="id_tipo_veiculo" class="form-control" required>
+                                <option value="">Selecione o tipo de veículo...</option>
+                                <option value="carreta" {% if frete.tipo_veiculo == 'carreta' %}selected{% endif %}>🚛 Carreta</option>
+                                <option value="truck" {% if frete.tipo_veiculo == 'truck' %}selected{% endif %}>🚚 Truck</option>
+                                <option value="vuc" {% if frete.tipo_veiculo == 'vuc' %}selected{% endif %}>🚐 VUC</option>
+                                <option value="toco" {% if frete.tipo_veiculo == 'toco' %}selected{% endif %}>🚛 Toco</option>
+                                <option value="3_4" {% if frete.tipo_veiculo == '3_4' %}selected{% endif %}>🚛 3/4</option>
+                                <option value="van" {% if frete.tipo_veiculo == 'van' %}selected{% endif %}>🚐 Van</option>
+                            </select>
+                            <div class="form-text">Selecione o tipo de veículo necessário para atender a demanda</div>
+                        </div>
+                        
+                        <div class="form-group">
                             <label for="id_observacoes_origem" class="form-label">Observações da Coleta</label>
                             <textarea name="observacoes_origem" id="id_observacoes_origem" class="form-control" rows="3" 
                                       placeholder="Informe observações importantes para a coleta">{{ frete.observacoes_origem|default:'' }}</textarea>

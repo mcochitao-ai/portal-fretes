@@ -38,6 +38,17 @@ class FreteRequest(models.Model):
 	horario_coleta = models.CharField(max_length=50, blank=True, null=True)
 	observacoes_origem = models.TextField(blank=True, null=True, verbose_name="Observações da Coleta")
 	anexo_origem = models.FileField(upload_to='anexos/origem/', blank=True, null=True, verbose_name="Anexo da Origem", help_text="Arquivo Excel ou PDF relacionado à origem")
+	
+	TIPO_VEICULO_CHOICES = [
+		('carreta', 'Carreta'),
+		('truck', 'Truck'),
+		('vuc', 'VUC'),
+		('toco', 'Toco'),
+		('3_4', '3/4'),
+		('van', 'Van'),
+	]
+	tipo_veiculo = models.CharField(max_length=10, choices=TIPO_VEICULO_CHOICES, blank=True, null=True, verbose_name="Tipo de Veículo", help_text="Tipo de veículo necessário para o frete")
+	
 	STATUS_CHOICES = [
 		('pendente', 'Pendente'),
 		('cotacao_enviada', 'Cotação enviada'),

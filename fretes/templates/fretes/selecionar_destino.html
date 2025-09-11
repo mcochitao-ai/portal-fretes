@@ -18,6 +18,21 @@
                 <div class="alert alert-success">{{ mensagem }}</div>
             {% endif %}
 
+            {% if tipo_veiculo %}
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-truck"></i> Tipo de Veículo Selecionado</h5>
+                    <p class="mb-0">
+                        {% if tipo_veiculo == 'carreta' %}🚛 Carreta
+                        {% elif tipo_veiculo == 'truck' %}🚚 Truck
+                        {% elif tipo_veiculo == 'vuc' %}🚐 VUC
+                        {% elif tipo_veiculo == 'toco' %}🚛 Toco
+                        {% elif tipo_veiculo == '3_4' %}🚛 3/4
+                        {% elif tipo_veiculo == 'van' %}🚐 Van
+                        {% else %}{{ tipo_veiculo|title }}{% endif %}
+                    </p>
+                </div>
+            {% endif %}
+            
             {% if observacoes_origem %}
                 <div class="alert alert-info">
                     <h5><i class="fas fa-info-circle"></i> Observações da Coleta</h5>
@@ -29,6 +44,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="origem_id" value="{{ origem_id }}">
                 <input type="hidden" name="horario_coleta" value="{{ horario_coleta }}">
+                <input type="hidden" name="tipo_veiculo" value="{{ tipo_veiculo }}">
                 <input type="hidden" name="observacoes_origem" value="{{ observacoes_origem }}">
                 
                 <div class="form-group">

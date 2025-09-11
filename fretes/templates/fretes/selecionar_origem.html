@@ -29,6 +29,20 @@
                 </div>
                 
                 <div class="form-group">
+                    <label for="id_tipo_veiculo" class="form-label">Tipo de Veículo</label>
+                    <select name="tipo_veiculo" id="id_tipo_veiculo" class="form-control" required>
+                        <option value="">Selecione o tipo de veículo...</option>
+                        <option value="carreta">🚛 Carreta</option>
+                        <option value="truck">🚚 Truck</option>
+                        <option value="vuc">🚐 VUC</option>
+                        <option value="toco">🚛 Toco</option>
+                        <option value="3_4">🚛 3/4</option>
+                        <option value="van">🚐 Van</option>
+                    </select>
+                    <div class="form-text">Selecione o tipo de veículo necessário para atender a demanda</div>
+                </div>
+                
+                <div class="form-group">
                     <label for="id_observacoes_origem" class="form-label">Observações da Coleta</label>
                     <textarea name="observacoes_origem" id="id_observacoes_origem" class="form-control" rows="3" placeholder="Informe observações importantes para a coleta (ex: horário específico, local exato, contato, etc.)"></textarea>
                 </div>
