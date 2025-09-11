@@ -1,0 +1,5 @@
+[33me97fca4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m feat: Implementar funcionalidade de reset de senha
+[33m4e11789[m Add professional documentation for LinkedIn presentation - Create README.md and LinkedIn presentation guide - Add project metrics and technical details
+[33m9f4b74e[m Add health check endpoint for monitoring - Create /health/ endpoint to keep site active
+[33m1ec2351[m Reduce username field limit from 150 to 30 characters - Create custom signup form with reasonable character limit
+[33m15e59fc[m Apply same design improvements to signup page - Center fields, increase sizes, and match login page styling

@@ -386,6 +386,16 @@ def selecionar_destino(request):
                         volume = 1
                     
                     observacao = request.POST.get(f'observacao_{loja_id}', '')
+                    data_entrega_str = request.POST.get(f'data_entrega_{loja_id}', '')
+                    
+                    # Processar data de entrega
+                    data_entrega = None
+                    if data_entrega_str:
+                        try:
+                            from django.utils.dateparse import parse_datetime
+                            data_entrega = parse_datetime(data_entrega_str)
+                        except (ValueError, TypeError):
+                            data_entrega = None
                     
                     destino = Destino.objects.create(
                         frete=frete,
@@ -396,6 +406,7 @@ def selecionar_destino(request):
                         estado=loja.estado,
                         cep=loja.cep,
                         volume=volume,
+                        data_entrega=data_entrega,
                         observacao=observacao,
                     )
                     
@@ -620,6 +631,16 @@ def editar_frete(request, frete_id):
                             volume = 1
                         
                         observacao = request.POST.get(f'observacao_{loja_id}', '')
+                        data_entrega_str = request.POST.get(f'data_entrega_{loja_id}', '')
+                        
+                        # Processar data de entrega
+                        data_entrega = None
+                        if data_entrega_str:
+                            try:
+                                from django.utils.dateparse import parse_datetime
+                                data_entrega = parse_datetime(data_entrega_str)
+                            except (ValueError, TypeError):
+                                data_entrega = None
                         
                         destino = Destino.objects.create(
                             frete=frete,
@@ -630,6 +651,7 @@ def editar_frete(request, frete_id):
                             estado=loja.estado,
                             cep=loja.cep,
                             volume=volume,
+                            data_entrega=data_entrega,
                             observacao=observacao,
                         )
                         

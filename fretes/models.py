@@ -58,6 +58,7 @@ class Destino(models.Model):
 	volume = models.PositiveIntegerField(default=1)
 	loja = models.CharField(max_length=100, blank=True, null=True)  # Adicione esta linha
 	numero = models.CharField(max_length=20, blank=True, null=True)
+	data_entrega = models.DateTimeField(blank=True, null=True, verbose_name="Data de Entrega", help_text="Data e horário previstos para entrega")
 	observacao = models.TextField(blank=True, null=True)
 	anexo_destino = models.FileField(upload_to='anexos/destino/', blank=True, null=True, verbose_name="Anexo do Destino", help_text="Arquivo Excel ou PDF relacionado ao destino")
 

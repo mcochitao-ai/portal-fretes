@@ -1,0 +1,15 @@
+# Copie este arquivo para .env e preencha com seus dados
+
+# Configurações de Email para Gmail
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=seu-email@gmail.com
+EMAIL_HOST_PASSWORD=sua-senha-de-app-aqui
+DEFAULT_FROM_EMAIL=seu-email@gmail.com
+
+# Outras configurações
+SECRET_KEY=django-insecure-#e7x=8hinxzo9(wk436ehc2u6qhn@lo*1^gu%bpr)i@a3vz
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+

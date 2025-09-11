@@ -152,6 +152,7 @@ function atualizarCamposDestinos() {
         let volumeExistente = 1;
         let observacaoExistente = '';
         let anexoExistente = '';
+        let dataEntregaExistente = '';
         
         {% for destino in destinos_existentes %}
             {% for id, nome, lat, lng in lojas_choices %}
@@ -161,6 +162,9 @@ function atualizarCamposDestinos() {
                         observacaoExistente = '{{ destino.observacao|default:""|escapejs }}';
                         {% if destino.anexo_destino %}
                             anexoExistente = '{{ destino.anexo_destino.name|escapejs }}';
+                        {% endif %}
+                        {% if destino.data_entrega %}
+                            dataEntregaExistente = '{{ destino.data_entrega|date:"Y-m-d\TH:i" }}';
                         {% endif %}
                     }
                 {% endif %}
@@ -198,6 +202,10 @@ function atualizarCamposDestinos() {
                     <div class="form-group">
                         <label class="form-label">Volume</label>
                         <input type="number" min="1" name="volume_${id}" id="volume_${id}" class="form-control" required placeholder="Volume" value="${volumeExistente}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Data de Entrega</label>
+                        <input type="datetime-local" name="data_entrega_${id}" id="data_entrega_${id}" class="form-control" placeholder="Data e horário de entrega" value="${dataEntregaExistente}">
                     </div>
                 </div>
                 <div class="form-group mt-4">

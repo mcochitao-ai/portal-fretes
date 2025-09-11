@@ -121,6 +121,9 @@
                                 <div><strong>Estado:</strong> {{ destino.estado|default:"-" }}</div>
                                 <div><strong>CEP:</strong> {{ destino.cep|format_cep|default:"-" }}</div>
                                 <div><strong>Volume:</strong> {{ destino.volume|default:"-" }}</div>
+                                {% if destino.data_entrega %}
+                                    <div><strong>Data de Entrega:</strong> {{ destino.data_entrega|date:'d/m/Y H:i' }}</div>
+                                {% endif %}
                             </div>
                             {% if destino.observacao %}
                                 <div class="mt-3 p-3 bg-green-50 border-l-4 border-green-400 rounded">
@@ -269,7 +272,8 @@
             "estado": "{{ destino.estado|escapejs }}",
             "cep": "{{ destino.cep|escapejs }}",
             "regional": "{{ destino.regional|escapejs }}",
-            "volume": "{{ destino.volume|escapejs }}"
+            "volume": "{{ destino.volume|escapejs }}",
+            "data_entrega": "{{ destino.data_entrega|date:'d/m/Y H:i'|default_if_none:''|escapejs }}"
         }{% if not forloop.last %},{% endif %}
     {% endfor %}
     ]
