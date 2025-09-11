@@ -345,6 +345,9 @@ def selecionar_destino(request):
         descricao = request.POST.get('descricao', '')
         origem_loja = Loja.objects.filter(id=origem_id).first()
         
+        print(f"DEBUG selecionar_destino - destino_ids recebidos: {destino_ids}")
+        print(f"DEBUG selecionar_destino - origem_loja: {origem_loja}")
+        
         if not origem_loja:
             erro = 'Origem inválida.'
         elif not destino_ids:
