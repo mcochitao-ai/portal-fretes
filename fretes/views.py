@@ -546,6 +546,17 @@ def frete_detalhe(request, frete_id):
     destinos = frete.destinos.all()
     transportadoras = Transportadora.objects.all()
     
+    # Buscar cotação aprovada para mostrar a transportadora aprovada
+    cotacao_aprovada = None
+    transportadora_aprovada = None
+    if frete.status == 'cotacao_aprovada':
+        cotacao_aprovada = CotacaoFrete.objects.filter(
+            frete=frete, 
+            status='aprovada'
+        ).select_related('transportadora').first()
+        if cotacao_aprovada:
+            transportadora_aprovada = cotacao_aprovada.transportadora
+    
     if request.method == 'POST':
         transportadora_id = request.POST.get('transportadora_id')
         if transportadora_id:
@@ -557,7 +568,9 @@ def frete_detalhe(request, frete_id):
     return render(request, 'fretes/frete_detalhe.html', {
         'frete': frete,
         'destinos': destinos,
-        'transportadoras': transportadoras
+        'transportadoras': transportadoras,
+        'cotacao_aprovada': cotacao_aprovada,
+        'transportadora_aprovada': transportadora_aprovada
     })
 
 
