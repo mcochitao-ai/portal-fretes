@@ -87,3 +87,26 @@ def split_last(value, delimiter):
     if not value:
         return ''
     return value.split(delimiter, 1)[-1]
+
+@register.filter
+def format_currency(value):
+    """
+    Formata um valor numérico como moeda brasileira (R$ 1.234.567,89).
+    """
+    if not value:
+        return 'R$ 0,00'
+    
+    try:
+        # Converte para float se for string
+        if isinstance(value, str):
+            value = float(value.replace(',', '.'))
+        
+        # Formata com separadores de milhares e decimais
+        formatted = f"{value:,.2f}"
+        
+        # Substitui vírgulas por pontos para milhares e ponto por vírgula para decimais
+        formatted = formatted.replace(',', 'X').replace('.', ',').replace('X', '.')
+        
+        return f"R$ {formatted}"
+    except (ValueError, TypeError):
+        return 'R$ 0,00'

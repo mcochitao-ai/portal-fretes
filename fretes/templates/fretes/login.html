@@ -1,13 +1,20 @@
-{% extends 'fretes/base.html' %}
-{% load static %}
-
-{% block title %}Login - Portal de Fretes{% endblock %}
-
-{% block content %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Portal de Fretes</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); min-height: 100vh; margin: 0; padding: 0; font-family: 'Inter', sans-serif;">
 <div class="login-container">
     <div class="login-card">
         <div class="login-header">
-            <div class="login-icon">🚛</div>
+            <div class="login-logo">
+                <div class="login-icon">r</div>
+            </div>
             <h1 class="login-title">Portal de Fretes</h1>
             <p class="login-subtitle">Faça login para acessar o sistema</p>
         </div>
@@ -46,11 +53,7 @@
 
         <div class="login-footer">
             <p class="login-text">
-                <a href="/forgot-password/" class="login-link">Esqueci a senha</a>
-            </p>
-            <p class="login-text">
-                Não tem conta? 
-                <a href="/signup/" class="login-link">Criar conta</a>
+                Entre em contato com o administrador para obter acesso ao sistema.
             </p>
         </div>
     </div>
@@ -62,8 +65,9 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        min-height: 80vh;
+        min-height: 100vh;
         padding: 2rem 1rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
     }
     
     .login-card {
@@ -82,9 +86,25 @@
         margin-bottom: 2rem;
     }
     
+    .login-logo {
+        margin-bottom: 1.5rem;
+    }
+    
     .login-icon {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
+        width: 60px;
+        height: 60px;
+        background: #dc2626;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        font-weight: 600;
+        font-style: italic;
+        font-family: 'Inter', sans-serif;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+        margin: 0 auto;
     }
     
     .login-title {
@@ -245,8 +265,11 @@
         }
         
         .login-icon {
-            font-size: 2rem;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
         }
     }
 </style>
-{% endblock %}
+</body>
+</html>

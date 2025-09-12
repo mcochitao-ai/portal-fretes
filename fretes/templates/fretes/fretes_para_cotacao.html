@@ -1,0 +1,374 @@
+{% extends 'fretes/base.html' %}
+{% load frete_filters %}
+
+{% block title %}Fretes para Cotação - Portal de Fretes{% endblock %}
+
+{% block content %}
+<div class="container-lg mt-8">
+    <div class="card animate-fade-in">
+        <div class="card-header">
+            <h2 class="text-center">Fretes para Cotação</h2>
+            {% if user.userprofile.is_usuario_master %}
+            <p class="text-muted text-center">Todas as cotações pendentes - Visão Master</p>
+            {% else %}
+            <p class="text-muted text-center">Fretes direcionados para sua transportadora - Envie suas cotações</p>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if cotacoes_pendentes %}
+                <div class="frete-quotes-grid">
+                    {% for cotacao in cotacoes_pendentes %}
+                    <div class="frete-quote-card">
+                        <div class="quote-card-header">
+                            <div class="quote-id">
+                                <strong>#{{ cotacao.frete.id }}</strong>
+                            </div>
+                            <div class="quote-actions">
+                                <a href="{% url 'cotar_frete' cotacao.id %}" class="quote-btn">
+                                    Cotar
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="quote-card-body">
+                            {% if user.userprofile.is_usuario_master %}
+                                <!-- Visão Master - Mostra todas as informações -->
+                                <div class="quote-info-grid">
+                                    <div class="quote-info-item">
+                                        <span class="quote-label">Solicitante</span>
+                                        <span class="quote-value">{{ cotacao.frete.usuario.username }}</span>
+                                    </div>
+                                    
+                                    <div class="quote-info-item">
+                                        <span class="quote-label">Transportadora</span>
+                                        <span class="quote-badge transportadora-badge">{{ cotacao.transportadora.nome }}</span>
+                                    </div>
+                                    
+                                    <div class="quote-info-item">
+                                        <span class="quote-label">Origem</span>
+                                        <span class="quote-value">{{ cotacao.frete.origem.nome }}</span>
+                                    </div>
+                                    
+                                    <div class="quote-info-item">
+                                        <span class="quote-label">Coleta</span>
+                                        <span class="quote-value">{{ cotacao.frete.horario_coleta|format_horario_coleta }}</span>
+                                    </div>
+                                    
+                                    <div class="quote-info-item">
+                                        <span class="quote-label">Veículo</span>
+                                        {% if cotacao.frete.tipo_veiculo %}
+                                            <span class="quote-badge veiculo-badge">{{ cotacao.frete.get_tipo_veiculo_display }}</span>
+                                        {% else %}
+                                            <span class="quote-muted">Não especificado</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="quote-info-item">
+                                        <span class="quote-label">Destinos</span>
+                                        <span class="quote-badge destinos-badge">{{ cotacao.frete.destinos.count }} destino{{ cotacao.frete.destinos.count|pluralize }}</span>
+                                    </div>
+                                    
+                                    <div class="quote-info-item">
+                                        <span class="quote-label">Criado em</span>
+                                        <span class="quote-value">{{ cotacao.frete.data_criacao|date:"d/m/Y H:i" }}</span>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <!-- Visão Transportadora - Mostra apenas informações relevantes -->
+                                <div class="quote-info-grid">
+                                    <div class="quote-info-item">
+                                        <span class="quote-label">Origem</span>
+                                        <span class="quote-value">{{ cotacao.frete.origem.nome }}</span>
+                                    </div>
+                                    
+                                    <div class="quote-info-item">
+                                        <span class="quote-label">Coleta</span>
+                                        <span class="quote-value">{{ cotacao.frete.horario_coleta|format_horario_coleta }}</span>
+                                    </div>
+                                    
+                                    <div class="quote-info-item">
+                                        <span class="quote-label">Veículo</span>
+                                        {% if cotacao.frete.tipo_veiculo %}
+                                            <span class="quote-badge veiculo-badge">{{ cotacao.frete.get_tipo_veiculo_display }}</span>
+                                        {% else %}
+                                            <span class="quote-muted">Não especificado</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="quote-info-item">
+                                        <span class="quote-label">Destinos</span>
+                                        <span class="quote-badge destinos-badge">{{ cotacao.frete.destinos.count }} destino{{ cotacao.frete.destinos.count|pluralize }}</span>
+                                    </div>
+                                    
+                                    <div class="quote-info-item">
+                                        <span class="quote-label">Prazo</span>
+                                        <span class="quote-value">{{ cotacao.frete.data_criacao|date:"d/m/Y H:i" }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <div class="empty-truck">🚛</div>
+                    </div>
+                    <h4 class="empty-title">Nenhum frete para cotação</h4>
+                    <p class="empty-description">Não há fretes direcionados para sua transportadora no momento.</p>
+                    <a href="{% url 'home' %}" class="empty-btn">
+                        Voltar ao Início
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+/* Frete Quotes Grid */
+.frete-quotes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1.5rem;
+}
+
+.frete-quote-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.frete-quote-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: #dc2626;
+}
+
+.quote-card-header {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.quote-id {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #dc2626;
+}
+
+.quote-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.quote-btn {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.quote-btn:hover {
+    background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+.quote-card-body {
+    padding: 1.5rem;
+}
+
+.quote-info-grid {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.quote-info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.quote-info-item:last-child {
+    border-bottom: none;
+}
+
+.quote-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.quote-value {
+    color: #1f2937;
+    font-weight: 500;
+    text-align: right;
+    flex: 1;
+    margin-left: 1rem;
+}
+
+.quote-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.transportadora-badge {
+    background: #dbeafe;
+    color: #2563eb;
+    border: 1px solid #93c5fd;
+}
+
+.veiculo-badge {
+    background: #dcfce7;
+    color: #16a34a;
+    border: 1px solid #86efac;
+}
+
+.destinos-badge {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+}
+
+.quote-muted {
+    color: #9ca3af;
+    font-style: italic;
+    font-size: 0.875rem;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.empty-icon {
+    margin-bottom: 1.5rem;
+}
+
+.empty-truck {
+    font-size: 4rem;
+    opacity: 0.5;
+}
+
+.empty-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 0.75rem;
+}
+
+.empty-description {
+    color: #9ca3af;
+    font-size: 1rem;
+    margin-bottom: 2rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.empty-btn {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    padding: 0.875rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.empty-btn:hover {
+    background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+    color: white;
+    text-decoration: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .frete-quotes-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .quote-card-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .quote-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .quote-btn {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    .quote-info-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+    
+    .quote-value {
+        text-align: left;
+        margin-left: 0;
+    }
+    
+    .empty-state {
+        padding: 2rem 1rem;
+    }
+    
+    .empty-truck {
+        font-size: 3rem;
+    }
+    
+    .empty-title {
+        font-size: 1.25rem;
+    }
+}
+</style>
+{% endblock %}
+

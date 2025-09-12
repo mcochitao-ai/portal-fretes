@@ -23,6 +23,9 @@
                     {% if user.userprofile.is_usuario_master %}
                         <h3 class="text-lg font-semibold">🏆 Administração - Todos os Fretes</h3>
                         <p class="text-secondary">Visualize e gerencie todos os fretes do sistema</p>
+                    {% elif user.userprofile.is_transportadora %}
+                        <h3 class="text-lg font-semibold">🚛 Área da Transportadora</h3>
+                        <p class="text-secondary">Gerencie suas cotações e acesse relatórios</p>
                     {% else %}
                         <h3 class="text-lg font-semibold">Minhas Solicitações</h3>
                         <p class="text-secondary">Filtre e gerencie seus fretes</p>
@@ -30,13 +33,29 @@
                 </div>
                 
                 <div class="actions-buttons">
-                    <a href="/selecionar-origem/" class="btn btn-primary">
-                        📦 Solicitar novo frete
-                    </a>
-                    
-                    <a href="/meus-fretes/relatorio-excel/?{% if status_selected %}status={{ status_selected }}{% endif %}" class="btn btn-success">
-                        📊 Gerar Relatório Excel
-                    </a>
+                    {% if user.userprofile.is_transportadora %}
+                        <!-- Botões específicos para transportadora -->
+                        <a href="/fretes-para-cotacao/" class="btn btn-primary">
+                            📋 Fretes para Cotação
+                        </a>
+                        
+                        <a href="/cotacoes-historico-transportadora/" class="btn btn-info">
+                            📊 Histórico de Cotações
+                        </a>
+                        
+                        <a href="/meus-fretes/relatorio-excel/?{% if status_selected %}status={{ status_selected }}{% endif %}" class="btn btn-success">
+                            📈 Exportar Relatório Excel
+                        </a>
+                    {% else %}
+                        <!-- Botões para usuários normais -->
+                        <a href="/selecionar-origem/" class="btn btn-primary">
+                            📦 Solicitar novo frete
+                        </a>
+                        
+                        <a href="/meus-fretes/relatorio-excel/?{% if status_selected %}status={{ status_selected }}{% endif %}" class="btn btn-success">
+                            📊 Gerar Relatório Excel
+                        </a>
+                    {% endif %}
                 </div>
             </div>
             
@@ -51,7 +70,13 @@
                     <select name="status" class="form-control status-select">
                         <option value="">Todos os status</option>
                         <option value="pendente" {% if status_selected == 'pendente' %}selected{% endif %}>Pendente</option>
+                        <option value="aguardando_aprovacao" {% if status_selected == 'aguardando_aprovacao' %}selected{% endif %}>Aguardando Aprovação</option>
+                        <option value="aprovado" {% if status_selected == 'aprovado' %}selected{% endif %}>Aprovado</option>
+                        <option value="rejeitado" {% if status_selected == 'rejeitado' %}selected{% endif %}>Rejeitado</option>
                         <option value="cotacao_enviada" {% if status_selected == 'cotacao_enviada' %}selected{% endif %}>Cotação enviada</option>
+                        <option value="cotacao_recebida" {% if status_selected == 'cotacao_recebida' %}selected{% endif %}>Cotação recebida</option>
+                        <option value="cotacao_aprovada" {% if status_selected == 'cotacao_aprovada' %}selected{% endif %}>Cotação aprovada</option>
+                        <option value="cancelado" {% if status_selected == 'cancelado' %}selected{% endif %}>Cancelado</option>
                         <option value="finalizado" {% if status_selected == 'finalizado' %}selected{% endif %}>Finalizado</option>
                     </select>
                     <button type="submit" class="btn btn-primary">
@@ -95,6 +120,12 @@
                                 <span class="badge badge-pending">⏳ Pendente</span>
                             {% elif frete.status == 'cotacao_enviada' %}
                                 <span class="badge badge-sent">📤 Cotação Enviada</span>
+                            {% elif frete.status == 'cotacao_recebida' %}
+                                <span class="badge badge-received">📥 Cotação Recebida</span>
+                            {% elif frete.status == 'cotacao_aprovada' %}
+                                <span class="badge badge-approved">✅ Cotação Aprovada</span>
+                            {% elif frete.status == 'cancelado' %}
+                                <span class="badge badge-danger">❌ Cancelado</span>
                             {% elif frete.status == 'finalizado' %}
                                 <span class="badge badge-completed">✅ Finalizado</span>
                             {% endif %}
@@ -170,12 +201,25 @@
                                     {% endfor %}
                                 </div>
                             </div>
+                            
+                            {% if frete.status == 'cancelado' and frete.motivo_cancelamento %}
+                            <div class="flex items-start gap-2">
+                                <span class="text-secondary">❌</span>
+                                <div>
+                                    <strong>Motivo do Cancelamento:</strong><br>
+                                    <span class="text-sm text-danger">{{ frete.motivo_cancelamento }}</span>
+                                    {% if frete.data_cancelamento %}
+                                        <br><span class="text-xs text-secondary">Cancelado em: {{ frete.data_cancelamento|date:'d/m/Y H:i' }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     
                     <div class="card-footer">
                         <div class="d-flex gap-2">
-                            {% if user.userprofile.pode_ver_detalhes_frete %}
+                            {% if user.userprofile.pode_ver_detalhes_frete or frete.usuario == user or user.userprofile.is_usuario_master %}
                                 <a href="/frete/{{ frete.id }}/" class="btn btn-outline flex-1">
                                     Ver detalhes
                                 </a>
@@ -191,6 +235,15 @@
                                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
                                     </svg>
                                 </a>
+                            {% endif %}
+                            {% if frete.status in 'pendente,cotacao_enviada,cotacao_recebida' and frete.usuario == user %}
+                                <button onclick="abrirModalCancelamento({{ frete.id }})" class="btn btn-danger" title="Cancelar frete">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                                    </svg>
+                                </button>
                             {% endif %}
                         </div>
                     </div>
@@ -229,6 +282,30 @@
     </div>
 </div>
 
+<!-- Modal de Cancelamento -->
+<div id="modalCancelamento" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Cancelar Frete</h3>
+            <span class="close" onclick="fecharModalCancelamento()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p><strong>Atenção:</strong> Esta ação não pode ser desfeita. O frete será cancelado permanentemente.</p>
+            <form id="formCancelamento">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="motivo_cancelamento" class="form-label">Motivo do Cancelamento *</label>
+                    <textarea id="motivo_cancelamento" name="motivo_cancelamento" class="form-control" rows="4" placeholder="Descreva o motivo do cancelamento..." required></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline" onclick="fecharModalCancelamento()">Cancelar</button>
+            <button type="button" class="btn btn-danger" onclick="confirmarCancelamento()">Confirmar Cancelamento</button>
+        </div>
+    </div>
+</div>
+
 <style>
 .space-y-3 > * + * {
     margin-top: 0.75rem;
@@ -252,6 +329,11 @@
 
 .text-xs {
     font-size: 0.75rem;
+}
+
+.text-danger {
+    color: #dc2626;
+    font-weight: 500;
 }
 
 .py-12 {
@@ -474,5 +556,160 @@
     color: white;
     text-decoration: none;
 }
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.close {
+    color: #6b7280;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.close:hover {
+    color: #374151;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    padding: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: white;
+    border: 1px solid #dc2626;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    text-decoration: none;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+    border-color: #b91c1c;
+    color: white;
+    text-decoration: none;
+}
 </style>
+
+<script>
+let freteIdParaCancelar = null;
+
+function abrirModalCancelamento(freteId) {
+    freteIdParaCancelar = freteId;
+    document.getElementById('modalCancelamento').style.display = 'flex';
+    document.getElementById('motivo_cancelamento').value = '';
+}
+
+function fecharModalCancelamento() {
+    document.getElementById('modalCancelamento').style.display = 'none';
+    freteIdParaCancelar = null;
+}
+
+function confirmarCancelamento() {
+    const motivo = document.getElementById('motivo_cancelamento').value.trim();
+    
+    if (!motivo) {
+        alert('Por favor, informe o motivo do cancelamento.');
+        return;
+    }
+    
+    if (!freteIdParaCancelar) {
+        alert('Erro: ID do frete não encontrado.');
+        return;
+    }
+    
+    // Confirmar ação
+    if (!confirm('Tem certeza que deseja cancelar este frete? Esta ação não pode ser desfeita.')) {
+        return;
+    }
+    
+    // Criar FormData para enviar via POST
+    const formData = new FormData();
+    formData.append('motivo_cancelamento', motivo);
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    // Fazer requisição AJAX
+    fetch(`/frete/${freteIdParaCancelar}/cancelar/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Frete cancelado com sucesso!');
+            location.reload(); // Recarregar a página para atualizar a lista
+        } else {
+            alert('Erro: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro interno. Tente novamente.');
+    });
+}
+
+// Fechar modal ao clicar fora dele
+window.onclick = function(event) {
+    const modal = document.getElementById('modalCancelamento');
+    if (event.target === modal) {
+        fecharModalCancelamento();
+    }
+}
+</script>
 {% endblock %}

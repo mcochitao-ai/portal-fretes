@@ -38,45 +38,6 @@
         </div>
     {% endif %}
 
-    <!-- Action Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <!-- Solicitar Frete Card -->
-        <div class="card-minimal animate-fade-in">
-            <div class="card-body-minimal">
-                <div class="icon-minimal">📦</div>
-                <h4 class="title-minimal">Solicitar Frete</h4>
-                <p class="text-minimal">Crie uma nova solicitação</p>
-                <a href="/selecionar-origem/" class="btn-minimal btn-primary">
-                    Começar
-                </a>
-            </div>
-        </div>
-
-        <!-- Meus Fretes Card -->
-        <div class="card-minimal animate-fade-in">
-            <div class="card-body-minimal">
-                <div class="icon-minimal">📋</div>
-                <h4 class="title-minimal">Meus Fretes</h4>
-                <p class="text-minimal">Gerencie suas solicitações</p>
-                <a href="/meus-fretes/" class="btn-minimal btn-secondary">
-                    Ver Fretes
-                </a>
-            </div>
-        </div>
-
-        <!-- Dashboard Card -->
-        <div class="card-minimal animate-fade-in">
-            <div class="card-body-minimal">
-                <div class="icon-minimal">📊</div>
-                <h4 class="title-minimal">Dashboard</h4>
-                <p class="text-minimal">Estatísticas e relatórios de frete</p>
-                <a href="/dashboard/" class="btn-minimal btn-success">
-                    Acessar
-                </a>
-            </div>
-        </div>
-    </div>
-
     <!-- Quick Stats -->
     {% if user.is_authenticated and estatisticas %}
         <div class="stats-minimal">
@@ -106,21 +67,6 @@
                 </div>
             </div>
         </div>
-    {% else %}
-        <!-- Debug: Mostrar por que não está funcionando -->
-        <div class="card">
-            <div class="card-header">
-                <h3>Debug - Por que as estatísticas não aparecem?</h3>
-            </div>
-            <div class="card-body">
-                <div class="space-y-2">
-                    <div><strong>Usuário autenticado:</strong> {{ user.is_authenticated }}</div>
-                    <div><strong>Username:</strong> {{ user.username }}</div>
-                    <div><strong>Estatísticas:</strong> {{ estatisticas }}</div>
-                    <div><strong>User object:</strong> {{ user }}</div>
-                </div>
-            </div>
-        </div>
     {% endif %}
 
     <!-- Renner Brands Section -->
@@ -137,28 +83,6 @@
             <div class="brand-minimal">you<span class="uppercase">COM</span></div>
             <div class="brand-minimal">realize</div>
             <div class="brand-minimal">repassa</div>
-        </div>
-    </div>
-
-    <!-- Features Section -->
-    <div class="features-minimal">
-        <h3 class="features-title">Por que escolher nosso Portal?</h3>
-        <div class="features-grid">
-            <div class="feature-item">
-                <div class="feature-icon">🚀</div>
-                <h5 class="feature-title">Rápido e Eficiente</h5>
-                <p class="feature-text">Interface intuitiva e ágil</p>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon">📱</div>
-                <h5 class="feature-title">Totalmente Responsivo</h5>
-                <p class="feature-text">Acesse de qualquer dispositivo</p>
-            </div>
-            <div class="feature-item">
-                <div class="feature-icon">🔒</div>
-                <h5 class="feature-title">Seguro e Confiável</h5>
-                <p class="feature-text">Dados protegidos e seguros</p>
-            </div>
         </div>
     </div>
 </div>
@@ -202,6 +126,7 @@
     text-align: center;
     flex: 1;
 }
+
 
 
 .header-main h1 {
@@ -259,109 +184,6 @@
     
 }
 
-/* Renner Color Classes */
-.bg-red-50 { background-color: #fef2f2; }
-.text-red-600 { color: #dc2626; }
-
-/* Minimalist Design Styles */
-.card-minimal {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border: 1px solid #f1f5f9;
-    transition: all 0.3s ease;
-    overflow: hidden;
-}
-
-.card-minimal:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-}
-
-.card-body-minimal {
-    padding: 1.5rem;
-    text-align: center;
-}
-
-.icon-minimal {
-    font-size: 2rem;
-    margin-bottom: 0.75rem;
-    opacity: 0.8;
-}
-
-.title-minimal {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 0.5rem;
-}
-
-.text-minimal {
-    font-size: 0.875rem;
-    color: #6b7280;
-    margin-bottom: 1rem;
-    line-height: 1.4;
-}
-
-.btn-minimal {
-    display: inline-block;
-    padding: 0.5rem 1.25rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-decoration: none;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    border: none;
-    cursor: pointer;
-}
-
-.btn-minimal.btn-primary {
-    background: #dc2626;
-    color: white;
-}
-
-.btn-minimal.btn-primary:hover {
-    background: #b91c1c;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-}
-
-.btn-minimal.btn-primary:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
-}
-
-.btn-minimal.btn-secondary {
-    background: #dc2626;
-    color: white;
-}
-
-.btn-minimal.btn-secondary:hover {
-    background: #b91c1c;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-}
-
-.btn-minimal.btn-secondary:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
-}
-
-.btn-minimal.btn-success {
-    background: #dc2626;
-    color: white;
-}
-
-.btn-minimal.btn-success:hover {
-    background: #b91c1c;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-}
-
-.btn-minimal.btn-success:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
-}
 
 /* Stats Minimal */
 .stats-minimal {
@@ -518,8 +340,8 @@
 }
 
 .brand-minimal:hover {
-    color: #dc2626;
-    background: rgba(220, 38, 38, 0.05);
+    background-color: #000000;
+    color: #ffffff;
     transform: translateY(-2px);
 }
 
@@ -552,129 +374,6 @@
     font-size: 0.9rem;
 }
 
-/* Features Minimal */
-.features-minimal {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border: 1px solid #f1f5f9;
-    padding: 2rem;
-    margin-bottom: 2rem;
-}
-
-.features-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1f2937;
-    text-align: center;
-    margin-bottom: 1.5rem;
-}
-
-.features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-}
-
-.feature-item {
-    text-align: center;
-    padding: 1.5rem 1rem;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    background: white;
-    border: 1px solid #f1f5f9;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInUp 0.6s ease forwards;
-}
-
-.feature-item:nth-child(1) { animation-delay: 0.1s; }
-.feature-item:nth-child(2) { animation-delay: 0.2s; }
-.feature-item:nth-child(3) { animation-delay: 0.3s; }
-
-@keyframes fadeInUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.feature-item:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 30px rgba(220, 38, 38, 0.15);
-    border-color: #fecaca;
-    background: linear-gradient(135deg, #fefefe 0%, #fef2f2 100%);
-}
-
-.feature-item::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(220, 38, 38, 0.1), transparent);
-    transition: left 0.6s ease;
-}
-
-.feature-item:hover::before {
-    left: 100%;
-}
-
-.feature-icon {
-    font-size: 2rem;
-    margin-bottom: 0.75rem;
-    opacity: 0.8;
-    transition: all 0.3s ease;
-    display: inline-block;
-}
-
-.feature-item:hover .feature-icon {
-    transform: scale(1.2) rotate(5deg);
-    opacity: 1;
-    filter: drop-shadow(0 0 12px rgba(220, 38, 38, 0.4));
-    animation: iconPulse 0.6s ease-in-out, float 2s ease-in-out infinite;
-}
-
-@keyframes float {
-    0%, 100% { transform: scale(1.2) rotate(5deg) translateY(0px); }
-    50% { transform: scale(1.2) rotate(5deg) translateY(-3px); }
-}
-
-@keyframes iconPulse {
-    0% { transform: scale(1.2) rotate(5deg); }
-    50% { transform: scale(1.3) rotate(5deg); }
-    100% { transform: scale(1.2) rotate(5deg); }
-}
-
-.feature-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 0.5rem;
-    transition: all 0.3s ease;
-}
-
-.feature-item:hover .feature-title {
-    color: #dc2626;
-    transform: translateY(-2px);
-    text-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
-}
-
-.feature-text {
-    font-size: 0.875rem;
-    color: #6b7280;
-    line-height: 1.4;
-    transition: color 0.3s ease;
-}
-
-.feature-item:hover .feature-text {
-    color: #4b5563;
-}
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
@@ -690,150 +389,8 @@
         flex-direction: column;
         gap: 1rem;
     }
-    
-    .features-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-    
-    .features-minimal {
-        padding: 1.5rem;
-    }
 }
 
-/* Renner Brands Styles */
-.brands-container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 2rem;
-    padding: 2rem 0;
-}
-
-.brand-item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.3s ease;
-}
-
-.brand-item:hover {
-    transform: translateY(-5px);
-}
-
-.brand-logo {
-    display: flex;
-    align-items: center;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-
-/* Renner Logo */
-.renner-logo {
-    background: #dc2626;
-    color: white;
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-}
-
-.brand-symbol {
-    font-size: 1.5rem;
-    font-weight: 800;
-    margin-right: 0.5rem;
-}
-
-.brand-text {
-    font-size: 1.1rem;
-    font-weight: 700;
-}
-
-/* CAMICADO Logo */
-.camicado-logo {
-    color: #1f2937;
-    font-size: 1.2rem;
-    font-weight: 700;
-    font-family: 'Inter', sans-serif;
-    letter-spacing: 1px;
-}
-
-/* youcom Logo */
-.youcom-logo {
-    color: #1f2937;
-    font-size: 1.1rem;
-    font-weight: 300;
-    font-family: 'Inter', sans-serif;
-}
-
-.youcom-logo .uppercase {
-    font-weight: 600;
-}
-
-/* realize Logo */
-.realize-logo {
-    color: #1f2937;
-    font-size: 1.1rem;
-    font-weight: 300;
-    font-family: 'Inter', sans-serif;
-    font-style: italic;
-}
-
-/* repassa Logo */
-.repassa-logo {
-    color: #1f2937;
-    font-size: 1.1rem;
-    font-weight: 300;
-    font-family: 'Inter', sans-serif;
-    transform: rotate(-2deg);
-}
-
-/* Responsive adjustments for brands */
-@media (max-width: 768px) {
-    .brands-container {
-        flex-direction: column;
-        gap: 1.5rem;
-    }
-    
-    .brand-item {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .renner-logo {
-        padding: 0.8rem 1.2rem;
-    }
-    
-    .brand-text {
-        font-size: 1rem;
-    }
-    
-    .camicado-logo,
-    .youcom-logo,
-    .realize-logo,
-    .repassa-logo {
-        font-size: 1rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .brands-container {
-        gap: 1rem;
-        padding: 1rem 0;
-    }
-    
-    .renner-logo {
-        padding: 0.6rem 1rem;
-    }
-    
-    .brand-symbol {
-        font-size: 1.2rem;
-    }
-    
-    .brand-text {
-        font-size: 0.9rem;
-    }
-}
 
 /* Counter Animation */
 .counter {

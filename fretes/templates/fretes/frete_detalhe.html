@@ -63,13 +63,30 @@
                         {% else %}
                             <div><strong>Nota Fiscal:</strong> ❌ Ainda não foi emitida</div>
                         {% endif %}
+                        {% if frete.precisa_ajudante %}
+                            <div><strong>Ajudante:</strong> 👥 {{ frete.quantidade_ajudantes }} ajudante(s) necessário(s)</div>
+                        {% else %}
+                            <div><strong>Ajudante:</strong> ❌ Não necessário</div>
+                        {% endif %}
                         <div><strong>Status:</strong> 
                             {% if frete.status == 'pendente' %}
                                 <span class="badge badge-pending">⏳ Pendente</span>
                             {% elif frete.status == 'cotacao_enviada' %}
                                 <span class="badge badge-sent">📤 Cotação Enviada</span>
+                            {% elif frete.status == 'cotacao_recebida' %}
+                                <span class="badge badge-received">📥 Cotação Recebida</span>
+                            {% elif frete.status == 'cotacao_aprovada' %}
+                                <span class="badge badge-approved">✅ Cotação Aprovada</span>
+                            {% elif frete.status == 'rejeitado' %}
+                                <span class="badge badge-rejected">❌ Rejeitado</span>
+                            {% elif frete.status == 'rejeitado_transportadora' %}
+                                <span class="badge badge-rejected">🚫 Rejeitado pela Transportadora</span>
+                            {% elif frete.status == 'cancelado' %}
+                                <span class="badge badge-rejected">❌ Cancelado</span>
                             {% elif frete.status == 'finalizado' %}
                                 <span class="badge badge-completed">✅ Finalizado</span>
+                            {% else %}
+                                <span class="badge badge-secondary">{{ frete.status|title }}</span>
                             {% endif %}
                         </div>
                     </div>
@@ -212,271 +229,235 @@
 
         <!-- Sidebar -->
         <div class="lg:col-span-1">
-            <!-- Transportadora -->
+            <!-- Informações da Cotação -->
             <div class="card mb-6">
                 <div class="card-header">
-                    <h3>🚛 Transportadora</h3>
+                    <h3>📊 Informações da Cotação</h3>
                 </div>
                 <div class="card-body">
-                    <form id="form-transportadora" method="post" class="space-y-4">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label class="form-label">Selecionar Transportadora</label>
-                            <select id="transportadora-select" name="transportadora_id" class="form-control">
-                                <option value="">Selecione...</option>
-                                {% for t in transportadoras %}
-                                    <option value="{{ t.id }}" data-email="{{ t.email }}" {% if frete.transportadora_selecionada and t.id == frete.transportadora_selecionada.id %}selected{% endif %}>{{ t.nome }}</option>
-                                {% endfor %}
-                            </select>
+                    <div class="space-y-4">
+                        {% if frete.transportadora %}
+                            <div>
+                                <strong>Transportadora:</strong><br>
+                                <span class="text-primary">{{ frete.transportadora.nome }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if frete.aprovador %}
+                            <div>
+                                <strong>Aprovador:</strong><br>
+                                <span class="text-success">{{ frete.aprovador.username }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if frete.data_cotacao %}
+                            <div>
+                                <strong>Data da Cotação:</strong><br>
+                                {{ frete.data_cotacao|date:'d/m/Y H:i' }}
+                            </div>
+                        {% endif %}
+                        
+                        {% if frete.data_aprovacao %}
+                            <div>
+                                <strong>Data de Aprovação:</strong><br>
+                                {{ frete.data_aprovacao|date:'d/m/Y H:i' }}
+                            </div>
+                        {% endif %}
+                        
+                        {% if frete.centro_custo and user.userprofile.is_usuario_master %}
+                            <div>
+                                <strong>Centro de Custo:</strong><br>
+                                <span class="text-success">{{ frete.centro_custo }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Valores da Cotação -->
+            {% if frete.valor_frete or frete.valor_pedagio or frete.valor_ajudante %}
+                <div class="card">
+                    <div class="card-header">
+                        <h3>💰 Valores da Cotação</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="space-y-3">
+                            {% if frete.valor_frete %}
+                                <div class="d-flex justify-content-between">
+                                    <span>Frete:</span>
+                                    <strong>R$ {{ frete.valor_frete|floatformat:2 }}</strong>
+                                </div>
+                            {% endif %}
+                            
+                            {% if frete.valor_pedagio %}
+                                <div class="d-flex justify-content-between">
+                                    <span>Pedágio:</span>
+                                    <strong>R$ {{ frete.valor_pedagio|floatformat:2 }}</strong>
+                                </div>
+                            {% endif %}
+                            
+                            {% if frete.valor_ajudante %}
+                                <div class="d-flex justify-content-between">
+                                    <span>Ajudante:</span>
+                                    <strong>R$ {{ frete.valor_ajudante|floatformat:2 }}</strong>
+                                </div>
+                            {% endif %}
+                            
+                            {% if frete.valor_total %}
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <span><strong>Total:</strong></span>
+                                    <strong class="text-success">R$ {{ frete.valor_total|floatformat:2 }}</strong>
+                                </div>
+                            {% endif %}
                         </div>
-                        <button type="submit" class="btn btn-primary btn-block">Salvar</button>
-                    </form>
-                    
-                    <div class="mt-4 p-3 bg-gray-50 rounded-lg">
-                        <strong>Transportadora Selecionada:</strong><br>
-                        {% if frete.transportadora_selecionada %}
-                            {{ frete.transportadora_selecionada.nome }}
-                        {% else %}
-                            <span class="text-secondary">Nenhuma</span>
-                        {% endif %}
                     </div>
                 </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="card">
-                <div class="card-header">
-                    <h3>⚡ Ações</h3>
-                </div>
-                <div class="card-body">
-                    <div class="space-y-3">
-                        <button type="button" id="enviar-email" class="btn btn-primary btn-block">
-                            📧 Enviar Cotação por E-mail
-                        </button>
-                        
-                        <button type="button" id="enviar-email-mailto" class="btn btn-secondary btn-block">
-                            📮 Enviar pelo App de E-mail
-                        </button>
-                        
-                        {% if frete.status != 'finalizado' %}
-                            <button type="button" id="finalizar-frete" class="btn btn-success btn-block">
-                                ✅ Finalizar Frete
-                            </button>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+            {% endif %}
         </div>
     </div>
 
-    <!-- Email Instructions -->
-    <div class="card mt-6">
-        <div class="card-header">
-            <h3>📋 Instruções para E-mail</h3>
-        </div>
-        <div class="card-body">
-            <div class="alert alert-warning">
-                <strong>Atenção:</strong> Se o botão de e-mail não abrir o e-mail pronto, é porque o Outlook Web não suporta essa função.
+    <!-- Informações da Cotação para Transportadora -->
+    {% if user.userprofile.is_transportadora and user.userprofile.transportadora %}
+        {% for cotacao in frete.cotacaofrete_set.all %}
+            {% if cotacao.transportadora == user.userprofile.transportadora %}
+                <div class="card mt-6">
+                    <div class="card-header">
+                        <h3>💰 Informações da Cotação</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div><strong>Status da Cotação:</strong> 
+                                {% if cotacao.status == 'pendente' %}
+                                    <span class="badge badge-pending">⏳ Pendente</span>
+                                {% elif cotacao.status == 'aprovado' %}
+                                    <span class="badge badge-approved">✅ Aprovado</span>
+                                {% elif cotacao.status == 'rejeitado' %}
+                                    <span class="badge badge-rejected">❌ Rejeitado</span>
+                                {% endif %}
+                            </div>
+                            <div><strong>Data da Cotação:</strong> {{ cotacao.data_cotacao|date:'d/m/Y H:i' }}</div>
+                            {% if cotacao.valor_frete %}
+                                <div><strong>Valor do Frete:</strong> R$ {{ cotacao.valor_frete|floatformat:2 }}</div>
+                            {% endif %}
+                            {% if cotacao.valor_pedagio %}
+                                <div><strong>Valor do Pedágio:</strong> R$ {{ cotacao.valor_pedagio|floatformat:2 }}</div>
+                            {% endif %}
+                            {% if cotacao.valor_ajudante %}
+                                <div><strong>Valor do Ajudante:</strong> R$ {{ cotacao.valor_ajudante|floatformat:2 }}</div>
+                            {% endif %}
+                            {% if cotacao.valor_total %}
+                                <div><strong>Valor Total:</strong> R$ {{ cotacao.valor_total|floatformat:2 }}</div>
+                            {% endif %}
+                        </div>
+                        {% if cotacao.observacoes_cotacao %}
+                            <div class="mt-4">
+                                <strong>Observações da Cotação:</strong>
+                                <div class="p-3 bg-blue-50 border-l-4 border-blue-400 rounded mt-2">
+                                    <p class="text-blue-700">{{ cotacao.observacoes_cotacao }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% if cotacao.motivo_rejeicao_transportadora %}
+                            <div class="mt-4">
+                                <strong>Motivo da Rejeição:</strong>
+                                <div class="p-3 bg-red-50 border-l-4 border-red-400 rounded mt-2">
+                                    <p class="text-red-700">{{ cotacao.motivo_rejeicao_transportadora }}</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <!-- Observações da Cotação -->
+    {% if frete.observacoes_cotacao %}
+        <div class="card mt-6">
+            <div class="card-header">
+                <h3>📝 Observações da Cotação</h3>
             </div>
-            
-            <p><strong>Solução:</strong> Copie o texto abaixo e cole manualmente em um novo e-mail para a transportadora.</p>
-            
-            <button onclick="copiarCorpoEmail()" class="btn btn-outline mt-3">
-                📋 Copiar corpo do e-mail
-            </button>
-            
-            <div id="corpo-email-preview" class="mt-4 p-4 bg-gray-50 rounded-lg font-mono text-sm whitespace-pre-line"></div>
+            <div class="card-body">
+                <div class="p-3 bg-blue-50 border-l-4 border-blue-400 rounded">
+                    <p class="text-blue-700">{{ frete.observacoes_cotacao }}</p>
+                </div>
+            </div>
         </div>
-    </div>
+    {% endif %}
+
+    <!-- Observações da Aprovação -->
+    {% if frete.observacoes_aprovacao %}
+        <div class="card mt-6">
+            <div class="card-header">
+                <h3>✅ Observações da Aprovação</h3>
+            </div>
+            <div class="card-body">
+                <div class="p-3 bg-green-50 border-l-4 border-green-400 rounded">
+                    <p class="text-green-700">{{ frete.observacoes_aprovacao }}</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Justificativa de Rejeição -->
+    {% if frete.justificativa_rejeicao %}
+        <div class="card mt-6">
+            <div class="card-header">
+                <h3>❌ Justificativa de Rejeição</h3>
+            </div>
+            <div class="card-body">
+                <div class="p-3 bg-red-50 border-l-4 border-red-400 rounded">
+                    <p class="text-red-700">{{ frete.justificativa_rejeicao }}</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Motivo de Rejeição pela Transportadora -->
+    {% if frete.motivo_rejeicao_transportadora %}
+        <div class="card mt-6">
+            <div class="card-header">
+                <h3>🚫 Motivo de Rejeição pela Transportadora</h3>
+            </div>
+            <div class="card-body">
+                <div class="p-3 bg-orange-50 border-l-4 border-orange-400 rounded">
+                    <p class="text-orange-700">{{ frete.motivo_rejeicao_transportadora }}</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Informações de Cancelamento -->
+    {% if frete.status == 'cancelado' and frete.motivo_cancelamento %}
+        <div class="card mt-6">
+            <div class="card-header">
+                <h3>❌ Informações de Cancelamento</h3>
+            </div>
+            <div class="card-body">
+                <div class="p-3 bg-red-50 border-l-4 border-red-400 rounded">
+                    <div class="mb-3">
+                        <h5 class="text-red-800 font-semibold mb-2">📝 Motivo do Cancelamento</h5>
+                        <p class="text-red-700">{{ frete.motivo_cancelamento }}</p>
+                    </div>
+                    {% if frete.usuario_cancelamento %}
+                        <div class="mb-3">
+                            <h5 class="text-red-800 font-semibold mb-2">👤 Cancelado por</h5>
+                            <p class="text-red-700">{{ frete.usuario_cancelamento.username }}</p>
+                        </div>
+                    {% endif %}
+                    {% if frete.data_cancelamento %}
+                        <div>
+                            <h5 class="text-red-800 font-semibold mb-2">📅 Data do Cancelamento</h5>
+                            <p class="text-red-700">{{ frete.data_cancelamento|date:'d/m/Y H:i' }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
 </div>
 
-<script id="dados-frete-json" type="application/json">
-{
-    "usuario": "{{ frete.usuario.username|escapejs }}",
-    "origem": {
-        "nome": "{{ frete.origem.nome|escapejs }}",
-        "endereco": "{{ frete.origem.endereco|escapejs }}",
-        "numero": "{{ frete.origem.numero|escapejs }}",
-        "complemento": "{{ frete.origem.complemento|default_if_none:''|escapejs }}",
-        "municipio": "{{ frete.origem.municipio|escapejs }}",
-        "estado": "{{ frete.origem.estado|escapejs }}",
-        "cep": "{{ frete.origem.cep|escapejs }}",
-        "regional": "{{ frete.origem.regional|escapejs }}"
-    },
-    "data_solicitacao": "{{ frete.data_criacao|date:'d/m/Y H:i'|escapejs }}",
-    "horario_coleta": "{{ frete.horario_coleta|format_horario_coleta|escapejs }}",
-    "tipo_veiculo": "{{ frete.get_tipo_veiculo_display|default_if_none:'-'|escapejs }}",
-    "descricao": "{{ frete.descricao|default_if_none:'-'|escapejs }}",
-    "destinos": [
-    {% for destino in destinos %}
-        {
-            "loja": "{{ destino.loja|escapejs }}",
-            "endereco": "{{ destino.endereco|escapejs }}",
-            "numero": "{{ destino.numero|escapejs }}",
-            "complemento": "{{ destino.complemento|default_if_none:''|escapejs }}",
-            "cidade": "{{ destino.cidade|escapejs }}",
-            "estado": "{{ destino.estado|escapejs }}",
-            "cep": "{{ destino.cep|escapejs }}",
-            "regional": "{{ destino.regional|escapejs }}",
-            "volume": "{{ destino.volume|escapejs }}",
-            "data_entrega": "{{ destino.data_entrega|date:'d/m/Y H:i'|default_if_none:''|escapejs }}"
-        }{% if not forloop.last %},{% endif %}
-    {% endfor %}
-    ]
-}
-</script>
-
-<script>
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
-
-function montarCorpo() {
-    const dadosFrete = JSON.parse(document.getElementById('dados-frete-json').textContent);
-    const br = '\n';
-    const br2 = '\n\n';
-    let corpo = '';
-    
-    corpo += 'Solicitante: ' + dadosFrete.usuario + br2;
-    corpo += 'Data Solicitação da Coleta: ' + (dadosFrete.data_solicitacao || '-') + br2;
-    corpo += 'ORIGEM:' + br;
-    corpo += '- Loja: ' + dadosFrete.origem.nome + br;
-    corpo += '- Endereço: ' + dadosFrete.origem.endereco + ', Nº ' + dadosFrete.origem.numero;
-    if (dadosFrete.origem.complemento) corpo += ', ' + dadosFrete.origem.complemento;
-    corpo += br;
-    corpo += '- Cidade: ' + dadosFrete.origem.municipio + br;
-    corpo += '- Estado: ' + dadosFrete.origem.estado + br;
-    corpo += '- CEP: ' + dadosFrete.origem.cep + br2;
-    corpo += 'Horário de Coleta: ' + (dadosFrete.horario_coleta || '-') + br;
-    corpo += 'Tipo de Veículo: ' + (dadosFrete.tipo_veiculo || '-') + br2;
-    corpo += 'DESTINOS:' + br;
-    
-    for (let i = 0; i < dadosFrete.destinos.length; i++) {
-        const d = dadosFrete.destinos[i];
-        corpo += '- Loja: ' + (d.loja || '-') + br;
-        corpo += '  Endereço: ' + (d.endereco || '-') + ', Nº ' + (d.numero || '-');
-        if (d.complemento) corpo += ', ' + d.complemento;
-        corpo += br;
-        corpo += '  Cidade: ' + (d.cidade || '-') + br;
-        corpo += '  Estado: ' + (d.estado || '-') + br;
-        corpo += '  CEP: ' + (d.cep || '-') + br;
-        corpo += '  Volume: ' + (d.volume || '-') + br2;
-    }
-    
-    return corpo;
-}
-
-function atualizarStatusCotacao() {
-    fetch('/frete/{{ frete.id }}/atualizar-status/', {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: 'status=cotacao_enviada'
-    }).then(function(resp) {
-        if (resp.ok) {
-            setTimeout(function() { location.reload(); }, 400);
-        }
-    });
-}
-
-function atualizarStatusFinalizado() {
-    fetch('/frete/{{ frete.id }}/atualizar-status/', {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: 'status=finalizado'
-    }).then(function(resp) {
-        if (resp.ok) {
-            setTimeout(function() { location.reload(); }, 400);
-        }
-    });
-}
-
-function copiarCorpoEmail() {
-    const corpo = montarCorpo();
-    const temp = document.createElement('textarea');
-    temp.value = corpo;
-    document.body.appendChild(temp);
-    temp.select();
-    document.execCommand('copy');
-    document.body.removeChild(temp);
-    alert('Corpo do e-mail copiado!');
-    atualizarStatusCotacao();
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Preencher visualização do corpo do e-mail
-    const corpoPreview = document.getElementById('corpo-email-preview');
-    if (corpoPreview) corpoPreview.textContent = montarCorpo();
-    
-    // Event listeners
-    const btnFinalizar = document.getElementById('finalizar-frete');
-    if (btnFinalizar) {
-        btnFinalizar.addEventListener('click', atualizarStatusFinalizado);
-    }
-    
-    const btnOutlook = document.getElementById('enviar-email');
-    if (btnOutlook) {
-        btnOutlook.addEventListener('click', function() {
-            const select = document.getElementById('transportadora-select');
-            const selected = select.options[select.selectedIndex];
-            const email = selected.getAttribute('data-email');
-            
-            if (!email) {
-                alert('Selecione uma transportadora.');
-                return;
-            }
-            
-            const transportadoraNome = selected.textContent || selected.innerText;
-            const corpo = montarCorpo();
-            const lojaOrigem = 'Origem Loja {{ frete.origem.nome }}';
-            const subject = 'Solicitação de Cotação de Frete - ' + lojaOrigem + ' - ' + transportadoraNome;
-            const url = 'https://outlook.office.com/mail/deeplink/compose?popoutv2=1&to=' + encodeURIComponent(email) + '&subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(corpo) + '&bodyType=HTML';
-            
-            window.open(url, '_blank');
-            atualizarStatusCotacao();
-        });
-    }
-    
-    const btnMailto = document.getElementById('enviar-email-mailto');
-    if (btnMailto) {
-        btnMailto.addEventListener('click', function() {
-            const select = document.getElementById('transportadora-select');
-            const selected = select.options[select.selectedIndex];
-            const email = selected.getAttribute('data-email');
-            
-            if (!email) {
-                alert('Selecione uma transportadora.');
-                return;
-            }
-            
-            const transportadoraNome = selected.textContent || selected.innerText;
-            const corpo = montarCorpo();
-            const lojaOrigem = 'Origem Loja {{ frete.origem.nome }}';
-            const subject = 'Solicitação de Cotação de Frete - ' + lojaOrigem + ' - ' + transportadoraNome;
-            const url = 'mailto:' + email + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(corpo);
-            
-            window.location.href = url;
-            atualizarStatusCotacao();
-        });
-    }
-});
-</script>
 
 <style>
 .space-y-3 > * + * {
@@ -706,6 +687,102 @@ document.addEventListener('DOMContentLoaded', function() {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     color: white;
     text-decoration: none;
+}
+
+/* Badge styles for status */
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 0.375rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.badge-pending {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    color: #ffffff;
+    border: 1px solid #d97706;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+}
+
+.badge-sent {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: #ffffff;
+    border: 1px solid #1d4ed8;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.badge-received {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: #ffffff;
+    border: 1px solid #6d28d9;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(139, 92, 246, 0.3);
+}
+
+.badge-approved {
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    color: #ffffff;
+    border: 1px solid #0e7490;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(6, 182, 212, 0.3);
+}
+
+.badge-rejected {
+    background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+    color: #ffffff;
+    border: 1px solid #dc2626;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(248, 113, 113, 0.3);
+}
+
+.badge-completed {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    border: 1px solid #047857;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+/* Additional color styles */
+.bg-orange-50 {
+    background-color: #fff7ed;
+}
+
+.border-orange-400 {
+    border-color: #fb923c;
+}
+
+.text-orange-700 {
+    color: #c2410c;
+}
+
+.bg-red-50 {
+    background-color: #fef2f2;
+}
+
+.border-red-400 {
+    border-color: #f87171;
+}
+
+.text-red-700 {
+    color: #b91c1c;
+}
+
+.text-primary {
+    color: #3b82f6;
+}
+
+.text-success {
+    color: #059669;
+}
+
+.justify-content-between {
+    justify-content: space-between;
 }
 
 /* Responsive adjustments */

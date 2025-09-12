@@ -1,0 +1,575 @@
+{% extends 'fretes/base.html' %}
+{% load static %}
+{% load frete_filters %}
+
+{% block title %}Fretes para Aprovação - Portal de Fretes{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="text-center">🔍 Fretes para Aprovação</h2>
+            <p class="text-muted text-center">Selecione múltiplas transportadoras para cada frete e receba várias cotações</p>
+        </div>
+        <div class="card-body p-0">
+            {% csrf_token %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if fretes_pendentes %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th><i class="fas fa-hashtag me-1"></i>ID</th>
+                                <th><i class="fas fa-user me-1"></i>Solicitante</th>
+                                <th><i class="fas fa-calendar me-1"></i>Data Solicitação</th>
+                                <th><i class="fas fa-map-marker-alt me-1"></i>Origem</th>
+                                <th><i class="fas fa-map-pin me-1"></i>Destinos</th>
+                                <th><i class="fas fa-truck me-1"></i>Tipo Veículo</th>
+                                <th><i class="fas fa-clock me-1"></i>Horário Coleta</th>
+                                <th><i class="fas fa-cogs me-1"></i>Direcionar para Transportadoras</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for frete in fretes_pendentes %}
+                                <tr>
+                                    <td>
+                                        <strong>#{{ frete.id }}</strong>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ frete.usuario.username }}</strong><br>
+                                            <small class="text-muted">{{ frete.usuario.email }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            {{ frete.data_criacao|date:"d/m/Y" }}<br>
+                                            <small class="text-muted">{{ frete.data_criacao|time:"H:i" }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ frete.origem.nome }}</strong><br>
+                                            <small class="text-muted">{{ frete.origem.municipio }}/{{ frete.origem.estado }}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ frete.destinos.count }} destino(s)</strong><br>
+                                            {% for destino in frete.destinos.all|slice:":2" %}
+                                                <small class="text-muted">{{ destino.loja }}</small><br>
+                                            {% endfor %}
+                                            {% if frete.destinos.count > 2 %}
+                                                <small class="text-muted">+{{ frete.destinos.count|add:"-2" }} mais</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {% if frete.tipo_veiculo == 'carreta' %}🚛 Carreta
+                                            {% elif frete.tipo_veiculo == 'truck' %}🚚 Truck
+                                            {% elif frete.tipo_veiculo == 'vuc' %}🚐 VUC
+                                            {% elif frete.tipo_veiculo == 'toco' %}🚛 Toco
+                                            {% elif frete.tipo_veiculo == '3_4' %}🚛 3/4
+                                            {% elif frete.tipo_veiculo == 'van' %}🚐 Van
+                                            {% else %}{{ frete.tipo_veiculo|title }}{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            {{ frete.horario_coleta|format_horario_coleta }}
+                                        </div>
+                                    </td>
+                        <td>
+                            <div class="transportadora-selection">
+                                <!-- Botão de detalhes -->
+                                <div class="mb-2">
+                                    <a href="{% url 'frete_detalhe' frete.id %}" class="btn btn-outline-primary btn-sm w-100" title="Ver detalhes completos do frete">
+                                        <i class="fas fa-eye"></i> Ver Detalhes
+                                    </a>
+                                </div>
+                                
+                                <!-- Seleção de transportadoras -->
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <label class="form-label small fw-bold text-primary mb-0">
+                                            <i class="fas fa-truck me-1"></i>Selecionar Transportadoras:
+                                        </label>
+                                        <span class="badge bg-secondary transportadora-count" data-frete-id="{{ frete.id }}">0 selecionada(s)</span>
+                                    </div>
+                                    <div class="transportadoras-checkboxes" data-frete-id="{{ frete.id }}">
+                                        {% for transportadora in transportadoras %}
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input transportadora-checkbox" type="checkbox" 
+                                                       value="{{ transportadora.id }}" id="transp_{{ frete.id }}_{{ transportadora.id }}">
+                                                <label class="form-check-label small" for="transp_{{ frete.id }}_{{ transportadora.id }}">
+                                                    <i class="fas fa-truck text-muted me-1"></i>{{ transportadora.nome }}
+                                                </label>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Botão de direcionar -->
+                                <button class="btn btn-success btn-sm direcionar-btn" data-frete-id="{{ frete.id }}" disabled>
+                                    <i class="fas fa-paper-plane"></i> Direcionar
+                                </button>
+                            </div>
+                        </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle fa-4x text-success"></i>
+                    </div>
+                    <h4 class="text-muted">🎉 Nenhum frete pendente</h4>
+                    <p class="text-muted">Todos os fretes foram direcionados! Não há solicitações aguardando aprovação no momento.</p>
+                    <div class="d-flex gap-2 justify-content-center">
+                        <a href="{% url 'home' %}" class="btn btn-primary">
+                            <i class="fas fa-home"></i> Voltar ao Início
+                        </a>
+                        <a href="{% url 'cotacoes_recebidas' %}" class="btn btn-outline-success">
+                            <i class="fas fa-money-bill-wave"></i> Ver Cotações Recebidas
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.table th {
+    border-top: none;
+    font-weight: 600;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.btn-group .btn {
+    margin-right: 2px;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Table Responsive Styles */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table {
+    width: 100%;
+    margin-bottom: 0;
+    min-width: 1200px;
+}
+
+.table th,
+.table td {
+    padding: 8px 6px;
+    vertical-align: middle;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.table th:nth-child(1),
+.table td:nth-child(1) {
+    width: 80px; /* ID */
+}
+
+.table th:nth-child(2),
+.table td:nth-child(2) {
+    width: 150px; /* Solicitante */
+}
+
+.table th:nth-child(3),
+.table td:nth-child(3) {
+    width: 120px; /* Data */
+}
+
+.table th:nth-child(4),
+.table td:nth-child(4) {
+    width: 180px; /* Origem */
+}
+
+.table th:nth-child(5),
+.table td:nth-child(5) {
+    width: 150px; /* Destinos */
+}
+
+.table th:nth-child(6),
+.table td:nth-child(6) {
+    width: 120px; /* Tipo Veículo */
+}
+
+.table th:nth-child(7),
+.table td:nth-child(7) {
+    width: 120px; /* Horário */
+}
+
+.table th:nth-child(8),
+.table td:nth-child(8) {
+    width: 300px; /* Ações */
+}
+
+/* Transportadora Selection Styles */
+.transportadora-selection {
+    min-width: 280px;
+    max-width: 300px;
+}
+
+.transportadora-selection .d-flex {
+    justify-content: center;
+}
+
+.transportadora-selection .btn-outline-primary {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    width: 100%;
+    background-color: transparent;
+    border: 1px solid #3b82f6;
+    color: #3b82f6;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.transportadora-selection .btn-outline-primary:hover {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.transportadora-select {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.4rem;
+    width: 100%;
+}
+
+.direcionar-btn {
+    width: 100%;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.4rem;
+    margin-top: 0.25rem;
+}
+
+.direcionar-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.direcionar-btn:not(:disabled) {
+    background: #28a745;
+    border-color: #28a745;
+}
+
+.direcionar-btn:not(:disabled):hover {
+    background: #218838;
+    border-color: #1e7e34;
+}
+
+/* Success message */
+.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+/* Loading state */
+.direcionar-btn.loading {
+    position: relative;
+    color: transparent;
+}
+
+.direcionar-btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ffffff;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .table {
+        min-width: 1000px;
+    }
+    
+    .transportadora-selection {
+        min-width: 250px;
+        max-width: 280px;
+    }
+}
+
+/* Ajustar alinhamento da tabela */
+.table th {
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* Manter alinhamento original das células */
+.table td {
+    vertical-align: middle;
+}
+
+/* Estilos para seleção de transportadoras */
+.transportadoras-checkboxes {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #dee2e6 !important;
+    transition: all 0.3s ease;
+}
+
+.transportadoras-checkboxes:hover {
+    border-color: #dc2626 !important;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.1);
+}
+
+.transportadora-checkbox {
+    transform: scale(1.1);
+    margin-right: 0.5rem;
+}
+
+.transportadora-checkbox:checked {
+    background-color: #dc2626;
+    border-color: #dc2626;
+}
+
+.form-check-label {
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.form-check-label:hover {
+    color: #dc2626;
+}
+
+.direcionar-btn {
+    width: 100%;
+    margin-top: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.direcionar-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.direcionar-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.transportadora-count {
+    font-size: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.transportadora-count.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+.transportadora-count.bg-warning {
+    background-color: #ffc107 !important;
+    color: #000 !important;
+}
+
+.transportadora-count.bg-success {
+    background-color: #198754 !important;
+}
+
+/* Melhorar responsividade da tabela */
+@media (max-width: 1200px) {
+    .table th:nth-child(8),
+    .table td:nth-child(8) {
+        width: 35%;
+    }
+}
+
+@media (max-width: 992px) {
+    .transportadoras-checkboxes {
+        max-height: 120px !important;
+        overflow-y: auto;
+    }
+    
+    .form-check-inline {
+        display: block !important;
+        margin-bottom: 0.25rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Habilitar/desabilitar botão direcionar baseado na seleção
+    document.querySelectorAll('.transportadora-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const freteId = this.closest('.transportadoras-checkboxes').dataset.freteId;
+            const direcionarBtn = document.querySelector(`.direcionar-btn[data-frete-id="${freteId}"]`);
+            const countBadge = document.querySelector(`.transportadora-count[data-frete-id="${freteId}"]`);
+            const checkedBoxes = document.querySelectorAll(`.transportadoras-checkboxes[data-frete-id="${freteId}"] .transportadora-checkbox:checked`);
+            
+            // Atualizar contador
+            const count = checkedBoxes.length;
+            countBadge.textContent = `${count} selecionada(s)`;
+            
+            // Atualizar cor do badge
+            if (count === 0) {
+                countBadge.className = 'badge bg-secondary transportadora-count';
+            } else if (count === 1) {
+                countBadge.className = 'badge bg-warning transportadora-count';
+            } else {
+                countBadge.className = 'badge bg-success transportadora-count';
+            }
+            
+            // Habilitar/desabilitar botão
+            direcionarBtn.disabled = count === 0;
+        });
+    });
+
+    // Processar direcionamento
+    document.querySelectorAll('.direcionar-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const freteId = this.dataset.freteId;
+            const checkedBoxes = document.querySelectorAll(`.transportadoras-checkboxes[data-frete-id="${freteId}"] .transportadora-checkbox:checked`);
+            
+            if (checkedBoxes.length === 0) {
+                alert('Selecione pelo menos uma transportadora primeiro!');
+                return;
+            }
+            
+            const transportadorasIds = Array.from(checkedBoxes).map(cb => cb.value);
+            const transportadorasNomes = Array.from(checkedBoxes).map(cb => cb.nextElementSibling.textContent.trim());
+            
+            // Confirmar ação
+            if (!confirm(`Tem certeza que deseja direcionar este frete para ${transportadorasIds.length} transportadora(s): ${transportadorasNomes.join(', ')}?`)) {
+                return;
+            }
+            
+            // Mostrar loading
+            this.classList.add('loading');
+            this.disabled = true;
+            
+            // Preparar dados para envio
+            const formData = new FormData();
+            formData.append('frete_id', freteId);
+            transportadorasIds.forEach(id => {
+                formData.append('transportadoras_ids[]', id);
+            });
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+            
+            // Fazer requisição AJAX
+            fetch('{% url "direcionar_frete_ajax" %}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mostrar mensagem de sucesso
+                    showAlert('success', data.message);
+                    
+                    // Remover linha da tabela
+                    const row = this.closest('tr');
+                    row.style.opacity = '0.5';
+                    row.style.textDecoration = 'line-through';
+                    
+                    // Desabilitar controles
+                    document.querySelectorAll(`.transportadoras-checkboxes[data-frete-id="${freteId}"] .transportadora-checkbox`).forEach(cb => cb.disabled = true);
+                    this.disabled = true;
+                    this.textContent = 'Direcionado';
+                    this.classList.remove('loading');
+                    
+                    // Atualizar contador se existir
+                    updatePendingCount();
+                } else {
+                    showAlert('danger', 'Erro: ' + data.error);
+                    this.classList.remove('loading');
+                    this.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                showAlert('danger', 'Erro ao direcionar frete. Tente novamente.');
+                this.classList.remove('loading');
+                this.disabled = false;
+            });
+        });
+    });
+});
+
+function showAlert(type, message) {
+    // Remover alertas existentes
+    document.querySelectorAll('.alert').forEach(alert => alert.remove());
+    
+    // Criar novo alerta
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Inserir no topo do card-body
+    const cardBody = document.querySelector('.card-body');
+    cardBody.insertBefore(alertDiv, cardBody.firstChild);
+    
+    // Auto-remover após 5 segundos
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
+function updatePendingCount() {
+    // Atualizar contador de fretes pendentes se existir
+    const pendingRows = document.querySelectorAll('tbody tr:not([style*="opacity: 0.5"])');
+    if (pendingRows.length === 0) {
+        // Se não há mais fretes pendentes, recarregar a página
+        setTimeout(() => {
+            window.location.reload();
+        }, 2000);
+    }
+}
+</script>
+{% endblock %}

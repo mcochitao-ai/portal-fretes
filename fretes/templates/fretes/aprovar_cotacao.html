@@ -1,0 +1,289 @@
+{% extends 'fretes/base.html' %}
+{% load static %}
+{% load frete_filters %}
+
+{% block title %}Aprovar Cotação #{{ cotacao.id }} - Portal de Fretes{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="text-center">💰 Aprovar Cotação #{{ cotacao.id }}</h2>
+            <p class="text-muted text-center">Analise a cotação da transportadora e tome uma decisão</p>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <!-- Informações do Frete -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">📋 Informações do Frete</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Detalhes Básicos -->
+                    <div class="mb-4">
+                        <h5 class="text-primary">📝 Detalhes</h5>
+                        <div class="row">
+                            <div class="col-sm-3"><strong>Solicitante:</strong></div>
+                            <div class="col-sm-9">{{ frete.usuario.username }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3"><strong>Origem:</strong></div>
+                            <div class="col-sm-9">{{ frete.origem.nome_loja }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3"><strong>Endereço:</strong></div>
+                            <div class="col-sm-9">{{ frete.origem.endereco_completo }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3"><strong>Coleta:</strong></div>
+                            <div class="col-sm-9">{{ frete.horario_coleta|format_horario_coleta }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3"><strong>Veículo:</strong></div>
+                            <div class="col-sm-9">
+                                {% if frete.tipo_veiculo %}
+                                    {{ frete.get_tipo_veiculo_display }}
+                                {% else %}
+                                    Não especificado
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if frete.precisa_ajudante %}
+                            <div class="row">
+                                <div class="col-sm-3"><strong>Ajudante:</strong></div>
+                                <div class="col-sm-9">Sim - {{ frete.quantidade_ajudantes }} pessoa(s)</div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Destinos -->
+                    <div class="mb-4">
+                        <h5 class="text-primary">🎯 Destinos ({{ destinos.count }})</h5>
+                        {% for destino in destinos %}
+                            <div class="card mb-2">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge bg-success me-2">{{ forloop.counter }}</span>
+                                        <strong>Destino {{ forloop.counter }}</strong>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-3"><strong>Endereço:</strong></div>
+                                        <div class="col-sm-9">{{ destino.endereco_completo }}</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-3"><strong>Volume:</strong></div>
+                                        <div class="col-sm-9">{{ destino.volume }}</div>
+                                    </div>
+                                    {% if destino.data_entrega %}
+                                        <div class="row">
+                                            <div class="col-sm-3"><strong>Entrega:</strong></div>
+                                            <div class="col-sm-9">{{ destino.data_entrega|format_data_entrega }}</div>
+                                        </div>
+                                    {% endif %}
+                                    {% if destino.observacao %}
+                                        <div class="row">
+                                            <div class="col-sm-3"><strong>Obs:</strong></div>
+                                            <div class="col-sm-9">{{ destino.observacao }}</div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cotação e Aprovação -->
+        <div class="col-lg-6 mb-4">
+            <!-- Cotação da Transportadora -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="mb-0">🚛 Cotação da Transportadora</h3>
+                    <p class="text-muted mb-0">{{ cotacao.transportadora.nome }}</p>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Frete</h6>
+                                    <h5 class="text-primary">R$ {{ cotacao.valor_frete|floatformat:2|default:"0,00" }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Pedágio</h6>
+                                    <h5 class="text-primary">R$ {{ cotacao.valor_pedagio|floatformat:2|default:"0,00" }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Ajudante</h6>
+                                    <h5 class="text-primary">R$ {{ cotacao.valor_ajudante|floatformat:2|default:"0,00" }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h6 class="card-title">Total</h6>
+                                    <h4 class="mb-0">R$ {{ cotacao.valor_total|floatformat:2|default:"0,00" }}</h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if cotacao.observacoes_cotacao %}
+                        <div class="mt-3">
+                            <h6><strong>Observações da Transportadora:</strong></h6>
+                            <p class="text-muted">{{ cotacao.observacoes_cotacao }}</p>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>
+                            Data da Cotação: {{ cotacao.data_cotacao|date:"d/m/Y H:i" }}
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulário de Aprovação -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">⚖️ Decisão</h3>
+                    <p class="text-muted mb-0">Aprove ou rejeite esta cotação</p>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="approvalForm">
+                        {% csrf_token %}
+                        
+                        <!-- Aprovar -->
+                        <div class="card border-success mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-check me-2"></i>
+                                    Aprovar Cotação
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="centro_custo" class="form-label">
+                                        <strong>Centro de Custo <span class="text-danger">*</span></strong>
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="centro_custo" 
+                                           name="centro_custo" 
+                                           placeholder="Digite o centro de custo aprovado"
+                                           required>
+                                    <div class="form-text">Campo obrigatório para aprovação</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="observacoes_aprovacao" class="form-label">
+                                        <strong>Observações da Aprovação</strong>
+                                    </label>
+                                    <textarea class="form-control" 
+                                              id="observacoes_aprovacao" 
+                                              name="observacoes_aprovacao" 
+                                              rows="3" 
+                                              placeholder="Observações adicionais sobre a aprovação (opcional)"></textarea>
+                                </div>
+                                
+                                <button type="submit" 
+                                        name="acao" 
+                                        value="aprovar" 
+                                        class="btn btn-success btn-lg w-100"
+                                        onclick="return confirm('Tem certeza que deseja APROVAR esta cotação?')">
+                                    <i class="fas fa-check me-2"></i>
+                                    Aprovar Cotação
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Rejeitar -->
+                        <div class="card border-danger">
+                            <div class="card-header bg-danger text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-times me-2"></i>
+                                    Rejeitar Cotação
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="justificativa_rejeicao" class="form-label">
+                                        <strong>Justificativa da Rejeição <span class="text-danger">*</span></strong>
+                                    </label>
+                                    <textarea class="form-control" 
+                                              id="justificativa_rejeicao" 
+                                              name="justificativa_rejeicao" 
+                                              rows="4" 
+                                              placeholder="Explique o motivo da rejeição desta cotação..."></textarea>
+                                    <div class="form-text">Campo obrigatório para rejeição</div>
+                                </div>
+                                
+                                <button type="submit" 
+                                        name="acao" 
+                                        value="rejeitar" 
+                                        class="btn btn-danger btn-lg w-100"
+                                        onclick="return confirm('Tem certeza que deseja REJEITAR esta cotação?')">
+                                    <i class="fas fa-times me-2"></i>
+                                    Rejeitar Cotação
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-4 text-center">
+                        <a href="{% url 'cotacoes_recebidas' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Voltar às Cotações
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('approvalForm');
+    const justificativaField = document.getElementById('justificativa_rejeicao');
+    
+    form.addEventListener('submit', function(e) {
+        const action = e.submitter.value;
+        
+        if (action === 'rejeitar') {
+            const justificativa = justificativaField.value.trim();
+            if (!justificativa) {
+                e.preventDefault();
+                alert('Justificativa da rejeição é obrigatória!');
+                justificativaField.focus();
+                return false;
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+

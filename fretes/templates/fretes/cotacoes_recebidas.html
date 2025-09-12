@@ -1,0 +1,96 @@
+{% extends 'fretes/base.html' %}
+{% load frete_filters %}
+
+{% block title %}Cotações Recebidas - Portal de Fretes{% endblock %}
+
+{% block content %}
+<div class="container-lg mt-8">
+    <div class="card animate-fade-in">
+        <div class="card-header">
+            <h2 class="text-center">💰 Cotações Recebidas</h2>
+            <p class="text-muted text-center">Cotações das transportadoras aguardando aprovação com centro de custo</p>
+        </div>
+        <div class="card-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if cotacoes_recebidas %}
+                <div class="cotacoes-grid">
+                    {% for cotacao in cotacoes_recebidas %}
+                    <div class="cotacao-card">
+                        <div class="cotacao-header">
+                            <div class="cotacao-id">
+                                <strong>#{{ cotacao.frete.id }}</strong>
+                            </div>
+                            <div class="cotacao-actions">
+                                <a href="{% url 'aprovar_cotacao' cotacao.id %}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye"></i> Analisar
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="cotacao-info">
+                            <div class="info-row">
+                                <span class="info-label">Solicitante:</span>
+                                <span class="info-value">{{ cotacao.frete.usuario.username }}</span>
+                            </div>
+                            
+                            <div class="info-row">
+                                <span class="info-label">Transportadora:</span>
+                                <span class="badge badge-info">{{ cotacao.transportadora.nome }}</span>
+                            </div>
+                            
+                            <div class="info-row">
+                                <span class="info-label">Origem:</span>
+                                <span class="info-value">{{ cotacao.frete.origem.nome }}</span>
+                            </div>
+                            
+                            <div class="info-row">
+                                <span class="info-label">Centro de Custo:</span>
+                                {% if cotacao.frete.centro_custo %}
+                                    <span class="badge badge-secondary">{{ cotacao.frete.centro_custo }}</span>
+                                {% else %}
+                                    <span class="text-muted">Não informado</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="info-row">
+                                <span class="info-label">Valor Total:</span>
+                                {% if cotacao.valor_total %}
+                                    <span class="info-value text-success font-bold">R$ {{ cotacao.valor_total|floatformat:2 }}</span>
+                                {% else %}
+                                    <span class="text-muted">Não informado</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="info-row">
+                                <span class="info-label">Data da Cotação:</span>
+                                <span class="info-value">{{ cotacao.data_cotacao|date:"d/m/Y H:i" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-clipboard-check fa-4x text-success"></i>
+                    </div>
+                    <h4 class="text-muted">Nenhuma cotação recebida</h4>
+                    <p class="text-muted">Não há cotações aguardando aprovação no momento.</p>
+                    <a href="{% url 'home' %}" class="btn btn-primary">
+                        <i class="fas fa-home"></i> Voltar ao Início
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

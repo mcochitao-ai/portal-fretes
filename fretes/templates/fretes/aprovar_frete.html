@@ -1,0 +1,283 @@
+{% extends 'fretes/base.html' %}
+{% load static %}
+{% load frete_filters %}
+
+{% block title %}Aprovar Frete #{{ frete.id }} - Portal de Fretes{% endblock %}
+
+{% block content %}
+<div class="container-md mt-8">
+    <div class="card animate-fade-in">
+        <div class="card-header">
+            <h2>🔍 Direcionar Frete #{{ frete.id }}</h2>
+            <p class="text-muted">Revise os detalhes e direcione para uma transportadora</p>
+        </div>
+        <div class="card-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Resumo do Frete -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>📋 Detalhes da Solicitação</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">👤 Solicitante</h6>
+                            <p><strong>{{ frete.usuario.username }}</strong><br>
+                            <small class="text-muted">{{ frete.usuario.email }}</small></p>
+                            
+                            <h6 class="text-primary">📅 Data da Solicitação</h6>
+                            <p>{{ frete.data_criacao|date:"d/m/Y H:i" }}</p>
+                            
+                            <h6 class="text-primary">🏢 Origem</h6>
+                            <p><strong>{{ frete.origem.nome }}</strong><br>
+                            {{ frete.origem.endereco }}, {{ frete.origem.numero }}<br>
+                            {{ frete.origem.municipio }}/{{ frete.origem.estado }}<br>
+                            <small class="text-muted">CEP: {{ frete.origem.cep|format_cep }}</small></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary">🚛 Tipo de Veículo</h6>
+                            <p>
+                                {% if frete.tipo_veiculo == 'carreta' %}🚛 Carreta
+                                {% elif frete.tipo_veiculo == 'truck' %}🚚 Truck
+                                {% elif frete.tipo_veiculo == 'vuc' %}🚐 VUC
+                                {% elif frete.tipo_veiculo == 'toco' %}🚛 Toco
+                                {% elif frete.tipo_veiculo == '3_4' %}🚛 3/4
+                                {% elif frete.tipo_veiculo == 'van' %}🚐 Van
+                                {% else %}{{ frete.tipo_veiculo|title }}{% endif %}
+                            </p>
+                            
+                            <h6 class="text-primary">⏰ Horário de Coleta</h6>
+                            <p>{{ frete.horario_coleta|format_horario_coleta }}</p>
+                            
+                            <h6 class="text-primary">💳 Quem Paga o Frete</h6>
+                            <p>{{ frete.quem_paga_frete }}</p>
+                            
+                            <h6 class="text-primary">🧾 Nota Fiscal</h6>
+                            <p>
+                                {% if frete.nota_fiscal_emitida %}
+                                    <span class="badge bg-success">✅ Já emitida</span>
+                                {% else %}
+                                    <span class="badge bg-warning">⏳ Pendente</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {% if frete.observacoes_origem %}
+                        <div class="mt-3">
+                            <h6 class="text-primary">📝 Observações da Coleta</h6>
+                            <div class="alert alert-info">
+                                {{ frete.observacoes_origem }}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Destinos -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4>🏪 Destinos ({{ destinos.count }})</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for destino in destinos %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-primary">🏪 {{ destino.loja }}</h6>
+                                        <p class="card-text">
+                                            <strong>📍 Endereço:</strong><br>
+                                            {{ destino.endereco }}, {{ destino.numero }}<br>
+                                            {{ destino.cidade }}/{{ destino.estado }}<br>
+                                            <small class="text-muted">CEP: {{ destino.cep|format_cep }}</small>
+                                        </p>
+                                        <p class="card-text">
+                                            <strong>📦 Volume:</strong> {{ destino.volume }} unidade(s)
+                                        </p>
+                                        {% if destino.data_entrega %}
+                                            <p class="card-text">
+                                                <strong>📅 Data de Entrega:</strong><br>
+                                                {{ destino.data_entrega|format_data_entrega }}
+                                            </p>
+                                        {% endif %}
+                                        {% if destino.observacao %}
+                                            <div class="alert alert-light">
+                                                <strong>📝 Observações:</strong><br>
+                                                {{ destino.observacao }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulário de Aprovação -->
+            <div class="card">
+                <div class="card-header">
+                    <h4>⚖️ Decisão de Aprovação</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="approvalForm">
+                        {% csrf_token %}
+                        
+                        <!-- Direcionar -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="card border-success">
+                                    <div class="card-header bg-success text-white">
+                                        <h5 class="mb-0">🚛 Direcionar para Transportadora</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-group mb-3">
+                                            <label for="transportadora" class="form-label">
+                                                <strong>Transportadora *</strong>
+                                            </label>
+                                            <select class="form-control" 
+                                                    id="transportadora" 
+                                                    name="transportadora" 
+                                                    required>
+                                                <option value="">Selecione uma transportadora</option>
+                                                {% for transportadora in transportadoras %}
+                                                    <option value="{{ transportadora.id }}">{{ transportadora.nome }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <div class="form-text">Selecione a transportadora que receberá a cotação</div>
+                                        </div>
+                                        
+                                        <div class="form-group mb-3">
+                                            <label for="observacoes_aprovacao" class="form-label">
+                                                <strong>Observações do Direcionamento</strong>
+                                            </label>
+                                            <textarea class="form-control" 
+                                                      id="observacoes_aprovacao" 
+                                                      name="observacoes_aprovacao" 
+                                                      rows="3" 
+                                                      placeholder="Observações adicionais sobre o direcionamento (opcional)"></textarea>
+                                        </div>
+                                        
+                                        <button type="submit" 
+                                                name="acao" 
+                                                value="direcionar" 
+                                                class="btn btn-success btn-lg"
+                                                onclick="return confirm('Tem certeza que deseja DIRECIONAR este frete?')">
+                                            <i class="fas fa-truck"></i> Direcionar Frete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Rejeitar -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card border-danger">
+                                    <div class="card-header bg-danger text-white">
+                                        <h5 class="mb-0">❌ Rejeitar Frete</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-group mb-3">
+                                            <label for="justificativa_rejeicao" class="form-label">
+                                                <strong>Justificativa da Rejeição *</strong>
+                                            </label>
+                                            <textarea class="form-control" 
+                                                      id="justificativa_rejeicao" 
+                                                      name="justificativa_rejeicao" 
+                                                      rows="4" 
+                                                      placeholder="Explique o motivo da rejeição"
+                                                      required></textarea>
+                                            <div class="form-text">Campo obrigatório para rejeição</div>
+                                        </div>
+                                        
+                                        <button type="submit" 
+                                                name="acao" 
+                                                value="rejeitar" 
+                                                class="btn btn-danger btn-lg"
+                                                onclick="return confirm('Tem certeza que deseja REJEITAR este frete?')">
+                                            <i class="fas fa-times"></i> Rejeitar Frete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Botões de Navegação -->
+            <div class="mt-4 d-flex justify-content-between">
+                <a href="{% url 'fretes_para_aprovacao' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar à Lista
+                </a>
+                <a href="{% url 'frete_detalhe' frete.id %}" class="btn btn-outline-primary">
+                    <i class="fas fa-eye"></i> Ver Detalhes Completos
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card-header h4, .card-header h5 {
+    margin: 0;
+}
+
+.badge {
+    font-size: 0.8em;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.1rem;
+}
+</style>
+
+<script>
+// Validação do formulário
+document.getElementById('approvalForm').addEventListener('submit', function(e) {
+    const action = e.submitter.value;
+    
+    if (action === 'aprovar') {
+        const centroCusto = document.getElementById('centro_custo').value.trim();
+        if (!centroCusto) {
+            e.preventDefault();
+            alert('Centro de custo é obrigatório para aprovação!');
+            document.getElementById('centro_custo').focus();
+            return false;
+        }
+    } else if (action === 'rejeitar') {
+        const justificativa = document.getElementById('justificativa_rejeicao').value.trim();
+        if (!justificativa) {
+            e.preventDefault();
+            alert('Justificativa é obrigatória para rejeição!');
+            document.getElementById('justificativa_rejeicao').focus();
+            return false;
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -7,7 +7,7 @@
 <div class="container-md mt-8">
     <div class="card animate-fade-in">
         <div class="card-header">
-            <h2>Selecionar Destino</h2>
+            <h2 class="text-center">Selecionar Destino</h2>
         </div>
         <div class="card-body">
             {% if erro %}
@@ -18,27 +18,42 @@
                 <div class="alert alert-success">{{ mensagem }}</div>
             {% endif %}
 
-            {% if tipo_veiculo %}
-                <div class="alert alert-info">
-                    <h5><i class="fas fa-truck"></i> Tipo de Veículo Selecionado</h5>
-                    <p class="mb-0">
-                        {% if tipo_veiculo == 'carreta' %}🚛 Carreta
-                        {% elif tipo_veiculo == 'truck' %}🚚 Truck
-                        {% elif tipo_veiculo == 'vuc' %}🚐 VUC
-                        {% elif tipo_veiculo == 'toco' %}🚛 Toco
-                        {% elif tipo_veiculo == '3_4' %}🚛 3/4
-                        {% elif tipo_veiculo == 'van' %}🚐 Van
-                        {% else %}{{ tipo_veiculo|title }}{% endif %}
-                    </p>
+            <!-- Informações da Solicitação -->
+            <div class="request-summary">
+                <div class="summary-header">
+                    <h3 class="text-center" style="color: white;">Resumo da Solicitação</h3>
                 </div>
-            {% endif %}
-            
-            {% if observacoes_origem %}
-                <div class="alert alert-info">
-                    <h5><i class="fas fa-info-circle"></i> Observações da Coleta</h5>
-                    <p class="mb-0">{{ observacoes_origem }}</p>
+                <div class="summary-content">
+                    {% if tipo_veiculo %}
+                        <div class="summary-item">
+                            <div class="summary-label">Tipo de Veículo</div>
+                            <div class="summary-value">
+                                {% if tipo_veiculo == 'carreta' %}Carreta
+                                {% elif tipo_veiculo == 'truck' %}Truck
+                                {% elif tipo_veiculo == 'vuc' %}VUC
+                                {% elif tipo_veiculo == 'toco' %}Toco
+                                {% elif tipo_veiculo == '3_4' %}3/4
+                                {% elif tipo_veiculo == 'van' %}Van
+                                {% else %}{{ tipo_veiculo|title }}{% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if observacoes_origem %}
+                        <div class="summary-item">
+                            <div class="summary-label">Observações da Coleta</div>
+                            <div class="summary-value">{{ observacoes_origem }}</div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if precisa_ajudante %}
+                        <div class="summary-item">
+                            <div class="summary-label">Ajudante</div>
+                            <div class="summary-value">👥 {{ quantidade_ajudantes }} ajudante(s) necessário(s)</div>
+                        </div>
+                    {% endif %}
                 </div>
-            {% endif %}
+            </div>
 
             <form method="post" enctype="multipart/form-data" class="space-y-4">
                 {% csrf_token %}
@@ -46,6 +61,8 @@
                 <input type="hidden" name="horario_coleta" value="{{ horario_coleta }}">
                 <input type="hidden" name="tipo_veiculo" value="{{ tipo_veiculo }}">
                 <input type="hidden" name="observacoes_origem" value="{{ observacoes_origem }}">
+                <input type="hidden" name="precisa_ajudante" value="{% if precisa_ajudante %}on{% endif %}">
+                <input type="hidden" name="quantidade_ajudantes" value="{{ quantidade_ajudantes }}">
                 
                 <div class="form-group">
                     <label for="id_destino" class="form-label">Destino(s)</label>
@@ -59,8 +76,8 @@
                 
                 <div id="destinos-info"></div>
                 
-                <button type="submit" class="btn btn-primary btn-block btn-lg">
-                    📋 Ir para Confirmação
+                <button type="submit" class="btn btn-primary btn-block btn-lg modern-btn">
+                    Continuar para Confirmação
                 </button>
             </form>
         </div>
@@ -78,12 +95,13 @@ function atualizarCamposDestinos() {
         const nome = option.text;
         
         const div = document.createElement('div');
-        div.className = 'card mt-4';
+        div.className = 'destination-card mt-4';
         div.innerHTML = `
-            <div class="card-header">
+            <div class="destination-header">
                 <h4>${nome}</h4>
+                <div class="destination-badge">Destino</div>
             </div>
-            <div class="card-body">
+            <div class="destination-body">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="form-group">
                         <label class="form-label">Endereço</label>
@@ -191,6 +209,205 @@ function validateFile(input) {
 
 .mt-6 {
     margin-top: 1.5rem;
+}
+
+/* Request Summary Styles */
+.request-summary {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.summary-header {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-bottom: none;
+}
+
+.summary-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.summary-content {
+    padding: 1.5rem;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.summary-item:last-child {
+    border-bottom: none;
+}
+
+.summary-label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.summary-value {
+    color: #1f2937;
+    font-weight: 500;
+    text-align: right;
+    flex: 1;
+    margin-left: 1rem;
+}
+
+/* Destination Card Styles */
+.destination-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.destination-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: #dc2626;
+}
+
+.destination-header {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.destination-header h4 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.destination-badge {
+    background: #dc2626;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.destination-body {
+    padding: 1.5rem;
+}
+
+/* Modern Button */
+.modern-btn {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+    background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+}
+
+.modern-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.modern-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.6s ease;
+}
+
+.modern-btn:hover::before {
+    left: 100%;
+}
+
+/* Form Improvements */
+.form-control {
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    outline: none;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Select Styling */
+select.form-control {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .summary-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .summary-value {
+        text-align: left;
+        margin-left: 0;
+    }
+    
+    .destination-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .modern-btn {
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+    }
 }
 </style>
 {% endblock %}

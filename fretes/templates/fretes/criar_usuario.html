@@ -1,0 +1,133 @@
+{% extends 'fretes/base.html' %}
+{% load static %}
+
+{% block title %}Criar Usuário - Portal de Fretes{% endblock %}
+
+{% block content %}
+<div class="container-md mt-8">
+    <div class="card animate-fade-in">
+        <div class="card-header">
+            <h2>👤 Criar Usuário</h2>
+            <p class="text-muted">Crie um novo usuário no sistema</p>
+        </div>
+        <div class="card-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">
+                                <strong>Username *</strong>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="username" 
+                                   name="username" 
+                                   placeholder="Digite o username"
+                                   required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="password" class="form-label">
+                                <strong>Senha *</strong>
+                            </label>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="password" 
+                                   name="password" 
+                                   placeholder="Digite a senha"
+                                   required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="first_name" class="form-label">
+                                <strong>Nome</strong>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="first_name" 
+                                   name="first_name" 
+                                   placeholder="Digite o nome">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="last_name" class="form-label">
+                                <strong>Sobrenome</strong>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="last_name" 
+                                   name="last_name" 
+                                   placeholder="Digite o sobrenome">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">
+                                <strong>Email</strong>
+                            </label>
+                            <input type="email" 
+                                   class="form-control" 
+                                   id="email" 
+                                   name="email" 
+                                   placeholder="Digite o email">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="tipo_usuario" class="form-label">
+                                <strong>Tipo de Usuário *</strong>
+                            </label>
+                            <select class="form-control" 
+                                    id="tipo_usuario" 
+                                    name="tipo_usuario" 
+                                    required>
+                                <option value="solicitante">Solicitante</option>
+                                <option value="gerente">Gerente</option>
+                                <option value="transportadora">Transportadora</option>
+                                <option value="master">Master</option>
+                            </select>
+                            <div class="form-text">
+                                <strong>Solicitante:</strong> Pode solicitar e visualizar fretes<br>
+                                <strong>Gerente:</strong> Pode aprovar fretes e cotações<br>
+                                <strong>Transportadora:</strong> Pode cotar fretes<br>
+                                <strong>Master:</strong> Acesso total ao sistema
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Criar Usuário
+                    </button>
+                    <a href="{% url 'gerenciar_usuarios' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

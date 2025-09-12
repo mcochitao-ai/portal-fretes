@@ -165,9 +165,12 @@ p { margin-bottom: 1rem; }
 
 .navbar-container {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  padding: 1rem 0;
+  padding: 1rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 60px;
 }
 
 .navbar-brand {
@@ -231,9 +234,16 @@ p { margin-bottom: 1rem; }
 .navbar-nav {
   display: flex;
   list-style: none;
-  gap: 2rem;
+  gap: 0.5rem;
   align-items: center;
+  margin: 0;
+  padding: 0;
+  justify-content: center;
+  flex-wrap: nowrap;
 }
+
+
+
 
 .nav-link {
   color: var(--text-secondary);
@@ -254,12 +264,116 @@ p { margin-bottom: 1rem; }
   background: var(--bg-tertiary);
 }
 
-/* Renner Navbar Links */
+/* Modern Navigation Buttons */
+.modern-nav-btn {
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0.6rem 0.8rem;
+  white-space: nowrap;
+  text-align: center;
+  border-radius: 8px;
+  background: #dc2626;
+  border: 2px solid #dc2626;
+  text-decoration: none;
+  overflow: hidden;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  z-index: 1;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Force white text on all elements - Maximum specificity */
+.modern-nav-btn,
+.modern-nav-btn *,
+.modern-nav-btn span,
+.modern-nav-btn div,
+.modern-nav-btn p,
+.modern-nav-btn a,
+a.modern-nav-btn,
+a.modern-nav-btn *,
+a.modern-nav-btn span,
+a.modern-nav-btn div,
+a.modern-nav-btn p {
+  color: #ffffff !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+}
+
+.modern-nav-btn:hover {
+  color: #ffffff !important;
+  background: #b91c1c !important;
+  border-color: #b91c1c !important;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+}
+
+.modern-nav-btn:hover,
+.modern-nav-btn:hover *,
+.modern-nav-btn:hover span,
+.modern-nav-btn:hover div,
+.modern-nav-btn:hover p,
+.modern-nav-btn:hover a,
+a.modern-nav-btn:hover,
+a.modern-nav-btn:hover *,
+a.modern-nav-btn:hover span,
+a.modern-nav-btn:hover div,
+a.modern-nav-btn:hover p {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+.modern-nav-btn:active {
+  transform: translateY(0) scale(0.98);
+  transition: all 0.1s ease;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.5);
+}
+
+.modern-nav-btn.active {
+  color: #ffffff !important;
+  background: #b91c1c !important;
+  border-color: #b91c1c !important;
+  box-shadow: 0 6px 20px rgba(185, 28, 28, 0.4);
+  transform: translateY(-2px);
+  position: relative;
+  border-bottom: 4px solid #ffffff;
+}
+
+.modern-nav-btn.active,
+.modern-nav-btn.active *,
+.modern-nav-btn.active span,
+.modern-nav-btn.active div,
+.modern-nav-btn.active p,
+.modern-nav-btn.active a,
+a.modern-nav-btn.active,
+a.modern-nav-btn.active *,
+a.modern-nav-btn.active span,
+a.modern-nav-btn.active div,
+a.modern-nav-btn.active p {
+  color: #ffffff !important;
+  font-weight: 600 !important;
+}
+
+/* Legacy nav-link styles for compatibility */
 .navbar-renner .nav-link {
   color: #000000 !important;
   font-weight: 500;
   transition: all 0.3s ease;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  white-space: nowrap;
+  text-align: center;
 }
 
 .navbar-renner .nav-link:hover {
@@ -277,12 +391,29 @@ p { margin-bottom: 1rem; }
   color: #000000 !important;
   border-radius: 6px;
   padding: 0.5rem 1rem;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
 }
 
 .navbar-renner .logout-link:hover {
   background: #000000 !important;
   color: white !important;
   transform: translateY(-1px);
+}
+
+/* User greeting alignment */
+.user-greeting {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0.5rem 1rem;
+  color: #000000 !important;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 /* Buttons */
@@ -552,26 +683,45 @@ p { margin-bottom: 1rem; }
   letter-spacing: 0.05em;
 }
 
-/* Status Badge Colors */
+/* Status Badge Colors - Melhoradas para melhor distinção */
 .badge-pending {
-  background: #fef3c7;
-  color: #d97706;
-  border: 1px solid #fed7aa;
-  font-weight: 600;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #ffffff;
+  border: 1px solid #d97706;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
 }
 
 .badge-sent {
-  background: #dbeafe;
-  color: #2563eb;
-  border: 1px solid #93c5fd;
-  font-weight: 600;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #ffffff;
+  border: 1px solid #1d4ed8;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.badge-received {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: #ffffff;
+  border: 1px solid #6d28d9;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(139, 92, 246, 0.3);
 }
 
 .badge-completed {
-  background: #dcfce7;
-  color: #16a34a;
-  border: 1px solid #86efac;
-  font-weight: 600;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: 1px solid #047857;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+.badge-approved {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  color: #ffffff;
+  border: 1px solid #0e7490;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(6, 182, 212, 0.3);
 }
 
 /* Responsive */
@@ -579,20 +729,67 @@ p { margin-bottom: 1rem; }
   .container { padding: 0 0.5rem; }
   .header h1 { font-size: 2rem; }
   .header .subtitle { font-size: 1rem; }
-  .navbar-nav { gap: 1rem; }
+  .navbar-nav { 
+    gap: 0.75rem; 
+    justify-content: center;
+    flex-wrap: wrap;
+  }
   .grid-cols-2, .grid-cols-3, .grid-cols-4 { grid-template-columns: 1fr; }
   .btn { width: 100%; }
   
-  /* Renner Navbar Responsive */
-  .brand-text-nav { font-size: 1rem; }
-  .renner-icon { 
-    width: 35px; 
-    height: 35px; 
-    font-size: 1.3rem; 
+  /* Navbar responsive */
+  .navbar-container {
+    padding: 0.75rem 1rem;
   }
+  
+  .navbar-nav {
+    gap: 0.4rem;
+  }
+  
+  .modern-nav-btn {
+    padding: 0.5rem 0.6rem;
+    font-size: 0.8rem;
+    min-height: 36px;
+    border-radius: 6px;
+  }
+  
   .navbar-renner .nav-link { 
     padding: 0.4rem 0.8rem; 
-    font-size: 0.9rem; 
+    font-size: 0.9rem;
+    min-height: 36px;
+  }
+  
+  /* Cotacoes Grid responsive */
+  .cotacoes-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .cotacao-card {
+    padding: 1rem;
+  }
+  
+  .cotacao-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .info-label {
+    min-width: auto;
+    font-size: 0.75rem;
+  }
+  
+  .info-value {
+    text-align: left;
+    margin-left: 0;
+    font-size: 0.875rem;
   }
 }
 
@@ -602,18 +799,18 @@ p { margin-bottom: 1rem; }
   .card-body { padding: 1rem; }
   .btn { padding: 0.5rem 1rem; }
   
-  /* Renner Navbar Mobile */
-  .brand-text-nav { font-size: 0.9rem; }
-  .renner-icon { 
-    width: 30px; 
-    height: 30px; 
-    font-size: 1.1rem; 
+  /* Navbar mobile */
+  .navbar-container {
+    padding: 0.75rem 0.5rem;
   }
+  
+  
   .navbar-renner .nav-link { 
     padding: 0.3rem 0.6rem; 
-    font-size: 0.8rem; 
+    font-size: 0.8rem;
+    min-height: 32px;
   }
-  .navbar-nav { gap: 0.5rem; }
+  .navbar-nav { gap: 1.5rem; }
 }
 
 /* Animations */
@@ -676,6 +873,364 @@ p { margin-bottom: 1rem; }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
+
+/* Tables */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+  background: var(--bg-primary);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.table th,
+.table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.table th {
+  background: var(--bg-dark);
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+}
+
+.table tbody tr:hover {
+  background: var(--bg-tertiary);
+  transition: background-color 0.2s ease;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.table-responsive::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Badge Colors */
+.badge-info {
+  background: #dbeafe;
+  color: #2563eb;
+  border: 1px solid #93c5fd;
+  font-weight: 600;
+}
+
+.badge-secondary {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  font-weight: 600;
+}
+
+.badge-success {
+  background: #dcfce7;
+  color: #16a34a;
+  border: 1px solid #86efac;
+  font-weight: 600;
+}
+
+.badge-warning {
+  background: #fef3c7;
+  color: #d97706;
+  border: 1px solid #fed7aa;
+  font-weight: 600;
+}
+
+.badge-danger {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  border: 1px solid #b91c1c;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+.badge-rejected {
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+  color: #ffffff;
+  border: 1px solid #dc2626;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(248, 113, 113, 0.3);
+}
+
+/* Cotacoes Grid Layout */
+.cotacoes-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+}
+
+.cotacao-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s ease;
+}
+
+.cotacao-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+}
+
+.cotacao-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.cotacao-id {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.cotacao-info {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+}
+
+.info-label {
+  font-weight: 600;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  min-width: 100px;
+}
+
+.info-value {
+  color: var(--text-primary);
+  font-weight: 500;
+  text-align: right;
+  flex: 1;
+  margin-left: 1rem;
+}
+
+.info-value.text-success {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+/* Footer Styles */
+.site-footer {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: white;
+  margin-top: 4rem;
+  padding: 3rem 0 2rem;
+  position: relative;
+  overflow: hidden;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+}
+
+.site-footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="footerGrain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.05"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.05"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.05"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.05"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23footerGrain)"/></svg>');
+  opacity: 0.3;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.footer-brand {
+  flex: 1;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.footer-icon {
+  width: 40px;
+  height: 40px;
+  background: #dc2626;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 600;
+  font-style: italic;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+.footer-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.01em;
+}
+
+.footer-description {
+  font-size: 0.9rem;
+  color: white;
+  margin: 0;
+  opacity: 0.8;
+}
+
+.footer-info {
+  text-align: right;
+  flex: 1;
+}
+
+.footer-copyright {
+  font-size: 0.9rem;
+  color: white;
+  margin: 0 0 0.5rem 0;
+  opacity: 0.8;
+}
+
+.footer-developer {
+  font-size: 0.85rem;
+  color: white;
+  margin: 0;
+  opacity: 0.9;
+}
+
+.footer-developer strong {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* Footer Responsive */
+@media (max-width: 768px) {
+  .site-footer {
+    padding: 2rem 0 1.5rem;
+  }
+  
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
+  
+  .footer-info {
+    text-align: center;
+  }
+  
+  .footer-logo {
+    justify-content: center;
+  }
+  
+  .footer-icon {
+    width: 35px;
+    height: 35px;
+    font-size: 1.25rem;
+  }
+  
+  .footer-text {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-footer {
+    padding: 1.5rem 0 1rem;
+  }
+  
+  .footer-content {
+    gap: 1rem;
+  }
+  
+  .footer-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+  
+  .footer-text {
+    font-size: 1rem;
+  }
+  
+  .footer-description {
+    font-size: 0.8rem;
+    color: white;
+  }
+  
+  .footer-copyright {
+    font-size: 0.8rem;
+    color: white;
+  }
+  
+  .footer-developer {
+    font-size: 0.75rem;
+    color: white;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  .navbar-container { 
+    padding: 0.5rem 0.75rem;
+  }
+  .navbar-nav { 
+    gap: 0.3rem;
+  }
+  .modern-nav-btn {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.75rem;
+    min-height: 32px;
+    border-radius: 4px;
+  }
+  .user-greeting {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+  }
+}
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     {% block extra_head %}{% endblock %}
@@ -684,17 +1239,29 @@ p { margin-bottom: 1rem; }
     <!-- Navigation -->
     <nav class="navbar navbar-renner">
         <div class="container navbar-container">
-            <a class="navbar-brand" href="/">
-                <div class="brand-logo-nav" style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div class="renner-icon" style="width: 40px; height: 40px; background: #dc2626; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: 600; font-style: italic; box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3); flex-shrink: 0;">r</div>
-                    <span class="brand-text-nav" style="font-size: 1.25rem; font-weight: 700; color: #1f2937; letter-spacing: -0.01em; line-height: 1;">Portal de Fretes Renner</span>
-                </div>
-            </a>
             <ul class="navbar-nav">
-                <li><a class="nav-link" href="/" style="color: #000000 !important;">Início</a></li>
-                <li><a class="nav-link" href="/selecionar-origem/" style="color: #000000 !important;">Solicitar Frete</a></li>
-                <li><a class="nav-link" href="/meus-fretes/" style="color: #000000 !important;">Meus Fretes</a></li>
-                <li><a class="nav-link" href="/dashboard/" style="color: #000000 !important;">Dashboard</a></li>
+                {% if user.is_authenticated and user.userprofile.is_transportadora and not user.userprofile.is_master %}
+                    <!-- Menu para Transportadora - Fretes para Cotação e Histórico -->
+                    <li><a class="nav-link modern-nav-btn" href="/">Início</a></li>
+                    <li><a class="nav-link modern-nav-btn" href="/fretes-para-cotacao/">Fretes para Cotação</a></li>
+                    <li><a class="nav-link modern-nav-btn" href="/cotacoes-historico-transportadora/">Histórico</a></li>
+                {% elif user.is_authenticated and user.userprofile.is_gerente and not user.userprofile.is_master %}
+                    <!-- Menu para Gerente - Apenas Aprovar Cotações -->
+                    <li><a class="nav-link modern-nav-btn" href="/">Início</a></li>
+                    <li><a class="nav-link modern-nav-btn" href="/cotacoes-recebidas/">Aprovar Cotações</a></li>
+                    <li><a class="nav-link modern-nav-btn" href="/fretes-aprovados-gerente/">Minhas Decisões</a></li>
+                {% else %}
+                    <!-- Menu para outros usuários -->
+                    <li><a class="nav-link modern-nav-btn" href="/">Início</a></li>
+                    <li><a class="nav-link modern-nav-btn" href="/selecionar-origem/">Solicitar Frete</a></li>
+                    <li><a class="nav-link modern-nav-btn" href="/meus-fretes/">Meus Fretes</a></li>
+                    {% if user.is_authenticated and user.userprofile.is_master %}
+                            <li><a class="nav-link modern-nav-btn" href="/fretes-para-aprovacao/">Direcionar Fretes</a></li>
+                            <li><a class="nav-link modern-nav-btn" href="/cotacoes-recebidas/">Aprovar Cotações</a></li>
+                            <li><a class="nav-link modern-nav-btn" href="/fretes-para-cotacao/">Fretes para Cotação</a></li>
+                            <li><a class="nav-link modern-nav-btn" href="/gerenciar-usuarios/">Gerenciar Usuários</a></li>
+                    {% endif %}
+                {% endif %}
                 {% if user.is_authenticated %}
                     <li><span class="user-greeting">Olá, {{ user.username }}!</span></li>
                     <li>
@@ -704,7 +1271,7 @@ p { margin-bottom: 1rem; }
                         </form>
                     </li>
                 {% else %}
-                    <li><a class="nav-link" href="/login/" style="color: #000000 !important;">Entrar</a></li>
+                    <li><a class="nav-link modern-nav-btn" href="/login/">Entrar</a></li>
                 {% endif %}
             </ul>
         </div>
@@ -716,13 +1283,143 @@ p { margin-bottom: 1rem; }
     </main>
 
     <!-- Footer -->
-    <footer style="background: var(--bg-dark); color: white; padding: 2rem 0; margin-top: 4rem; text-align: center;">
+    <footer class="site-footer">
         <div class="container">
-            <p>&copy; {% now "Y" %} Portal de Fretes Renner. Todos os direitos reservados.</p>
-            <p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.8;">Desenvolvido por Murilo Augusto Cochito</p>
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <span class="footer-icon">r</span>
+                        <span class="footer-text">Portal de Fretes Renner</span>
+                    </div>
+                    <p class="footer-description">Sistema de gestão de fretes do Grupo Renner</p>
+                </div>
+                <div class="footer-info">
+                    <p class="footer-copyright">&copy; {% now "Y" %} Portal de Fretes Renner. Todos os direitos reservados.</p>
+                    <p class="footer-developer">Desenvolvido por <strong>Murilo Augusto Cochito</strong></p>
+                </div>
+            </div>
         </div>
     </footer>
 
     {% block extra_js %}{% endblock %}
+    
+    <script>
+    // Modern Navigation Button Interactions
+    document.addEventListener('DOMContentLoaded', function() {
+        const modernNavBtns = document.querySelectorAll('.modern-nav-btn');
+        const currentPath = window.location.pathname;
+        
+        // Set active state based on current page
+        modernNavBtns.forEach(btn => {
+            const btnPath = btn.getAttribute('href');
+            
+            // Check if current path matches button path
+            let isActive = false;
+            
+            if (currentPath === btnPath) {
+                isActive = true;
+            } else if (currentPath === '/' && btnPath === '/') {
+                isActive = true;
+            } else if (btnPath !== '/' && currentPath.startsWith(btnPath)) {
+                // For paths like /meus-fretes/123, match /meus-fretes/
+                isActive = true;
+            } else if (btnPath === '/selecionar-origem/' && currentPath.includes('selecionar')) {
+                // Special case for origin selection flow
+                isActive = true;
+            } else if (btnPath === '/fretes-para-cotacao/' && currentPath.includes('cotar-frete')) {
+                // Special case for quotation flow
+                isActive = true;
+            }
+            
+            if (isActive) {
+                btn.classList.add('active');
+            }
+            
+            // Add ripple effect on click
+            btn.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = x + 'px';
+                ripple.style.top = y + 'px';
+                ripple.classList.add('ripple');
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+            
+            // Add active state management
+            btn.addEventListener('mousedown', function() {
+                this.style.transform = 'translateY(0) scale(0.98)';
+            });
+            
+            btn.addEventListener('mouseup', function() {
+                this.style.transform = 'translateY(-2px) scale(1)';
+            });
+            
+            btn.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    });
+    </script>
+
+    <style>
+    /* Ripple effect for modern nav buttons */
+    .modern-nav-btn {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(0);
+        animation: ripple-animation 0.6s linear;
+        pointer-events: none;
+    }
+    
+    @keyframes ripple-animation {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+    
+    /* Override any conflicting styles for navigation buttons */
+    .navbar-renner .modern-nav-btn,
+    .navbar-renner .modern-nav-btn *,
+    .navbar-renner a.modern-nav-btn,
+    .navbar-renner a.modern-nav-btn * {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        text-decoration: none !important;
+    }
+    
+    
+    .navbar-renner .modern-nav-btn:hover,
+    .navbar-renner .modern-nav-btn:hover *,
+    .navbar-renner a.modern-nav-btn:hover,
+    .navbar-renner a.modern-nav-btn:hover * {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }
+    
+    .navbar-renner .modern-nav-btn.active,
+    .navbar-renner .modern-nav-btn.active *,
+    .navbar-renner a.modern-nav-btn.active,
+    .navbar-renner a.modern-nav-btn.active * {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }
+    </style>
 </body>
 </html>

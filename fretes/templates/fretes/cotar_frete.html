@@ -1,0 +1,294 @@
+{% extends 'fretes/base.html' %}
+{% load frete_filters %}
+{% load static %}
+
+{% block title %}Cotar Frete #{{ frete.id }} - Portal de Fretes{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2 class="text-center">💰 Cotar Frete #{{ frete.id }}</h2>
+            <p class="text-muted text-center">
+                {% if user.userprofile.is_usuario_master %}
+                    Cotação para: {{ cotacao.transportadora.nome }} - Visão Master
+                {% else %}
+                    Preencha os valores para gerar sua cotação
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <!-- Informações do Frete -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">📋 Informações do Frete</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Origem -->
+                    <div class="mb-4">
+                        <h5 class="text-primary">📍 Origem</h5>
+                        <div class="row">
+                            <div class="col-sm-3"><strong>Loja:</strong></div>
+                            <div class="col-sm-9">{{ frete.origem.nome_loja }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3"><strong>Endereço:</strong></div>
+                            <div class="col-sm-9">{{ frete.origem.endereco_completo }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3"><strong>Solicitante:</strong></div>
+                            <div class="col-sm-9">{{ frete.usuario.username }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Coleta -->
+                    <div class="mb-4">
+                        <h5 class="text-primary">⏰ Coleta</h5>
+                        <div class="row">
+                            <div class="col-sm-3"><strong>Horário:</strong></div>
+                            <div class="col-sm-9">{{ frete.horario_coleta|format_horario_coleta }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3"><strong>Veículo:</strong></div>
+                            <div class="col-sm-9">
+                                {% if frete.tipo_veiculo %}
+                                    {{ frete.get_tipo_veiculo_display }}
+                                {% else %}
+                                    Não especificado
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if frete.precisa_ajudante %}
+                            <div class="row">
+                                <div class="col-sm-3"><strong>Ajudante:</strong></div>
+                                <div class="col-sm-9">Sim - {{ frete.quantidade_ajudantes }} pessoa(s)</div>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Destinos -->
+                    <div class="mb-4">
+                        <h5 class="text-primary">🎯 Destinos ({{ frete.destinos.count }})</h5>
+                        {% for destino in frete.destinos.all %}
+                            <div class="card mb-2">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge bg-success me-2">{{ forloop.counter }}</span>
+                                        <strong>Destino {{ forloop.counter }}</strong>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-3"><strong>Endereço:</strong></div>
+                                        <div class="col-sm-9">{{ destino.endereco_completo }}</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-3"><strong>Volume:</strong></div>
+                                        <div class="col-sm-9">{{ destino.volume }}</div>
+                                    </div>
+                                    {% if destino.data_entrega %}
+                                        <div class="row">
+                                            <div class="col-sm-3"><strong>Entrega:</strong></div>
+                                            <div class="col-sm-9">{{ destino.data_entrega|format_data_entrega }}</div>
+                                        </div>
+                                    {% endif %}
+                                    {% if destino.observacao %}
+                                        <div class="row">
+                                            <div class="col-sm-3"><strong>Obs:</strong></div>
+                                            <div class="col-sm-9">{{ destino.observacao }}</div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulário de Cotação -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">💰 Valores da Cotação</h3>
+                    <p class="text-muted mb-0">Preencha os valores para gerar sua cotação</p>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="cotacaoForm">
+                        {% csrf_token %}
+                        
+                        <!-- Campos de Valores -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-truck me-1"></i>
+                                Valor do Frete <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" class="form-control" id="valor_frete" name="valor_frete" 
+                                       step="0.01" min="0" required placeholder="0,00">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-road me-1"></i>
+                                Valor do Pedágio
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" class="form-control" id="valor_pedagio" name="valor_pedagio" 
+                                       step="0.01" min="0" placeholder="0,00">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-users me-1"></i>
+                                Valor do Ajudante
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" class="form-control" id="valor_ajudante" name="valor_ajudante" 
+                                       step="0.01" min="0" placeholder="0,00">
+                            </div>
+                        </div>
+                        
+                        <!-- Total -->
+                        <div class="mb-3">
+                            <div class="alert alert-primary">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong>Valor Total:</strong>
+                                    <span class="h4 mb-0" id="valor_total_display">R$ 0,00</span>
+                                    <input type="hidden" id="valor_total" name="valor_total">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Observações -->
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-sticky-note me-1"></i>
+                                Observações da Cotação
+                            </label>
+                            <textarea class="form-control" id="observacoes_cotacao" name="observacoes_cotacao" 
+                                      rows="4" placeholder="Adicione observações sobre a cotação, condições especiais, prazos, etc..."></textarea>
+                        </div>
+                        
+                        <!-- Ações -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" name="acao" value="cotar" class="btn btn-success me-md-2">
+                                <i class="fas fa-check me-1"></i>
+                                Enviar Cotação
+                            </button>
+                            <button type="button" class="btn btn-danger me-md-2" onclick="toggleRejeicao()">
+                                <i class="fas fa-times me-1"></i>
+                                Rejeitar Frete
+                            </button>
+                            <a href="{% url 'fretes_para_cotacao' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Voltar
+                            </a>
+                        </div>
+                    </form>
+                    
+                    <!-- Rejeição -->
+                    <div id="motivoRejeicao" class="mt-4" style="display: none;">
+                        <div class="card border-danger">
+                            <div class="card-header bg-danger text-white">
+                                <h5 class="mb-0">Motivo da Rejeição</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="post" id="formRejeicao">
+                                    {% csrf_token %}
+                                    <p class="text-muted">Explique o motivo da rejeição do frete</p>
+                                    <div class="mb-3">
+                                        <textarea class="form-control" id="motivo_rejeicao_transportadora" 
+                                                  name="motivo_rejeicao_transportadora" rows="4" 
+                                                  placeholder="Descreva o motivo da rejeição..." required></textarea>
+                                    </div>
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <button type="submit" name="acao" value="rejeitar" class="btn btn-danger">
+                                            Confirmar Rejeição
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" onclick="toggleRejeicao()">
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const valorFrete = document.getElementById('valor_frete');
+    const valorPedagio = document.getElementById('valor_pedagio');
+    const valorAjudante = document.getElementById('valor_ajudante');
+    const valorTotal = document.getElementById('valor_total');
+    const valorTotalDisplay = document.getElementById('valor_total_display');
+    const resumoFrete = document.getElementById('resumo_frete');
+    const resumoPedagio = document.getElementById('resumo_pedagio');
+    const resumoAjudante = document.getElementById('resumo_ajudante');
+    const resumoTotal = document.getElementById('resumo_total');
+    
+    function formatarMoeda(valor) {
+        return valor.toFixed(2).replace('.', ',');
+    }
+    
+    function calcularTotal() {
+        const frete = parseFloat(valorFrete.value) || 0;
+        const pedagio = parseFloat(valorPedagio.value) || 0;
+        const ajudante = parseFloat(valorAjudante.value) || 0;
+        const total = frete + pedagio + ajudante;
+        
+        // Atualizar campos
+        valorTotal.value = total.toFixed(2);
+        valorTotalDisplay.textContent = 'R$ ' + formatarMoeda(total);
+        resumoFrete.textContent = 'R$ ' + formatarMoeda(frete);
+        resumoPedagio.textContent = 'R$ ' + formatarMoeda(pedagio);
+        resumoAjudante.textContent = 'R$ ' + formatarMoeda(ajudante);
+        resumoTotal.textContent = 'R$ ' + formatarMoeda(total);
+    }
+    
+    valorFrete.addEventListener('input', calcularTotal);
+    valorPedagio.addEventListener('input', calcularTotal);
+    valorAjudante.addEventListener('input', calcularTotal);
+    
+    // Calcular inicial
+    calcularTotal();
+});
+
+// Função para mostrar/ocultar campo de motivo da rejeição
+function toggleRejeicao() {
+    const motivoDiv = document.getElementById('motivoRejeicao');
+    if (motivoDiv.style.display === 'none') {
+        motivoDiv.style.display = 'block';
+        motivoDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+        motivoDiv.style.display = 'none';
+        // Limpar o campo quando ocultar
+        document.getElementById('motivo_rejeicao_transportadora').value = '';
+    }
+}
+</script>
+
+{% endblock %}
+

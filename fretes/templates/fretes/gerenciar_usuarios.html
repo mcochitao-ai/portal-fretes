@@ -1,0 +1,244 @@
+{% extends 'fretes/base.html' %}
+{% load static %}
+
+{% block title %}Gerenciar Usuários - Portal de Fretes{% endblock %}
+
+{% block content %}
+<style>
+.user-management-table {
+    width: 100%;
+    max-width: 100%;
+    table-layout: fixed;
+    font-size: 0.9rem;
+}
+
+.user-management-table th,
+.user-management-table td {
+    padding: 8px 4px;
+    text-align: center;
+    vertical-align: middle;
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-management-table th:nth-child(1),
+.user-management-table td:nth-child(1) {
+    width: 5%; /* ID */
+    min-width: 50px;
+}
+
+.user-management-table th:nth-child(2),
+.user-management-table td:nth-child(2) {
+    width: 15%; /* Username */
+    text-align: left;
+    min-width: 100px;
+}
+
+.user-management-table th:nth-child(3),
+.user-management-table td:nth-child(3) {
+    width: 12%; /* Nome */
+    text-align: left;
+    min-width: 80px;
+}
+
+.user-management-table th:nth-child(4),
+.user-management-table td:nth-child(4) {
+    width: 20%; /* Email */
+    text-align: left;
+    min-width: 120px;
+}
+
+.user-management-table th:nth-child(5),
+.user-management-table td:nth-child(5) {
+    width: 12%; /* Tipo */
+    min-width: 100px;
+}
+
+.user-management-table th:nth-child(6),
+.user-management-table td:nth-child(6) {
+    width: 8%; /* Status */
+    min-width: 70px;
+}
+
+.user-management-table th:nth-child(7),
+.user-management-table td:nth-child(7) {
+    width: 12%; /* Data */
+    min-width: 100px;
+}
+
+.user-management-table th:nth-child(8),
+.user-management-table td:nth-child(8) {
+    width: 16%; /* Ações */
+    min-width: 120px;
+}
+
+.badge {
+    font-size: 0.7rem;
+    padding: 0.3em 0.5em;
+    white-space: nowrap;
+}
+
+.btn-group .btn {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.4rem;
+    white-space: nowrap;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 1200px) {
+    .user-management-table {
+        font-size: 0.85rem;
+    }
+    
+    .user-management-table th,
+    .user-management-table td {
+        padding: 6px 3px;
+    }
+    
+    .btn-group .btn {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.3rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .user-management-table {
+        font-size: 0.8rem;
+    }
+    
+    .user-management-table th,
+    .user-management-table td {
+        padding: 4px 2px;
+    }
+    
+    .btn-group .btn {
+        font-size: 0.65rem;
+        padding: 0.1rem 0.2rem;
+    }
+    
+    .badge {
+        font-size: 0.65rem;
+        padding: 0.2em 0.4em;
+    }
+}
+</style>
+
+<div class="container-fluid mt-8 px-3">
+    <div class="card animate-fade-in" style="overflow: hidden;">
+        <div class="card-header">
+            <h2 class="text-center">👥 Gerenciar Usuários</h2>
+            <p class="text-muted text-center">Gerencie todos os usuários do sistema</p>
+        </div>
+        <div class="card-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4>Lista de Usuários</h4>
+                <a href="{% url 'criar_usuario' %}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Criar Usuário
+                </a>
+            </div>
+
+            {% if usuarios %}
+                <div class="table-responsive">
+                    <table class="table table-hover user-management-table">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Tipo</th>
+                                <th>Status</th>
+                                <th>Data de Criação</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for usuario in usuarios %}
+                            <tr>
+                                <td><strong>#{{ usuario.id }}</strong></td>
+                                <td>{{ usuario.username }}</td>
+                                <td>
+                                    {% if usuario.first_name or usuario.last_name %}
+                                        {{ usuario.first_name }} {{ usuario.last_name }}
+                                    {% else %}
+                                        <span class="text-muted">Não informado</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if usuario.email %}
+                                        {{ usuario.email }}
+                                    {% else %}
+                                        <span class="text-muted">Não informado</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if usuario.userprofile.tipo_usuario == 'master' %}
+                                        <span class="badge bg-danger">MASTER</span>
+                                    {% elif usuario.userprofile.tipo_usuario == 'gerente' %}
+                                        <span class="badge bg-warning text-dark">GERENTE</span>
+                                    {% elif usuario.userprofile.tipo_usuario == 'solicitante' %}
+                                        <span class="badge bg-primary">SOLICITANTE</span>
+                                    {% elif usuario.userprofile.tipo_usuario == 'transportadora' %}
+                                        <span class="badge bg-info text-dark">TRANSPORTADORA</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">NORMAL</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if usuario.is_active %}
+                                        <span class="badge bg-success">ATIVO</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">INATIVO</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ usuario.date_joined|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'editar_usuario' usuario.id %}" class="btn btn-primary btn-sm" title="Editar usuário">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% if usuario != user %}
+                                            <a href="{% url 'excluir_usuario' usuario.id %}" 
+                                               class="btn btn-danger btn-sm"
+                                               onclick="return confirm('Tem certeza que deseja excluir o usuário {{ usuario.username }}?')"
+                                               title="Excluir usuário">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-users fa-4x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted">Nenhum usuário encontrado</h4>
+                    <p class="text-muted">Crie o primeiro usuário do sistema.</p>
+                    <a href="{% url 'criar_usuario' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Criar Usuário
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
