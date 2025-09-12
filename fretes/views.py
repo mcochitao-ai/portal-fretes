@@ -68,67 +68,88 @@ def signup(request):
 
 @login_required(login_url='/login/')
 def home(request):
-    """Página inicial com lista de fretes e estatísticas"""
-    fretes = FreteRequest.objects.select_related(
-        'usuario', 'transportadora_selecionada'
-    ).all().order_by('-data_criacao')
+    """Página inicial com dashboard específico para cada tipo de usuário"""
     mensagem = request.GET.get('mensagem')
     
-    # Estatísticas para o resumo rápido
-    estatisticas = None
-    if request.user.is_authenticated:
-        try:
-            # Total de fretes do usuário
-            total_fretes = FreteRequest.objects.filter(usuario=request.user).count()
+    try:
+        user_profile = request.user.userprofile
+        
+        # Verificar tipo de usuário e renderizar template apropriado
+        if user_profile.is_transportadora():
+            return render(request, 'fretes/home_transportadora.html', {
+                'mensagem': mensagem,
+                'user_profile': user_profile
+            })
+        elif user_profile.is_gerente() or user_profile.is_usuario_master():
+            return render(request, 'fretes/home_gerente.html', {
+                'mensagem': mensagem,
+                'user_profile': user_profile
+            })
+        else:
+            # Usuário solicitante - usar template original com estatísticas
+            fretes = FreteRequest.objects.select_related(
+                'usuario', 'transportadora_selecionada'
+            ).all().order_by('-data_criacao')
             
-            # Fretes pendentes do usuário
-            fretes_pendentes = FreteRequest.objects.filter(
-                usuario=request.user, 
-                status='pendente'
-            ).count()
+            # Estatísticas para o resumo rápido
+            estatisticas = None
+            try:
+                # Total de fretes do usuário
+                total_fretes = FreteRequest.objects.filter(usuario=request.user).count()
+                
+                # Fretes pendentes do usuário
+                fretes_pendentes = FreteRequest.objects.filter(
+                    usuario=request.user, 
+                    status='pendente'
+                ).count()
+                
+                # Fretes finalizados do usuário
+                fretes_finalizados = FreteRequest.objects.filter(
+                    usuario=request.user, 
+                    status='finalizado'
+                ).count()
+                
+                # Fretes deste mês do usuário
+                hoje = timezone.now()
+                inicio_mes = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+                fretes_mes = FreteRequest.objects.filter(
+                    usuario=request.user,
+                    data_criacao__gte=inicio_mes
+                ).count()
+                
+                estatisticas = {
+                    'total_fretes': total_fretes,
+                    'fretes_pendentes': fretes_pendentes,
+                    'fretes_finalizados': fretes_finalizados,
+                    'fretes_mes': fretes_mes,
+                }
+                
+            except Exception as e:
+                print(f"ERRO ao calcular estatísticas: {e}")
+                estatisticas = {
+                    'total_fretes': 0,
+                    'fretes_pendentes': 0,
+                    'fretes_finalizados': 0,
+                    'fretes_mes': 0,
+                }
             
-            # Fretes finalizados do usuário
-            fretes_finalizados = FreteRequest.objects.filter(
-                usuario=request.user, 
-                status='finalizado'
-            ).count()
+            return render(request, 'fretes/home.html', {
+                'fretes': fretes, 
+                'mensagem': mensagem,
+                'estatisticas': estatisticas
+            })
             
-            # Fretes deste mês do usuário
-            hoje = timezone.now()
-            inicio_mes = hoje.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-            fretes_mes = FreteRequest.objects.filter(
-                usuario=request.user,
-                data_criacao__gte=inicio_mes
-            ).count()
-            
-            estatisticas = {
-                'total_fretes': total_fretes,
-                'fretes_pendentes': fretes_pendentes,
-                'fretes_finalizados': fretes_finalizados,
-                'fretes_mes': fretes_mes,
-            }
-            
-            # Debug: imprimir no console para verificar
-            print(f"DEBUG - Estatísticas para {request.user.username}:")
-            print(f"  Total: {total_fretes}")
-            print(f"  Pendentes: {fretes_pendentes}")
-            print(f"  Finalizados: {fretes_finalizados}")
-            print(f"  Este mês: {fretes_mes}")
-            
-        except Exception as e:
-            print(f"ERRO ao calcular estatísticas: {e}")
-            estatisticas = {
-                'total_fretes': 0,
-                'fretes_pendentes': 0,
-                'fretes_finalizados': 0,
-                'fretes_mes': 0,
-            }
-    
-    return render(request, 'fretes/home.html', {
-        'fretes': fretes, 
-        'mensagem': mensagem,
-        'estatisticas': estatisticas
-    })
+    except UserProfile.DoesNotExist:
+        # Se não tem perfil, usar template original
+        fretes = FreteRequest.objects.select_related(
+            'usuario', 'transportadora_selecionada'
+        ).all().order_by('-data_criacao')
+        
+        return render(request, 'fretes/home.html', {
+            'fretes': fretes, 
+            'mensagem': mensagem,
+            'estatisticas': None
+        })
 
 
 

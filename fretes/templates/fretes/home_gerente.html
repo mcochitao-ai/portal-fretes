@@ -1,0 +1,597 @@
+{% extends 'fretes/base.html' %}
+{% load static %}
+
+{% block title %}Portal de Fretes Renner - Gerência{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="header header-renner">
+    <div class="header-content">
+        <div class="header-main">
+            <h1>Portal de Fretes Renner</h1>
+            <div class="subtitle">Área de Gerência</div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="container mt-8">
+    {% if mensagem %}
+        <div class="success-message-container">
+            <div class="success-message animate-fade-in">
+                <div class="success-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" fill="#10b981" stroke="#059669" stroke-width="2"/>
+                        <path d="M9 12l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="success-content">
+                    <h3 class="success-title">Ação Realizada com Sucesso!</h3>
+                    <p class="success-text">{{ mensagem }}</p>
+                </div>
+                <button class="success-close" onclick="this.parentElement.parentElement.style.display='none'">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <div class="welcome-content">
+            <div class="welcome-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#dc2626"/>
+                </svg>
+            </div>
+            <div class="welcome-text">
+                <h2>Bem-vindo, {{ user.username }}!</h2>
+                <p>Aprove cotações das transportadoras e acompanhe o histórico de suas decisões.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h3 class="section-title">Ações Rápidas</h3>
+        <div class="actions-grid">
+            <a href="/cotacoes-recebidas/" class="action-card">
+                <div class="action-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="action-content">
+                    <h4>Cotações Recebidas</h4>
+                    <p>Aprove ou rejeite cotações das transportadoras</p>
+                </div>
+            </a>
+
+            <a href="/fretes-aprovados-gerente/" class="action-card">
+                <div class="action-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="action-content">
+                    <h4>Histórico de Decisões</h4>
+                    <p>Consulte o histórico de suas aprovações e rejeições</p>
+                </div>
+            </a>
+
+            <a href="/fretes-aprovados-gerente/excel/" class="action-card">
+                <div class="action-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="#dc2626"/>
+                        <polyline points="14,2 14,8 20,8" fill="#dc2626"/>
+                        <path d="M16 13H8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16 17H8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <polyline points="10,9 9,9 8,9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="action-content">
+                    <h4>Exportar Relatório</h4>
+                    <p>Gere relatório Excel com suas decisões</p>
+                </div>
+            </a>
+
+            {% if user_profile.is_usuario_master %}
+            <a href="/gerenciar-usuarios/" class="action-card">
+                <div class="action-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="8.5" cy="7" r="4" stroke="#dc2626" stroke-width="2"/>
+                        <path d="M20 8v6m3-3h-6" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="action-content">
+                    <h4>Gerenciar Usuários</h4>
+                    <p>Crie e gerencie usuários do sistema</p>
+                </div>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="recent-activity">
+        <h3 class="section-title">Atividade Recente</h3>
+        <div class="activity-card">
+            <div class="activity-content">
+                <p>💰 <strong>Cotações Recebidas:</strong> Analise e aprove cotações das transportadoras.</p>
+                <p>📊 <strong>Histórico de Decisões:</strong> Acompanhe todas as suas aprovações e rejeições.</p>
+                <p>📈 <strong>Relatórios:</strong> Exporte relatórios em Excel para análise e controle.</p>
+                {% if user_profile.is_usuario_master %}
+                <p>👥 <strong>Gerenciamento de Usuários:</strong> Crie e gerencie usuários do sistema.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Renner Brands Section -->
+    <div class="brands-minimal">
+        <div class="brands-header">
+            <h4 class="brands-title">Fazemos parte do Grupo Renner</h4>
+        </div>
+        <div class="brands-list">
+            <div class="brand-minimal renner-minimal">
+                <span class="brand-symbol-minimal">r</span>
+                <span class="brand-text-minimal">RENNER</span>
+            </div>
+            <div class="brand-minimal">CAMICADO</div>
+            <div class="brand-minimal">you<span class="uppercase">COM</span></div>
+            <div class="brand-minimal">realize</div>
+            <div class="brand-minimal">repassa</div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Header Renner Styles */
+.header-renner {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    padding: 3rem 0;
+    text-align: center;
+    box-shadow: 0 10px 25px rgba(220, 38, 38, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.header-renner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.2;
+}
+
+.header-content {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 120px;
+}
+
+.header-main {
+    text-align: center;
+    flex: 1;
+}
+
+.header-main h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 0.75rem;
+    color: white;
+    text-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    letter-spacing: -0.02em;
+}
+
+.header-main .subtitle {
+    font-size: 1.5rem;
+    opacity: 0.95;
+    font-weight: 500;
+    margin-bottom: 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Welcome Section */
+.welcome-section {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.welcome-content {
+    display: flex;
+    align-items: center;
+    padding: 2rem;
+    gap: 2rem;
+}
+
+.welcome-icon {
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.welcome-text h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+}
+
+.welcome-text p {
+    font-size: 1.1rem;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Quick Actions */
+.quick-actions {
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 1.5rem 0;
+    text-align: center;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.action-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.action-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(220, 38, 38, 0.15);
+    text-decoration: none;
+    color: inherit;
+}
+
+.action-icon {
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+    border-radius: 8px;
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-content h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 0.25rem 0;
+}
+
+.action-content p {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Recent Activity */
+.recent-activity {
+    margin-bottom: 2rem;
+}
+
+.activity-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    padding: 1.5rem;
+}
+
+.activity-content p {
+    font-size: 1rem;
+    color: #4b5563;
+    margin: 0 0 1rem 0;
+    line-height: 1.6;
+}
+
+.activity-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* Brands Minimal */
+.brands-minimal {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #f1f5f9;
+    margin-bottom: 2rem;
+}
+
+.brands-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    background: #fafbfc;
+}
+
+.brands-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+    text-align: center;
+}
+
+.brands-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+}
+
+.brand-minimal {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #4b5563;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+}
+
+.brand-minimal:hover {
+    background-color: #000000;
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.renner-minimal {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #dc2626;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+
+.renner-minimal:hover {
+    background: #b91c1c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+}
+
+.brand-symbol-minimal {
+    font-size: 1.1rem;
+    font-style: italic;
+}
+
+.brand-text-minimal {
+    font-size: 0.9rem;
+}
+
+/* Success Message Styles */
+.success-message-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+}
+
+.success-message {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    border: 2px solid #10b981;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15);
+    position: relative;
+    animation: successSlideIn 0.6s ease-out;
+    transition: all 0.3s ease;
+}
+
+.success-icon {
+    flex-shrink: 0;
+    animation: successIconBounce 0.8s ease-out 0.3s both;
+}
+
+.success-content {
+    flex: 1;
+}
+
+.success-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #065f46;
+    margin: 0 0 0.5rem 0;
+    animation: successTextSlide 0.6s ease-out 0.2s both;
+}
+
+.success-text {
+    font-size: 1rem;
+    color: #047857;
+    margin: 0;
+    line-height: 1.5;
+    animation: successTextSlide 0.6s ease-out 0.4s both;
+}
+
+.success-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.success-close:hover {
+    background: rgba(107, 114, 128, 0.1);
+    color: #374151;
+    transform: scale(1.1);
+}
+
+/* Animations */
+@keyframes successSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes successIconBounce {
+    0% {
+        opacity: 0;
+        transform: scale(0.3) rotate(-10deg);
+    }
+    50% {
+        transform: scale(1.1) rotate(5deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+@keyframes successTextSlide {
+    0% {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .header-renner {
+        padding: 2rem 0;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .header-main {
+        text-align: center;
+    }
+    
+    .header-main h1 {
+        font-size: 2.5rem;
+    }
+    
+    .header-main .subtitle {
+        font-size: 1.25rem;
+    }
+    
+    .welcome-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+    
+    .actions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .brands-list {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-main h1 {
+        font-size: 2rem;
+    }
+    
+    .header-main .subtitle {
+        font-size: 1rem;
+    }
+    
+    .welcome-text h2 {
+        font-size: 1.5rem;
+    }
+    
+    .action-card {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+</style>
+
+<script>
+// Auto-dismiss success message after 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    const successMessage = document.querySelector('.success-message-container');
+    if (successMessage) {
+        setTimeout(() => {
+            successMessage.style.opacity = '0';
+            successMessage.style.transform = 'translateY(-20px) scale(0.95)';
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 300);
+        }, 5000);
+    }
+});
+</script>
+{% endblock %}
