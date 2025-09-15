@@ -1,0 +1,442 @@
+{% extends 'fretes/base.html' %}
+{% load static %}
+
+{% block title %}Gerenciar Transportadoras - Portal de Fretes{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="flex-grow-1 text-center">
+                    <h2 class="mb-1">🚛 Gerenciar Transportadoras</h2>
+                    <p class="text-muted mb-0">Crie, edite e gerencie as transportadoras do sistema</p>
+                </div>
+                <div class="ms-3">
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#criarTransportadoraModal" title="Criar nova transportadora">
+                        <i class="fas fa-plus"></i> Nova Transportadora
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            {% csrf_token %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if transportadoras %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th><i class="fas fa-hashtag me-1"></i>ID</th>
+                                <th><i class="fas fa-building me-1"></i>Nome</th>
+                                <th><i class="fas fa-envelope me-1"></i>Email</th>
+                                <th><i class="fas fa-chart-bar me-1"></i>Cotações</th>
+                                <th><i class="fas fa-calendar me-1"></i>Última Atividade</th>
+                                <th><i class="fas fa-cogs me-1"></i>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transportadora in transportadoras %}
+                                <tr>
+                                    <td>
+                                        <strong>#{{ transportadora.id }}</strong>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ transportadora.nome }}</strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <i class="fas fa-envelope text-muted me-1"></i>
+                                            {{ transportadora.email }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ transportadora.cotacaofrete_set.count }} cotação(ões)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {% if transportadora.cotacaofrete_set.exists %}
+                                                {{ transportadora.cotacaofrete_set.first.data_cotacao|date:"d/m/Y H:i" }}
+                                            {% else %}
+                                                Nunca
+                                            {% endif %}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                    onclick="editarTransportadora({{ transportadora.id }}, '{{ transportadora.nome }}', '{{ transportadora.email }}')"
+                                                    title="Editar transportadora">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                    onclick="excluirTransportadora({{ transportadora.id }}, '{{ transportadora.nome }}')"
+                                                    title="Excluir transportadora">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-truck fa-4x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted">🚛 Nenhuma transportadora cadastrada</h4>
+                    <p class="text-muted">Comece criando sua primeira transportadora para poder direcionar fretes.</p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#criarTransportadoraModal">
+                        <i class="fas fa-plus"></i> Criar Primeira Transportadora
+                    </button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Criar Transportadora -->
+<div class="modal fade" id="criarTransportadoraModal" tabindex="-1" aria-labelledby="criarTransportadoraModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="criarTransportadoraModalLabel">
+                    <i class="fas fa-truck me-2"></i>Nova Transportadora
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="criarTransportadoraForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="nomeTransportadora" class="form-label">
+                            <i class="fas fa-building me-1"></i>Nome da Transportadora
+                        </label>
+                        <input type="text" class="form-control" id="nomeTransportadora" name="nome" required 
+                               placeholder="Ex: Transportadora ABC">
+                    </div>
+                    <div class="mb-3">
+                        <label for="emailTransportadora" class="form-label">
+                            <i class="fas fa-envelope me-1"></i>Email
+                        </label>
+                        <input type="email" class="form-control" id="emailTransportadora" name="email" required 
+                               placeholder="Ex: contato@transportadora.com.br">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="salvarTransportadoraBtn">
+                        <i class="fas fa-save me-1"></i>Salvar Transportadora
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Editar Transportadora -->
+<div class="modal fade" id="editarTransportadoraModal" tabindex="-1" aria-labelledby="editarTransportadoraModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarTransportadoraModalLabel">
+                    <i class="fas fa-edit me-2"></i>Editar Transportadora
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editarTransportadoraForm">
+                {% csrf_token %}
+                <input type="hidden" id="editarTransportadoraId" name="id">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editarNomeTransportadora" class="form-label">
+                            <i class="fas fa-building me-1"></i>Nome da Transportadora
+                        </label>
+                        <input type="text" class="form-control" id="editarNomeTransportadora" name="nome" required 
+                               placeholder="Ex: Transportadora ABC">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editarEmailTransportadora" class="form-label">
+                            <i class="fas fa-envelope me-1"></i>Email
+                        </label>
+                        <input type="email" class="form-control" id="editarEmailTransportadora" name="email" required 
+                               placeholder="Ex: contato@transportadora.com.br">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="salvarEdicaoBtn">
+                        <i class="fas fa-save me-1"></i>Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.table th {
+    border-top: none;
+    font-weight: 600;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.btn-group .btn {
+    margin-right: 2px;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Table Responsive Styles */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.table th,
+.table td {
+    padding: 12px 8px;
+    vertical-align: middle;
+}
+
+.table th:nth-child(1),
+.table td:nth-child(1) {
+    width: 80px; /* ID */
+}
+
+.table th:nth-child(2),
+.table td:nth-child(2) {
+    width: 200px; /* Nome */
+}
+
+.table th:nth-child(3),
+.table td:nth-child(3) {
+    width: 250px; /* Email */
+}
+
+.table th:nth-child(4),
+.table td:nth-child(4) {
+    width: 120px; /* Cotações */
+}
+
+.table th:nth-child(5),
+.table td:nth-child(5) {
+    width: 150px; /* Última Atividade */
+}
+
+.table th:nth-child(6),
+.table td:nth-child(6) {
+    width: 120px; /* Ações */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .table {
+        font-size: 0.9rem;
+    }
+    
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Processar criação de transportadora
+    document.getElementById('criarTransportadoraForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const salvarBtn = document.getElementById('salvarTransportadoraBtn');
+        
+        // Mostrar loading
+        salvarBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Salvando...';
+        salvarBtn.disabled = true;
+        
+        // Fazer requisição AJAX
+        fetch('{% url "criar_transportadora_ajax" %}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('success', data.message);
+                
+                // Fechar modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('criarTransportadoraModal'));
+                modal.hide();
+                
+                // Limpar formulário
+                document.getElementById('criarTransportadoraForm').reset();
+                
+                // Recarregar página para mostrar nova transportadora
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showAlert('danger', 'Erro: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            showAlert('danger', 'Erro ao criar transportadora. Tente novamente.');
+        })
+        .finally(() => {
+            // Restaurar botão
+            salvarBtn.innerHTML = '<i class="fas fa-save me-1"></i>Salvar Transportadora';
+            salvarBtn.disabled = false;
+        });
+    });
+
+    // Processar edição de transportadora
+    document.getElementById('editarTransportadoraForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const salvarBtn = document.getElementById('salvarEdicaoBtn');
+        
+        // Mostrar loading
+        salvarBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Salvando...';
+        salvarBtn.disabled = true;
+        
+        // Fazer requisição AJAX
+        fetch('{% url "editar_transportadora_ajax" %}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('success', data.message);
+                
+                // Fechar modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editarTransportadoraModal'));
+                modal.hide();
+                
+                // Recarregar página para mostrar alterações
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showAlert('danger', 'Erro: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            showAlert('danger', 'Erro ao editar transportadora. Tente novamente.');
+        })
+        .finally(() => {
+            // Restaurar botão
+            salvarBtn.innerHTML = '<i class="fas fa-save me-1"></i>Salvar Alterações';
+            salvarBtn.disabled = false;
+        });
+    });
+});
+
+function editarTransportadora(id, nome, email) {
+    document.getElementById('editarTransportadoraId').value = id;
+    document.getElementById('editarNomeTransportadora').value = nome;
+    document.getElementById('editarEmailTransportadora').value = email;
+    
+    const modal = new bootstrap.Modal(document.getElementById('editarTransportadoraModal'));
+    modal.show();
+}
+
+function excluirTransportadora(id, nome) {
+    if (!confirm(`Tem certeza que deseja excluir a transportadora "${nome}"?\n\nEsta ação não pode ser desfeita.`)) {
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('id', id);
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    // Fazer requisição AJAX
+    fetch('{% url "excluir_transportadora_ajax" %}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message);
+            
+            // Recarregar página para remover transportadora
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showAlert('danger', 'Erro: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        showAlert('danger', 'Erro ao excluir transportadora. Tente novamente.');
+    });
+}
+
+function showAlert(type, message) {
+    // Remover alertas existentes
+    document.querySelectorAll('.alert').forEach(alert => alert.remove());
+    
+    // Criar novo alerta
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Inserir no topo do card-body
+    const cardBody = document.querySelector('.card-body');
+    cardBody.insertBefore(alertDiv, cardBody.firstChild);
+    
+    // Auto-remover após 5 segundos
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

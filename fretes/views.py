@@ -2122,6 +2122,26 @@ def cotacoes_historico_transportadora_excel(request):
 
 
 @login_required(login_url='/login/')
+def gerenciar_transportadoras(request):
+    """Página para gerenciar transportadoras - apenas para usuários master"""
+    try:
+        # Verificar se o usuário é master
+        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master:
+            messages.error(request, 'Apenas usuários master podem gerenciar transportadoras.')
+            return redirect('home')
+        
+        transportadoras = Transportadora.objects.all().order_by('nome')
+        
+        return render(request, 'fretes/gerenciar_transportadoras.html', {
+            'transportadoras': transportadoras
+        })
+        
+    except Exception as e:
+        messages.error(request, f'Erro ao carregar transportadoras: {str(e)}')
+        return redirect('home')
+
+
+@login_required(login_url='/login/')
 @require_POST
 def criar_transportadora_ajax(request):
     """View AJAX para criar nova transportadora - apenas para usuários master"""
@@ -2175,6 +2195,140 @@ def criar_transportadora_ajax(request):
             'message': f'Transportadora "{transportadora.nome}" criada com sucesso!',
             'transportadora_id': transportadora.id,
             'transportadora_nome': transportadora.nome
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Erro interno: {str(e)}'
+        })
+
+
+@login_required(login_url='/login/')
+@require_POST
+def editar_transportadora_ajax(request):
+    """View AJAX para editar transportadora - apenas para usuários master"""
+    try:
+        # Verificar se o usuário é master
+        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master:
+            return JsonResponse({
+                'success': False,
+                'error': 'Apenas usuários master podem editar transportadoras.'
+            })
+        
+        # Obter dados do formulário
+        transportadora_id = request.POST.get('id')
+        nome = request.POST.get('nome', '').strip()
+        email = request.POST.get('email', '').strip()
+        
+        # Validações
+        if not transportadora_id:
+            return JsonResponse({
+                'success': False,
+                'error': 'ID da transportadora é obrigatório.'
+            })
+        
+        if not nome:
+            return JsonResponse({
+                'success': False,
+                'error': 'Nome da transportadora é obrigatório.'
+            })
+        
+        if not email:
+            return JsonResponse({
+                'success': False,
+                'error': 'Email é obrigatório.'
+            })
+        
+        # Buscar transportadora
+        try:
+            transportadora = Transportadora.objects.get(id=transportadora_id)
+        except Transportadora.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Transportadora não encontrada.'
+            })
+        
+        # Verificar se já existe transportadora com esse nome (excluindo a atual)
+        if Transportadora.objects.filter(nome__iexact=nome).exclude(id=transportadora_id).exists():
+            return JsonResponse({
+                'success': False,
+                'error': f'Já existe uma transportadora com o nome "{nome}".'
+            })
+        
+        # Verificar se já existe transportadora com esse email (excluindo a atual)
+        if Transportadora.objects.filter(email__iexact=email).exclude(id=transportadora_id).exists():
+            return JsonResponse({
+                'success': False,
+                'error': f'Já existe uma transportadora com o email "{email}".'
+            })
+        
+        # Atualizar transportadora
+        transportadora.nome = nome
+        transportadora.email = email
+        transportadora.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Transportadora "{transportadora.nome}" atualizada com sucesso!',
+            'transportadora_id': transportadora.id,
+            'transportadora_nome': transportadora.nome
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Erro interno: {str(e)}'
+        })
+
+
+@login_required(login_url='/login/')
+@require_POST
+def excluir_transportadora_ajax(request):
+    """View AJAX para excluir transportadora - apenas para usuários master"""
+    try:
+        # Verificar se o usuário é master
+        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master:
+            return JsonResponse({
+                'success': False,
+                'error': 'Apenas usuários master podem excluir transportadoras.'
+            })
+        
+        # Obter ID da transportadora
+        transportadora_id = request.POST.get('id')
+        
+        if not transportadora_id:
+            return JsonResponse({
+                'success': False,
+                'error': 'ID da transportadora é obrigatório.'
+            })
+        
+        # Buscar transportadora
+        try:
+            transportadora = Transportadora.objects.get(id=transportadora_id)
+        except Transportadora.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Transportadora não encontrada.'
+            })
+        
+        # Verificar se há cotações associadas
+        from fretes.models import CotacaoFrete
+        cotacoes_count = CotacaoFrete.objects.filter(transportadora=transportadora).count()
+        
+        if cotacoes_count > 0:
+            return JsonResponse({
+                'success': False,
+                'error': f'Não é possível excluir a transportadora "{transportadora.nome}" pois ela possui {cotacoes_count} cotação(ões) associada(s).'
+            })
+        
+        # Excluir transportadora
+        nome_transportadora = transportadora.nome
+        transportadora.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Transportadora "{nome_transportadora}" excluída com sucesso!'
         })
         
     except Exception as e:
