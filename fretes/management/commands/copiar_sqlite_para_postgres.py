@@ -72,8 +72,8 @@ class Command(BaseCommand):
                         estado VARCHAR(10) DEFAULT '',
                         cep VARCHAR(15) DEFAULT '',
                         regional VARCHAR(100) DEFAULT '',
-                        latitude DECIMAL(9,6),
-                        longitude DECIMAL(9,6)
+                        latitude DOUBLE PRECISION,
+                        longitude DOUBLE PRECISION
                     );
                 """)
                 print("✅ Tabela fretes_loja criada")

@@ -60,9 +60,16 @@ class Command(BaseCommand):
                         if row[col_idx] is not None:
                             try:
                                 valor = float(row[col_idx])
-                                if latitude is None:
+                                # Verificar se é uma coordenada válida
+                                if -90 <= valor <= 90:  # Latitude válida
+                                    if latitude is None:
+                                        latitude = valor
+                                elif -180 <= valor <= 180:  # Longitude válida
+                                    if longitude is None:
+                                        longitude = valor
+                                elif latitude is None:  # Se não for coordenada válida, usar como latitude
                                     latitude = valor
-                                elif longitude is None:
+                                elif longitude is None:  # Se não for coordenada válida, usar como longitude
                                     longitude = valor
                                     break
                             except (ValueError, TypeError):
