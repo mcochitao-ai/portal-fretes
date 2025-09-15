@@ -1,51 +1,38 @@
 from django.core.management.base import BaseCommand
-from django.conf import settings
-from django.db import connection
-import os
+from django.contrib.auth.models import User
+from fretes.models import Loja, Transportadora, UserProfile
 
 class Command(BaseCommand):
-    help = 'Verifica qual banco de dados está sendo usado'
+    help = 'Verifica se o banco está configurado corretamente'
 
     def handle(self, *args, **options):
-        self.stdout.write('🔍 Verificando configuração do banco de dados...')
-        self.stdout.write('=' * 60)
-        
-        # Verificar configuração do Django
-        db_config = settings.DATABASES['default']
-        self.stdout.write(f'📊 Engine: {db_config["ENGINE"]}')
-        self.stdout.write(f'📊 Name: {db_config["NAME"]}')
-        self.stdout.write(f'📊 Host: {db_config.get("HOST", "N/A")}')
-        self.stdout.write(f'📊 Port: {db_config.get("PORT", "N/A")}')
-        self.stdout.write(f'📊 User: {db_config.get("USER", "N/A")}')
-        
-        # Verificar variáveis de ambiente
-        self.stdout.write('\n🌍 Variáveis de ambiente:')
-        database_url = os.environ.get('DATABASE_URL')
-        if database_url:
-            self.stdout.write(f'✅ DATABASE_URL: {database_url[:50]}...')
-        else:
-            self.stdout.write('❌ DATABASE_URL: Não definida')
-        
-        # Verificar conexão
-        self.stdout.write('\n🔌 Testando conexão:')
         try:
-            with connection.cursor() as cursor:
-                cursor.execute("SELECT 1")
-                result = cursor.fetchone()
-                if result:
-                    self.stdout.write('✅ Conexão com banco: OK')
-                else:
-                    self.stdout.write('❌ Conexão com banco: FALHOU')
+            # Verificar se existe usuário admin
+            admin_exists = User.objects.filter(username='admin').exists()
+            self.stdout.write(f'👤 Usuário admin: {"✅ Existe" if admin_exists else "❌ Não existe"}')
+            
+            # Verificar se existem lojas
+            lojas_count = Loja.objects.count()
+            self.stdout.write(f'🏪 Lojas: {"✅" if lojas_count > 0 else "❌"} {lojas_count} encontradas')
+            
+            # Verificar se existem transportadoras
+            transportadoras_count = Transportadora.objects.count()
+            self.stdout.write(f'🚛 Transportadoras: {"✅" if transportadoras_count > 0 else "❌"} {transportadoras_count} encontradas')
+            
+            # Verificar se admin tem profile
+            if admin_exists:
+                admin = User.objects.get(username='admin')
+                profile_exists = UserProfile.objects.filter(user=admin).exists()
+                self.stdout.write(f'👤 Profile do admin: {"✅ Existe" if profile_exists else "❌ Não existe"}')
+            
+            # Resumo
+            if admin_exists and lojas_count > 0 and transportadoras_count > 0:
+                self.stdout.write(self.style.SUCCESS('🎉 Banco configurado corretamente!'))
+                return True
+            else:
+                self.stdout.write(self.style.WARNING('⚠️ Banco precisa ser configurado'))
+                return False
+                
         except Exception as e:
-            self.stdout.write(f'❌ Erro na conexão: {e}')
-        
-        # Verificar se é SQLite ou PostgreSQL
-        if 'sqlite' in db_config['ENGINE']:
-            self.stdout.write('\n⚠️ ATENÇÃO: Usando SQLite (dados serão perdidos!)')
-            self.stdout.write('💡 Para usar PostgreSQL, verifique a variável DATABASE_URL')
-        elif 'postgresql' in db_config['ENGINE']:
-            self.stdout.write('\n✅ Usando PostgreSQL (dados persistentes)')
-        else:
-            self.stdout.write(f'\n❓ Banco desconhecido: {db_config["ENGINE"]}')
-        
-        self.stdout.write('=' * 60)
+            self.stdout.write(self.style.ERROR(f'❌ Erro ao verificar banco: {e}'))
+            return False
