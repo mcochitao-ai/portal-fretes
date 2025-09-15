@@ -1462,10 +1462,10 @@ def aprovar_cotacao(request, cotacao_id):
 @login_required(login_url='/login/')
 def gerenciar_usuarios(request):
     """Lista de usuários para gerenciamento pelo master"""
-    # Verificar se o usuário é master
+    # Verificar se o usuário é master (apenas master, não gerente)
     try:
         user_profile = request.user.userprofile
-        if not user_profile.is_usuario_master():
+        if not user_profile.is_master or user_profile.tipo_usuario != 'master':
             messages.error(request, 'Você não tem permissão para gerenciar usuários.')
             return redirect('home')
     except UserProfile.DoesNotExist:
@@ -1531,7 +1531,7 @@ def criar_usuario(request):
                 profile.is_master = True
                 profile.tipo_acesso = 'completo'
             elif tipo_usuario == 'gerente':
-                profile.is_master = True
+                profile.is_master = False
                 profile.tipo_acesso = 'completo'
             elif tipo_usuario == 'transportadora':
                 profile.tipo_acesso = 'completo'
@@ -1552,10 +1552,10 @@ def criar_usuario(request):
 @login_required(login_url='/login/')
 def editar_usuario(request, user_id):
     """Editar usuário existente"""
-    # Verificar se o usuário é master
+    # Verificar se o usuário é master (apenas master, não gerente)
     try:
         user_profile = request.user.userprofile
-        if not user_profile.is_usuario_master():
+        if not user_profile.is_master or user_profile.tipo_usuario != 'master':
             messages.error(request, 'Você não tem permissão para editar usuários.')
             return redirect('home')
     except UserProfile.DoesNotExist:
@@ -1612,7 +1612,7 @@ def editar_usuario(request, user_id):
                 profile.is_master = True
                 profile.tipo_acesso = 'completo'
             elif tipo_usuario == 'gerente':
-                profile.is_master = True
+                profile.is_master = False
                 profile.tipo_acesso = 'completo'
             elif tipo_usuario == 'transportadora':
                 profile.tipo_acesso = 'completo'
@@ -2130,8 +2130,8 @@ def cotacoes_historico_transportadora_excel(request):
 def gerenciar_transportadoras(request):
     """Página para gerenciar transportadoras - apenas para usuários master"""
     try:
-        # Verificar se o usuário é master
-        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master:
+        # Verificar se o usuário é master (apenas master, não gerente)
+        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master or request.user.userprofile.tipo_usuario != 'master':
             messages.error(request, 'Apenas usuários master podem gerenciar transportadoras.')
             return redirect('home')
         
@@ -2151,8 +2151,8 @@ def gerenciar_transportadoras(request):
 def criar_transportadora_ajax(request):
     """View AJAX para criar nova transportadora - apenas para usuários master"""
     try:
-        # Verificar se o usuário é master
-        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master:
+        # Verificar se o usuário é master (apenas master, não gerente)
+        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master or request.user.userprofile.tipo_usuario != 'master':
             return JsonResponse({
                 'success': False,
                 'error': 'Apenas usuários master podem criar transportadoras.'
@@ -2214,8 +2214,8 @@ def criar_transportadora_ajax(request):
 def editar_transportadora_ajax(request):
     """View AJAX para editar transportadora - apenas para usuários master"""
     try:
-        # Verificar se o usuário é master
-        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master:
+        # Verificar se o usuário é master (apenas master, não gerente)
+        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master or request.user.userprofile.tipo_usuario != 'master':
             return JsonResponse({
                 'success': False,
                 'error': 'Apenas usuários master podem editar transportadoras.'
@@ -2292,8 +2292,8 @@ def editar_transportadora_ajax(request):
 def excluir_transportadora_ajax(request):
     """View AJAX para excluir transportadora - apenas para usuários master"""
     try:
-        # Verificar se o usuário é master
-        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master:
+        # Verificar se o usuário é master (apenas master, não gerente)
+        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master or request.user.userprofile.tipo_usuario != 'master':
             return JsonResponse({
                 'success': False,
                 'error': 'Apenas usuários master podem excluir transportadoras.'
@@ -2347,8 +2347,8 @@ def excluir_transportadora_ajax(request):
 def gerenciar_usuarios_transportadora(request, transportadora_id):
     """Página para gerenciar usuários de uma transportadora específica"""
     try:
-        # Verificar se o usuário é master
-        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master:
+        # Verificar se o usuário é master (apenas master, não gerente)
+        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master or request.user.userprofile.tipo_usuario != 'master':
             messages.error(request, 'Apenas usuários master podem gerenciar usuários de transportadoras.')
             return redirect('home')
         
@@ -2389,8 +2389,8 @@ def gerenciar_usuarios_transportadora(request, transportadora_id):
 def associar_usuario_transportadora_ajax(request):
     """View AJAX para associar usuário à transportadora"""
     try:
-        # Verificar se o usuário é master
-        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master:
+        # Verificar se o usuário é master (apenas master, não gerente)
+        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master or request.user.userprofile.tipo_usuario != 'master':
             return JsonResponse({
                 'success': False,
                 'error': 'Apenas usuários master podem associar usuários.'
@@ -2449,8 +2449,8 @@ def associar_usuario_transportadora_ajax(request):
 def desassociar_usuario_transportadora_ajax(request):
     """View AJAX para desassociar usuário da transportadora"""
     try:
-        # Verificar se o usuário é master
-        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master:
+        # Verificar se o usuário é master (apenas master, não gerente)
+        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master or request.user.userprofile.tipo_usuario != 'master':
             return JsonResponse({
                 'success': False,
                 'error': 'Apenas usuários master podem desassociar usuários.'
