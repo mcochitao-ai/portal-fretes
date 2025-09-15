@@ -15,7 +15,12 @@ class Command(BaseCommand):
             call_command('migrate', verbosity=0, interactive=False)
             self.stdout.write('✅ Migrações executadas')
             
-            # 2. Verificar se precisa de setup
+            # 2. Configurar sessões
+            self.stdout.write('🔧 Configurando sessões...')
+            call_command('setup_sessions', verbosity=0)
+            self.stdout.write('✅ Sessões configuradas')
+            
+            # 3. Verificar se precisa de setup
             from django.contrib.auth.models import User
             from fretes.models import Loja, Transportadora
             
@@ -29,7 +34,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write('✅ Banco já configurado')
             
-            # 3. Coletar arquivos estáticos (se não foi feito no build)
+            # 4. Coletar arquivos estáticos (se não foi feito no build)
             if not os.path.exists('staticfiles'):
                 self.stdout.write('📁 Coletando arquivos estáticos...')
                 call_command('collectstatic', verbosity=0, interactive=False)

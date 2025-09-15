@@ -82,14 +82,22 @@ DATABASES = {
     )
 }
 
-# Sessões em cache para evitar problemas com django_session
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-SESSION_CACHE_ALIAS = 'default'
+# Sessões em banco de dados para persistência entre workers
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 86400  # 24 horas
+SESSION_COOKIE_SECURE = not DEBUG  # HTTPS em produção
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
 
-# Cache para sessões
+# Cache para performance (opcional)
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+        'TIMEOUT': 300,  # 5 minutos
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+        }
     }
 }
 
@@ -133,6 +141,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Redirecionamento após login
 LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = '/login/'
+LOGOUT_REDIRECT_URL = '/login/'
+
+# Configurações de autenticação
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# Configurações de segurança para cookies
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 # Email configuration
 if DEBUG:
