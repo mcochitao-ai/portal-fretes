@@ -72,13 +72,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'portal_fretes.wsgi.application'
 
 # Database
+# TEMPORÁRIO: Usar SQLite para garantir funcionamento
 DATABASES = {
-    'default': dj_database_url.config(
-        default=f'sqlite:///{BASE_DIR}/db.sqlite3',
-        conn_max_age=600,
-        conn_health_checks=True
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
+
+# Se DATABASE_URL estiver definida, usar PostgreSQL
+if os.environ.get('DATABASE_URL'):
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=f'sqlite:///{BASE_DIR}/db.sqlite3',
+            conn_max_age=600,
+            conn_health_checks=True
+        )
+    }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
