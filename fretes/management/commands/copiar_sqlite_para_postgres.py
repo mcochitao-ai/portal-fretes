@@ -136,16 +136,24 @@ class Command(BaseCommand):
                 """)
                 print("✅ Tabela fretes_destino criada")
                 
-                # 6. CRIAR TABELA FRETES_COTACAOFRETE (migração 0021)
+                # 6. CRIAR TABELA FRETES_COTACAOFRETE (migração 0021 + 0024)
                 cursor.execute("""
                     CREATE TABLE fretes_cotacaofrete (
                         id SERIAL PRIMARY KEY,
                         frete_id INTEGER NOT NULL REFERENCES fretes_freterequest(id) ON DELETE CASCADE,
                         transportadora_id INTEGER NOT NULL REFERENCES fretes_transportadora(id) ON DELETE CASCADE,
-                        valor DECIMAL(10,2) NOT NULL,
-                        observacoes TEXT DEFAULT '',
-                        data_cotacao TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-                        status VARCHAR(50) NOT NULL DEFAULT 'pendente'
+                        valor_frete DECIMAL(10,2),
+                        valor_pedagio DECIMAL(10,2),
+                        valor_ajudante DECIMAL(10,2),
+                        valor_total DECIMAL(10,2),
+                        status VARCHAR(30) DEFAULT 'pendente',
+                        data_cotacao TIMESTAMP WITH TIME ZONE,
+                        observacoes_cotacao TEXT,
+                        motivo_rejeicao_transportadora TEXT,
+                        aprovador_id INTEGER REFERENCES auth_user(id) ON DELETE SET NULL,
+                        data_aprovacao TIMESTAMP WITH TIME ZONE,
+                        observacoes_aprovacao TEXT,
+                        justificativa_rejeicao TEXT
                     );
                 """)
                 print("✅ Tabela fretes_cotacaofrete criada")
