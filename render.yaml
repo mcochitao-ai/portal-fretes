@@ -3,7 +3,7 @@ services:
     name: portal-fretes
     env: python
     plan: free
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py configurar_postgresql && python manage.py solucao_definitiva
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py forcar_migracoes_postgresql && python manage.py solucao_definitiva
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
     envVars:
       - key: PYTHON_VERSION
