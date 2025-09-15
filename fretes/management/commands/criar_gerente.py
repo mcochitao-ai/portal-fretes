@@ -48,3 +48,4 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(f'🔑 Login: {username} / {password}')
         )
+

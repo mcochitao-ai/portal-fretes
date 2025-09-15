@@ -30,3 +30,4 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS('🎯 Todos os usuários gerentes agora veem apenas "Aprovar Cotações"')
         )
+

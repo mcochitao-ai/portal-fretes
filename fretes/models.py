@@ -264,7 +264,8 @@ def create_user_profile(sender, instance, created, **kwargs):
 	if created:
 		UserProfile.objects.create(user=instance)
 
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-	if hasattr(instance, 'userprofile'):
-		instance.userprofile.save()
+# Signal removido - estava causando problemas na edição de usuários
+# @receiver(post_save, sender=User)
+# def save_user_profile(sender, instance, created, **kwargs):
+# 	if not created and hasattr(instance, 'userprofile'):
+# 		instance.userprofile.save()
