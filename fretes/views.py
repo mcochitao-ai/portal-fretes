@@ -2119,3 +2119,66 @@ def cotacoes_historico_transportadora_excel(request):
     response['Content-Disposition'] = 'attachment; filename=historico_cotacoes_transportadora.xlsx'
     wb.save(response)
     return response
+
+
+@login_required(login_url='/login/')
+@require_POST
+def criar_transportadora_ajax(request):
+    """View AJAX para criar nova transportadora - apenas para usuários master"""
+    try:
+        # Verificar se o usuário é master
+        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master:
+            return JsonResponse({
+                'success': False,
+                'error': 'Apenas usuários master podem criar transportadoras.'
+            })
+        
+        # Obter dados do formulário
+        nome = request.POST.get('nome', '').strip()
+        email = request.POST.get('email', '').strip()
+        
+        # Validações
+        if not nome:
+            return JsonResponse({
+                'success': False,
+                'error': 'Nome da transportadora é obrigatório.'
+            })
+        
+        if not email:
+            return JsonResponse({
+                'success': False,
+                'error': 'Email é obrigatório.'
+            })
+        
+        # Verificar se já existe transportadora com esse nome
+        if Transportadora.objects.filter(nome__iexact=nome).exists():
+            return JsonResponse({
+                'success': False,
+                'error': f'Já existe uma transportadora com o nome "{nome}".'
+            })
+        
+        # Verificar se já existe transportadora com esse email
+        if Transportadora.objects.filter(email__iexact=email).exists():
+            return JsonResponse({
+                'success': False,
+                'error': f'Já existe uma transportadora com o email "{email}".'
+            })
+        
+        # Criar transportadora
+        transportadora = Transportadora.objects.create(
+            nome=nome,
+            email=email
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Transportadora "{transportadora.nome}" criada com sucesso!',
+            'transportadora_id': transportadora.id,
+            'transportadora_nome': transportadora.nome
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Erro interno: {str(e)}'
+        })
