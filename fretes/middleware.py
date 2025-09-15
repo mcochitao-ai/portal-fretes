@@ -31,6 +31,11 @@ class DatabaseSetupMiddleware(MiddlewareMixin):
             print("🔧 [MIDDLEWARE] Verificando usuário admin...")
             call_command('criar_admin', verbosity=0)
             print("✅ [MIDDLEWARE] Usuário admin verificado!")
+            
+            # Importa lojas se não existirem
+            print("🔧 [MIDDLEWARE] Verificando lojas...")
+            call_command('importar_lojas_automatico', verbosity=0)
+            print("✅ [MIDDLEWARE] Lojas verificadas!")
                         
         except Exception as e:
             print(f"❌ [MIDDLEWARE] Erro ao configurar banco: {e}")
