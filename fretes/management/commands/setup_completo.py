@@ -186,31 +186,44 @@ class Command(BaseCommand):
             username='admin',
             defaults={
                 'email': 'admin@portal.com',
-                'password': 'pbkdf2_sha256$600000$dummy$dummy',
                 'is_staff': True,
                 'is_superuser': True,
                 'is_active': True
             }
         )
         
+        # Sempre atualizar senha e permissões
+        admin_user.set_password('admin123')
+        admin_user.is_staff = True
+        admin_user.is_superuser = True
+        admin_user.is_active = True
+        admin_user.save()
+        
         if created:
-            admin_user.set_password('admin123')
-            admin_user.save()
             self.stdout.write('✅ Usuário admin criado')
         else:
-            self.stdout.write('✅ Usuário admin já existia')
+            self.stdout.write('✅ Usuário admin atualizado')
         
-        # Criar profile
+        # Criar ou atualizar profile como MASTER
         profile, created = UserProfile.objects.get_or_create(
             user=admin_user,
             defaults={
-                'tipo_usuario': 'gerente',
-                'is_master': True
+                'tipo_usuario': 'master',
+                'is_master': True,
+                'tipo_acesso': 'completo'
             }
         )
         
+        # Sempre garantir que seja master
+        profile.tipo_usuario = 'master'
+        profile.is_master = True
+        profile.tipo_acesso = 'completo'
+        profile.save()
+        
         if created:
-            self.stdout.write('✅ Profile do admin criado')
+            self.stdout.write('✅ Profile do admin criado como MASTER')
+        else:
+            self.stdout.write('✅ Profile do admin atualizado para MASTER')
     
     def importar_lojas(self):
         """Importa lojas do Excel"""
