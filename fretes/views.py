@@ -66,7 +66,6 @@ def signup(request):
     return render(request, 'fretes/signup.html', {'form': form})
 
 
-@login_required(login_url='/login/')
 def verificar_e_criar_coluna_tipo_acesso():
     """Verifica se a coluna tipo_acesso existe e cria se necessário"""
     from django.db import connection
