@@ -127,10 +127,10 @@ class Command(BaseCommand):
                         cep VARCHAR(10) NOT NULL,
                         volume INTEGER DEFAULT 1,
                         frete_id INTEGER NOT NULL REFERENCES fretes_freterequest(id) ON DELETE CASCADE,
-                        loja_id INTEGER REFERENCES fretes_loja(id) ON DELETE CASCADE,
+                        loja VARCHAR(100) DEFAULT '',
                         numero VARCHAR(20) DEFAULT '',
                         observacao TEXT DEFAULT '',
-                        anexo VARCHAR(100) DEFAULT '',
+                        anexo_destino VARCHAR(100) DEFAULT '',
                         data_entrega TIMESTAMP WITH TIME ZONE
                     );
                 """)
