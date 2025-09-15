@@ -3,7 +3,7 @@ services:
     name: portal-fretes
     env: python
     plan: free
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate && python manage.py verificar_sistema && python manage.py mostrar_logs
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate && python manage.py garantir_cochit0 && python manage.py status_sistema
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
     envVars:
       - key: PYTHON_VERSION
