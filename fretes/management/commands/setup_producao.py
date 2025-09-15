@@ -18,7 +18,8 @@ class Command(BaseCommand):
                 first_name='Administrador',
                 last_name='Sistema',
                 is_staff=True,
-                is_superuser=True
+                is_superuser=True,
+                is_active=True
             )
             
             # Criar perfil master
@@ -35,7 +36,16 @@ class Command(BaseCommand):
             self.stdout.write('Username: admin')
             self.stdout.write('Password: admin123')
         else:
-            self.stdout.write('Usuário admin já existe.')
+            # Verificar se o usuário admin existente tem as permissões corretas
+            admin_user = User.objects.get(username='admin')
+            if not admin_user.is_staff or not admin_user.is_superuser:
+                admin_user.is_staff = True
+                admin_user.is_superuser = True
+                admin_user.is_active = True
+                admin_user.save()
+                self.stdout.write('Permissões do usuário admin atualizadas!')
+            else:
+                self.stdout.write('Usuário admin já existe com permissões corretas.')
         
         # Criar transportadoras básicas se não existirem
         transportadoras_data = [
