@@ -2365,9 +2365,10 @@ def gerenciar_usuarios_transportadora(request, transportadora_id):
             tipo_usuario='transportadora'
         ).select_related('user')
         
-        # Buscar usuários disponíveis para associar (que não são transportadoras)
+        # Buscar usuários disponíveis para associar
+        # Incluir usuários que são solicitantes, gerentes ou transportadoras sem transportadora associada
         usuarios_disponiveis = User.objects.filter(
-            userprofile__tipo_usuario__in=['solicitante', 'gerente']
+            userprofile__tipo_usuario__in=['solicitante', 'gerente', 'transportadora']
         ).exclude(
             userprofile__transportadora__isnull=False
         ).select_related('userprofile')
