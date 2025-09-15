@@ -416,6 +416,10 @@ def confirmar_frete(request):
                 with open(anexo_info['path'], 'rb') as temp_file:
                     frete.anexo_origem.save(anexo_info['name'], File(temp_file), save=True)
                 
+                print(f"DEBUG: Anexo origem salvo - Caminho: {frete.anexo_origem.path}")
+                print(f"DEBUG: Anexo origem URL: {frete.anexo_origem.url}")
+                print(f"DEBUG: Anexo origem existe: {os.path.exists(frete.anexo_origem.path)}")
+                
                 os.unlink(anexo_info['path'])
                 os.rmdir(os.path.dirname(anexo_info['path']))
                 del request.session['anexo_origem_temp']
@@ -431,6 +435,10 @@ def confirmar_frete(request):
                 if file_extension in allowed_extensions:
                     frete.anexo_nota_fiscal = anexo_nota_fiscal
                     frete.save()
+                    
+                    print(f"DEBUG: Anexo nota fiscal salvo - Caminho: {frete.anexo_nota_fiscal.path}")
+                    print(f"DEBUG: Anexo nota fiscal URL: {frete.anexo_nota_fiscal.url}")
+                    print(f"DEBUG: Anexo nota fiscal existe: {os.path.exists(frete.anexo_nota_fiscal.path)}")
         
         # Criar os destinos
         for loja_id in destino_ids:
