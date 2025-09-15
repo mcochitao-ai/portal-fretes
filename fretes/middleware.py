@@ -36,6 +36,11 @@ class DatabaseSetupMiddleware(MiddlewareMixin):
             print("🔧 [MIDDLEWARE] Verificando lojas...")
             call_command('corrigir_estrutura_lojas', verbosity=0)
             print("✅ [MIDDLEWARE] Lojas verificadas!")
+            
+            # Cadastra transportadoras se não existirem
+            print("🔧 [MIDDLEWARE] Verificando transportadoras...")
+            call_command('cadastrar_transportadoras', verbosity=0)
+            print("✅ [MIDDLEWARE] Transportadoras verificadas!")
                         
         except Exception as e:
             print(f"❌ [MIDDLEWARE] Erro ao configurar banco: {e}")
