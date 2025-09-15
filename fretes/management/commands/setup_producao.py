@@ -68,6 +68,18 @@ class Command(BaseCommand):
                 self.style.WARNING('Nenhuma loja encontrada. Execute o comando import_lojas.py para importar as lojas.')
             )
         
+        # Configurar usuário cochit0 como admin se existir
+        if User.objects.filter(username='cochit0').exists():
+            cochit0_user = User.objects.get(username='cochit0')
+            if not cochit0_user.is_staff or not cochit0_user.is_superuser:
+                cochit0_user.is_staff = True
+                cochit0_user.is_superuser = True
+                cochit0_user.is_active = True
+                cochit0_user.save()
+                self.stdout.write('✅ Usuário cochit0 configurado como admin!')
+            else:
+                self.stdout.write('✅ Usuário cochit0 já tem permissões de admin.')
+        
         self.stdout.write(
             self.style.SUCCESS('Configuração inicial concluída!')
         )
