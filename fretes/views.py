@@ -263,8 +263,7 @@ def home(request):
     """Página inicial com dashboard específico para cada tipo de usuário"""
     mensagem = request.GET.get('mensagem')
     
-    # Verificar e criar todas as tabelas se necessário
-    verificar_e_criar_todas_tabelas()
+    # As tabelas são criadas automaticamente pelo middleware
     
     # Verificar se o usuário está logado
     if not request.user.is_authenticated:
