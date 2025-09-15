@@ -80,6 +80,17 @@ DATABASES = {
     )
 }
 
+# Sessões em cache para evitar problemas com django_session
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+
+# Cache para sessões
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
