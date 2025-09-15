@@ -15,32 +15,34 @@ class DatabaseSetupMiddleware(MiddlewareMixin):
     def process_request(self, request):
         # Só executa uma vez por sessão para não sobrecarregar
         if not self.setup_done and os.environ.get('DATABASE_URL'):
+            # Verificar se já existe dados no banco antes de executar
+            if self.banco_ja_configurado():
+                self.setup_done = True
+                return
             self.setup_database()
             self.setup_done = True
     
+    def banco_ja_configurado(self):
+        """Verifica se o banco já foi configurado"""
+        try:
+            from django.contrib.auth.models import User
+            from fretes.models import Loja, Transportadora
+            
+            # Se já existe usuário admin e lojas, não precisa configurar novamente
+            return (User.objects.filter(username='admin').exists() and 
+                    Loja.objects.exists() and 
+                    Transportadora.objects.exists())
+        except:
+            return False
+    
     def setup_database(self):
-        """Executa o comando que copia a estrutura do SQLite para PostgreSQL"""
+        """Executa o setup completo do sistema"""
         from django.core.management import call_command
         
         try:
-            print("🔧 [MIDDLEWARE] Executando cópia da estrutura do SQLite...")
-            call_command('copiar_sqlite_para_postgres', verbosity=0)
-            print("✅ [MIDDLEWARE] Estrutura copiada com sucesso!")
-            
-            # Cria usuário admin se não existir
-            print("🔧 [MIDDLEWARE] Verificando usuário admin...")
-            call_command('criar_admin', verbosity=0)
-            print("✅ [MIDDLEWARE] Usuário admin verificado!")
-            
-            # Importa lojas se não existirem
-            print("🔧 [MIDDLEWARE] Verificando lojas...")
-            call_command('corrigir_estrutura_lojas', verbosity=0)
-            print("✅ [MIDDLEWARE] Lojas verificadas!")
-            
-            # Cadastra transportadoras se não existirem
-            print("🔧 [MIDDLEWARE] Verificando transportadoras...")
-            call_command('cadastrar_transportadoras', verbosity=0)
-            print("✅ [MIDDLEWARE] Transportadoras verificadas!")
+            print("🔧 [MIDDLEWARE] Executando setup completo...")
+            call_command('setup_completo', verbosity=0)
+            print("✅ [MIDDLEWARE] Setup completo executado com sucesso!")
                         
         except Exception as e:
             print(f"❌ [MIDDLEWARE] Erro ao configurar banco: {e}")
