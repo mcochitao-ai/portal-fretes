@@ -113,7 +113,12 @@ class Command(BaseCommand):
                                     numero_endereco = valor
                                 # Se contém números e hífen, pode ser CEP
                                 elif any(c.isdigit() for c in valor) and ('-' in valor or len(valor) >= 8):
-                                    cep = valor[:15]
+                                    # Verificar se é CEP (formato brasileiro) ou coordenada
+                                    if '-' in valor and len(valor.replace('-', '')) == 8:
+                                        cep = valor[:15]  # CEP válido
+                                    elif len(valor) == 8 and valor.isdigit():
+                                        # CEP sem hífen, adicionar hífen
+                                        cep = f"{valor[:5]}-{valor[5:]}"
                                 # Se é um estado conhecido, converter para sigla
                                 elif valor.upper() in estado_map:
                                     estado = estado_map[valor.upper()]
@@ -134,19 +139,25 @@ class Command(BaseCommand):
                             municipio = 'Blumenau'
                         # Adicionar mais mapeamentos conforme necessário
                     
-                    # Procurar coordenadas
+                    # Procurar coordenadas (latitude e longitude)
                     latitude = None
                     longitude = None
                     for col_idx in range(2, len(row)):
                         if row[col_idx] is not None:
                             try:
                                 valor = float(row[col_idx])
-                                if -90 <= valor <= 90:  # Latitude válida
+                                # Coordenadas do Brasil: latitude entre -33 e 5, longitude entre -74 e -34
+                                if -33 <= valor <= 5:  # Latitude do Brasil
                                     if latitude is None:
                                         latitude = valor
-                                elif -180 <= valor <= 180:  # Longitude válida
+                                elif -74 <= valor <= -34:  # Longitude do Brasil
                                     if longitude is None:
                                         longitude = valor
+                                # Coordenadas gerais (caso não seja Brasil)
+                                elif -90 <= valor <= 90 and latitude is None:  # Latitude geral
+                                    latitude = valor
+                                elif -180 <= valor <= 180 and longitude is None:  # Longitude geral
+                                    longitude = valor
                             except (ValueError, TypeError):
                                 continue
                     

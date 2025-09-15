@@ -360,7 +360,11 @@ def selecionar_origem(request):
     
     def loja_numero(loja):
         try:
-            return int(loja.nome)
+            # Extrair número do nome "Loja 18" -> 18
+            if loja.nome.startswith('Loja '):
+                return int(loja.nome.replace('Loja ', ''))
+            else:
+                return int(loja.nome)
         except (ValueError, TypeError):
             return 0
     
@@ -454,7 +458,11 @@ def selecionar_destino(request):
     
     def loja_numero(loja):
         try:
-            return int(loja.nome)
+            # Extrair número do nome "Loja 18" -> 18
+            if loja.nome.startswith('Loja '):
+                return int(loja.nome.replace('Loja ', ''))
+            else:
+                return int(loja.nome)
         except (ValueError, TypeError):
             return 0
     
@@ -829,7 +837,11 @@ def editar_frete(request, frete_id):
     
     def loja_numero(loja):
         try:
-            return int(loja.nome)
+            # Extrair número do nome "Loja 18" -> 18
+            if loja.nome.startswith('Loja '):
+                return int(loja.nome.replace('Loja ', ''))
+            else:
+                return int(loja.nome)
         except (ValueError, TypeError):
             return 0
     
