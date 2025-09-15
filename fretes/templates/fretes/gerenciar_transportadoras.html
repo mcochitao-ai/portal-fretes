@@ -427,8 +427,11 @@ function excluirTransportadora(id, nome) {
 }
 
 function gerenciarUsuarios(transportadoraId, transportadoraNome) {
+    console.log('Função gerenciarUsuarios chamada:', transportadoraId, transportadoraNome);
     // Redirecionar para página de gerenciamento de usuários
-    window.location.href = `/gerenciar-transportadoras/${transportadoraId}/usuarios/`;
+    const url = `/gerenciar-transportadoras/${transportadoraId}/usuarios/`;
+    console.log('Redirecionando para:', url);
+    window.location.href = url;
 }
 
 function showAlert(type, message) {
