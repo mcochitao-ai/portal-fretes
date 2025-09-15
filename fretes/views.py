@@ -8,6 +8,7 @@ from openpyxl.utils import get_column_letter
 from django import forms
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
 from django.db import models
 from django.contrib.auth.forms import UserCreationForm, PasswordResetForm, SetPasswordForm
 from django import forms
@@ -147,6 +148,10 @@ def home(request):
     
     # Verificar e criar colunas se necessário
     verificar_e_criar_coluna_tipo_acesso()
+    
+    # Verificar se o usuário está logado
+    if not request.user.is_authenticated:
+        return redirect('login')
     
     try:
         user_profile = request.user.userprofile
