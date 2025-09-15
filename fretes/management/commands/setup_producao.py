@@ -9,6 +9,16 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write('Configurando dados iniciais para produção...')
         
+        # Verificar se o banco está funcionando
+        try:
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
+                self.stdout.write('✅ Conexão com banco: OK')
+        except Exception as e:
+            self.stdout.write(f'❌ Erro na conexão com banco: {e}')
+            return
+        
         # Criar usuário master se não existir
         if not User.objects.filter(username='admin').exists():
             admin_user = User.objects.create_user(
