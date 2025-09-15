@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-#e7x=8hinxzo9(wk436ehc2u6qhn@lo*1^gu%bpr)i@a3vz')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = config('DEBUG', default=True, cast=bool)  # Temporariamente True para debug
 
 # Allow all hosts for Render deployment
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
