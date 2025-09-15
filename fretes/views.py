@@ -67,9 +67,87 @@ def signup(request):
 
 
 @login_required(login_url='/login/')
+def verificar_e_criar_coluna_tipo_acesso():
+    """Verifica se a coluna tipo_acesso existe e cria se necessário"""
+    from django.db import connection
+    import os
+    
+    # Só executa se estiver usando PostgreSQL
+    if not os.environ.get('DATABASE_URL'):
+        return
+    
+    try:
+        with connection.cursor() as cursor:
+            # Verificar se a coluna tipo_acesso existe
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.columns 
+                    WHERE table_name = 'fretes_userprofile' 
+                    AND column_name = 'tipo_acesso'
+                );
+            """)
+            column_exists = cursor.fetchone()[0]
+            
+            if not column_exists:
+                print("🔧 Criando coluna tipo_acesso...")
+                cursor.execute("""
+                    ALTER TABLE fretes_userprofile 
+                    ADD COLUMN tipo_acesso VARCHAR(20) DEFAULT 'limitado';
+                """)
+                print("✅ Coluna tipo_acesso criada!")
+                
+                # Criar outras colunas se não existirem
+                cursor.execute("""
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.columns 
+                        WHERE table_name = 'fretes_userprofile' 
+                        AND column_name = 'is_master'
+                    );
+                """)
+                if not cursor.fetchone()[0]:
+                    cursor.execute("""
+                        ALTER TABLE fretes_userprofile 
+                        ADD COLUMN is_master BOOLEAN DEFAULT FALSE;
+                    """)
+                    print("✅ Coluna is_master criada!")
+                
+                cursor.execute("""
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.columns 
+                        WHERE table_name = 'fretes_userprofile' 
+                        AND column_name = 'tipo_usuario'
+                    );
+                """)
+                if not cursor.fetchone()[0]:
+                    cursor.execute("""
+                        ALTER TABLE fretes_userprofile 
+                        ADD COLUMN tipo_usuario VARCHAR(20) DEFAULT 'solicitante';
+                    """)
+                    print("✅ Coluna tipo_usuario criada!")
+                
+                cursor.execute("""
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.columns 
+                        WHERE table_name = 'fretes_userprofile' 
+                        AND column_name = 'transportadora_id'
+                    );
+                """)
+                if not cursor.fetchone()[0]:
+                    cursor.execute("""
+                        ALTER TABLE fretes_userprofile 
+                        ADD COLUMN transportadora_id INTEGER;
+                    """)
+                    print("✅ Coluna transportadora_id criada!")
+                    
+    except Exception as e:
+        print(f"❌ Erro ao criar colunas: {e}")
+
 def home(request):
     """Página inicial com dashboard específico para cada tipo de usuário"""
     mensagem = request.GET.get('mensagem')
+    
+    # Verificar e criar colunas se necessário
+    verificar_e_criar_coluna_tipo_acesso()
     
     try:
         user_profile = request.user.userprofile
