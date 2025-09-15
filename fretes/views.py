@@ -717,6 +717,11 @@ def meus_fretes(request):
         if user_profile.is_usuario_master():
             # Master vê todos os fretes
             qs = FreteRequest.objects.all()
+        elif user_profile.is_transportadora() and user_profile.transportadora:
+            # Transportadora vê apenas fretes direcionados para ela
+            qs = FreteRequest.objects.filter(
+                cotacaofrete__transportadora=user_profile.transportadora
+            ).distinct()
         else:
             # Usuário normal vê apenas seus fretes
             qs = FreteRequest.objects.filter(usuario=request.user)
@@ -2329,6 +2334,156 @@ def excluir_transportadora_ajax(request):
         return JsonResponse({
             'success': True,
             'message': f'Transportadora "{nome_transportadora}" excluída com sucesso!'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Erro interno: {str(e)}'
+        })
+
+
+@login_required(login_url='/login/')
+def gerenciar_usuarios_transportadora(request, transportadora_id):
+    """Página para gerenciar usuários de uma transportadora específica"""
+    try:
+        # Verificar se o usuário é master
+        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master:
+            messages.error(request, 'Apenas usuários master podem gerenciar usuários de transportadoras.')
+            return redirect('home')
+        
+        # Buscar transportadora
+        try:
+            transportadora = Transportadora.objects.get(id=transportadora_id)
+        except Transportadora.DoesNotExist:
+            messages.error(request, 'Transportadora não encontrada.')
+            return redirect('gerenciar_transportadoras')
+        
+        # Buscar usuários associados à transportadora
+        usuarios_associados = UserProfile.objects.filter(
+            transportadora=transportadora,
+            tipo_usuario='transportadora'
+        ).select_related('user')
+        
+        # Buscar usuários disponíveis para associar (que não são transportadoras)
+        usuarios_disponiveis = User.objects.filter(
+            userprofile__tipo_usuario__in=['solicitante', 'gerente']
+        ).exclude(
+            userprofile__transportadora__isnull=False
+        ).select_related('userprofile')
+        
+        return render(request, 'fretes/gerenciar_usuarios_transportadora.html', {
+            'transportadora': transportadora,
+            'usuarios_associados': usuarios_associados,
+            'usuarios_disponiveis': usuarios_disponiveis
+        })
+        
+    except Exception as e:
+        messages.error(request, f'Erro ao carregar usuários: {str(e)}')
+        return redirect('gerenciar_transportadoras')
+
+
+@login_required(login_url='/login/')
+@require_POST
+def associar_usuario_transportadora_ajax(request):
+    """View AJAX para associar usuário à transportadora"""
+    try:
+        # Verificar se o usuário é master
+        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master:
+            return JsonResponse({
+                'success': False,
+                'error': 'Apenas usuários master podem associar usuários.'
+            })
+        
+        # Obter dados
+        user_id = request.POST.get('user_id')
+        transportadora_id = request.POST.get('transportadora_id')
+        
+        if not user_id or not transportadora_id:
+            return JsonResponse({
+                'success': False,
+                'error': 'Dados incompletos.'
+            })
+        
+        # Buscar usuário e transportadora
+        try:
+            user = User.objects.get(id=user_id)
+            transportadora = Transportadora.objects.get(id=transportadora_id)
+        except (User.DoesNotExist, Transportadora.DoesNotExist):
+            return JsonResponse({
+                'success': False,
+                'error': 'Usuário ou transportadora não encontrados.'
+            })
+        
+        # Atualizar perfil do usuário
+        profile, created = UserProfile.objects.get_or_create(
+            user=user,
+            defaults={
+                'tipo_usuario': 'transportadora',
+                'tipo_acesso': 'completo',
+                'transportadora': transportadora
+            }
+        )
+        
+        # Sempre atualizar para garantir que está correto
+        profile.tipo_usuario = 'transportadora'
+        profile.tipo_acesso = 'completo'
+        profile.transportadora = transportadora
+        profile.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Usuário {user.username} associado à transportadora {transportadora.nome} com sucesso!'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': f'Erro interno: {str(e)}'
+        })
+
+
+@login_required(login_url='/login/')
+@require_POST
+def desassociar_usuario_transportadora_ajax(request):
+    """View AJAX para desassociar usuário da transportadora"""
+    try:
+        # Verificar se o usuário é master
+        if not hasattr(request.user, 'userprofile') or not request.user.userprofile.is_master:
+            return JsonResponse({
+                'success': False,
+                'error': 'Apenas usuários master podem desassociar usuários.'
+            })
+        
+        # Obter dados
+        user_id = request.POST.get('user_id')
+        
+        if not user_id:
+            return JsonResponse({
+                'success': False,
+                'error': 'ID do usuário é obrigatório.'
+            })
+        
+        # Buscar usuário
+        try:
+            user = User.objects.get(id=user_id)
+            profile = user.userprofile
+        except User.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Usuário não encontrado.'
+            })
+        
+        # Desassociar da transportadora
+        transportadora_nome = profile.transportadora.nome if profile.transportadora else 'N/A'
+        profile.transportadora = None
+        profile.tipo_usuario = 'solicitante'
+        profile.tipo_acesso = 'limitado'
+        profile.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Usuário {user.username} desassociado da transportadora {transportadora_nome} com sucesso!'
         })
         
     except Exception as e:

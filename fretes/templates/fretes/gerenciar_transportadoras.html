@@ -38,6 +38,7 @@
                                 <th><i class="fas fa-hashtag me-1"></i>ID</th>
                                 <th><i class="fas fa-building me-1"></i>Nome</th>
                                 <th><i class="fas fa-envelope me-1"></i>Email</th>
+                                <th><i class="fas fa-users me-1"></i>Usuários</th>
                                 <th><i class="fas fa-chart-bar me-1"></i>Cotações</th>
                                 <th><i class="fas fa-calendar me-1"></i>Última Atividade</th>
                                 <th><i class="fas fa-cogs me-1"></i>Ações</th>
@@ -61,6 +62,11 @@
                                         </div>
                                     </td>
                                     <td>
+                                        <span class="badge bg-secondary">
+                                            {{ transportadora.userprofile_set.count }} usuário(s)
+                                        </span>
+                                    </td>
+                                    <td>
                                         <span class="badge bg-info">
                                             {{ transportadora.cotacaofrete_set.count }} cotação(ões)
                                         </span>
@@ -76,6 +82,11 @@
                                     </td>
                                     <td>
                                         <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-outline-info btn-sm" 
+                                                    onclick="gerenciarUsuarios({{ transportadora.id }}, '{{ transportadora.nome }}')"
+                                                    title="Gerenciar usuários da transportadora">
+                                                <i class="fas fa-users"></i>
+                                            </button>
                                             <button type="button" class="btn btn-outline-primary btn-sm" 
                                                     onclick="editarTransportadora({{ transportadora.id }}, '{{ transportadora.nome }}', '{{ transportadora.email }}')"
                                                     title="Editar transportadora">
@@ -413,6 +424,11 @@ function excluirTransportadora(id, nome) {
         console.error('Erro:', error);
         showAlert('danger', 'Erro ao excluir transportadora. Tente novamente.');
     });
+}
+
+function gerenciarUsuarios(transportadoraId, transportadoraNome) {
+    // Redirecionar para página de gerenciamento de usuários
+    window.location.href = `/gerenciar-transportadoras/${transportadoraId}/usuarios/`;
 }
 
 function showAlert(type, message) {
