@@ -26,8 +26,13 @@ class DatabaseSetupMiddleware(MiddlewareMixin):
             print("🔧 [MIDDLEWARE] Executando cópia da estrutura do SQLite...")
             call_command('copiar_sqlite_para_postgres', verbosity=0)
             print("✅ [MIDDLEWARE] Estrutura copiada com sucesso!")
+            
+            # Cria usuário admin se não existir
+            print("🔧 [MIDDLEWARE] Verificando usuário admin...")
+            call_command('criar_admin', verbosity=0)
+            print("✅ [MIDDLEWARE] Usuário admin verificado!")
                         
         except Exception as e:
-            print(f"❌ [MIDDLEWARE] Erro ao copiar estrutura: {e}")
+            print(f"❌ [MIDDLEWARE] Erro ao configurar banco: {e}")
             import traceback
             print(f"Detalhes: {traceback.format_exc()}")
