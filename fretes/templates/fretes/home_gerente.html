@@ -97,7 +97,7 @@
                 </div>
             </a>
 
-            {% if user_profile.is_usuario_master %}
+            {% if user_profile.is_master and user_profile.tipo_usuario == 'master' %}
             <a href="/gerenciar-usuarios/" class="action-card">
                 <div class="action-icon">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -123,7 +123,7 @@
                 <p>💰 <strong>Cotações Recebidas:</strong> Analise e aprove cotações das transportadoras.</p>
                 <p>📊 <strong>Histórico de Decisões:</strong> Acompanhe todas as suas aprovações e rejeições.</p>
                 <p>📈 <strong>Relatórios:</strong> Exporte relatórios em Excel para análise e controle.</p>
-                {% if user_profile.is_usuario_master %}
+                {% if user_profile.is_master and user_profile.tipo_usuario == 'master' %}
                 <p>👥 <strong>Gerenciamento de Usuários:</strong> Crie e gerencie usuários do sistema.</p>
                 {% endif %}
             </div>
