@@ -45,3 +45,20 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+
+# Django static files (collected)
+staticfiles/
+
+# Environment variables
+.env
+
+# Database
+*.sqlite3
+*.db
+
+# Logs
+*.log
+
+# Backup files
+*.bak
+*.backup
