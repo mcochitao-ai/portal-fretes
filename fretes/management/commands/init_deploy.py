@@ -49,7 +49,15 @@ class Command(BaseCommand):
             else:
                 self.stdout.write('✅ Banco já configurado')
             
-            # 4. Coletar arquivos estáticos (se não foi feito no build)
+            # 4. Associar usuários às transportadoras
+            self.stdout.write('🔗 Associando usuários às transportadoras...')
+            try:
+                call_command('associar_transportadoras', verbosity=0)
+                self.stdout.write('✅ Usuários associados às transportadoras')
+            except Exception as e:
+                self.stdout.write(f'⚠️ Erro ao associar usuários: {e}')
+            
+            # 5. Coletar arquivos estáticos (se não foi feito no build)
             if not os.path.exists('staticfiles'):
                 self.stdout.write('📁 Coletando arquivos estáticos...')
                 call_command('collectstatic', verbosity=0, interactive=False)
