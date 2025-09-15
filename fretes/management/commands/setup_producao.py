@@ -84,3 +84,4 @@ class Command(BaseCommand):
             self.style.SUCCESS('Configuração inicial concluída!')
         )
         self.stdout.write('✅ PostgreSQL configurado e funcionando!')
+        self.stdout.write('🔄 Servidor reiniciado - testando persistência de dados...')
