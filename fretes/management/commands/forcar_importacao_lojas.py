@@ -42,7 +42,7 @@ class Command(BaseCommand):
                     continue
                     
                 try:
-                    # Extrair dados da linha
+                    # Extrair dados da linha - ajustar índices conforme estrutura real do Excel
                     nome = str(row[0]) if row[0] else ''
                     endereco = str(row[1]) if row[1] else ''
                     numero = str(row[2]) if row[2] else ''
@@ -50,8 +50,23 @@ class Command(BaseCommand):
                     estado = str(row[4]) if row[4] else ''
                     cep = str(row[5]) if row[5] else ''
                     regional = str(row[6]) if row[6] else ''
-                    latitude = float(row[7]) if row[7] and row[7] != 'None' else None
-                    longitude = float(row[8]) if row[8] and row[8] != 'None' else None
+                    
+                    # Tentar encontrar latitude e longitude - podem estar em colunas diferentes
+                    latitude = None
+                    longitude = None
+                    
+                    # Procurar por valores numéricos nas colunas restantes
+                    for col_idx in range(7, len(row)):
+                        if row[col_idx] is not None:
+                            try:
+                                valor = float(row[col_idx])
+                                if latitude is None:
+                                    latitude = valor
+                                elif longitude is None:
+                                    longitude = valor
+                                    break
+                            except (ValueError, TypeError):
+                                continue
                     
                     if not nome:  # Pular se não tiver nome
                         continue
