@@ -43,13 +43,13 @@ class Command(BaseCommand):
                     
                 try:
                     # Extrair dados da linha - ajustar índices conforme estrutura real do Excel
-                    nome = str(row[0]) if row[0] else ''
+                    nome = str(row[0])[:255] if row[0] else ''  # Limitar a 255 caracteres
                     endereco = str(row[1]) if row[1] else ''
-                    numero = str(row[2]) if row[2] else ''
-                    municipio = str(row[3]) if row[3] else ''
-                    estado = str(row[4]) if row[4] else ''
-                    cep = str(row[5]) if row[5] else ''
-                    regional = str(row[6]) if row[6] else ''
+                    numero = str(row[2])[:20] if row[2] else ''  # Limitar a 20 caracteres
+                    municipio = str(row[3])[:100] if row[3] else ''  # Limitar a 100 caracteres
+                    estado = str(row[4])[:10] if row[4] else ''  # Limitar a 10 caracteres
+                    cep = str(row[5])[:15] if row[5] else ''  # Limitar a 15 caracteres
+                    regional = str(row[6])[:100] if row[6] else ''  # Limitar a 100 caracteres
                     
                     # Tentar encontrar latitude e longitude - podem estar em colunas diferentes
                     latitude = None

@@ -69,7 +69,7 @@ class Command(BaseCommand):
                         endereco TEXT NOT NULL,
                         numero VARCHAR(20) DEFAULT '',
                         municipio VARCHAR(100) DEFAULT '',
-                        estado VARCHAR(2) DEFAULT '',
+                        estado VARCHAR(10) DEFAULT '',
                         cep VARCHAR(15) DEFAULT '',
                         regional VARCHAR(100) DEFAULT '',
                         latitude DECIMAL(9,6),
