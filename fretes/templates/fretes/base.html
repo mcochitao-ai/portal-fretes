@@ -1240,12 +1240,12 @@ a.modern-nav-btn.active p {
     <nav class="navbar navbar-renner">
         <div class="container navbar-container">
             <ul class="navbar-nav">
-                {% if user.is_authenticated and user.userprofile.is_transportadora and not user.userprofile.is_master %}
+                {% if user.is_authenticated and user.userprofile.tipo_usuario == 'transportadora' and not user.userprofile.is_master %}
                     <!-- Menu para Transportadora - Fretes para Cotação e Histórico -->
                     <li><a class="nav-link modern-nav-btn" href="/">Início</a></li>
                     <li><a class="nav-link modern-nav-btn" href="/fretes-para-cotacao/">Fretes para Cotação</a></li>
                     <li><a class="nav-link modern-nav-btn" href="/cotacoes-historico-transportadora/">Histórico</a></li>
-                {% elif user.is_authenticated and user.userprofile.is_gerente and not user.userprofile.is_master %}
+                {% elif user.is_authenticated and user.userprofile.tipo_usuario == 'gerente' and not user.userprofile.is_master %}
                     <!-- Menu para Gerente - Apenas Aprovar Cotações -->
                     <li><a class="nav-link modern-nav-btn" href="/">Início</a></li>
                     <li><a class="nav-link modern-nav-btn" href="/cotacoes-recebidas/">Aprovar Cotações</a></li>
