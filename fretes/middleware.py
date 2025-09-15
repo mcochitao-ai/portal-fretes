@@ -34,7 +34,7 @@ class DatabaseSetupMiddleware(MiddlewareMixin):
             
             # Importa lojas se não existirem
             print("🔧 [MIDDLEWARE] Verificando lojas...")
-            call_command('importar_lojas_automatico', verbosity=0)
+            call_command('importar_lojas_simples', verbosity=0)
             print("✅ [MIDDLEWARE] Lojas verificadas!")
                         
         except Exception as e:
