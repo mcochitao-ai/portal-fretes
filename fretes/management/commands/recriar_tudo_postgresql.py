@@ -20,37 +20,47 @@ class Command(BaseCommand):
         self.stdout.write('✅ Usando PostgreSQL - recriando todos os dados')
         
         try:
-            # 1. LIMPAR TUDO
+            # 1. LIMPAR TUDO (se existir)
             self.stdout.write('\n🧹 LIMPANDO DADOS EXISTENTES:')
-            User.objects.all().delete()
-            Transportadora.objects.all().delete()
-            Loja.objects.all().delete()
-            self.stdout.write('   ✅ Todos os dados removidos')
+            try:
+                User.objects.all().delete()
+                Transportadora.objects.all().delete()
+                Loja.objects.all().delete()
+                self.stdout.write('   ✅ Todos os dados removidos')
+            except Exception as e:
+                self.stdout.write(f'   ⚠️ Erro ao limpar dados (normal se banco vazio): {e}')
+                self.stdout.write('   ✅ Continuando com criação de dados...')
             
             # 2. CRIAR USUÁRIOS ADMIN
             self.stdout.write('\n👑 CRIANDO USUÁRIOS ADMIN:')
             
             # Admin principal
-            admin = User.objects.create_user(
-                username='admin',
-                email='admin@portal.com',
-                password='admin123',
-                is_staff=True,
-                is_superuser=True,
-                is_active=True
-            )
-            self.stdout.write('   ✅ Admin criado: admin / admin123')
+            if not User.objects.filter(username='admin').exists():
+                admin = User.objects.create_user(
+                    username='admin',
+                    email='admin@portal.com',
+                    password='admin123',
+                    is_staff=True,
+                    is_superuser=True,
+                    is_active=True
+                )
+                self.stdout.write('   ✅ Admin criado: admin / admin123')
+            else:
+                self.stdout.write('   ⚠️ Admin já existe')
             
             # Cochit0
-            cochit0 = User.objects.create_user(
-                username='cochit0',
-                email='cochit0@portal.com',
-                password='123456',
-                is_staff=True,
-                is_superuser=True,
-                is_active=True
-            )
-            self.stdout.write('   ✅ Cochit0 criado: cochit0 / 123456')
+            if not User.objects.filter(username='cochit0').exists():
+                cochit0 = User.objects.create_user(
+                    username='cochit0',
+                    email='cochit0@portal.com',
+                    password='123456',
+                    is_staff=True,
+                    is_superuser=True,
+                    is_active=True
+                )
+                self.stdout.write('   ✅ Cochit0 criado: cochit0 / 123456')
+            else:
+                self.stdout.write('   ⚠️ Cochit0 já existe')
             
             # 3. CRIAR TRANSPORTADORAS
             self.stdout.write('\n🚛 CRIANDO TRANSPORTADORAS:')
@@ -65,11 +75,14 @@ class Command(BaseCommand):
             ]
             
             for trans_data in transportadoras:
-                transportadora = Transportadora.objects.create(
-                    nome=trans_data['nome'],
-                    email=trans_data['email']
-                )
-                self.stdout.write(f'   ✅ {transportadora.nome} criada')
+                if not Transportadora.objects.filter(nome=trans_data['nome']).exists():
+                    transportadora = Transportadora.objects.create(
+                        nome=trans_data['nome'],
+                        email=trans_data['email']
+                    )
+                    self.stdout.write(f'   ✅ {transportadora.nome} criada')
+                else:
+                    self.stdout.write(f'   ⚠️ {trans_data["nome"]} já existe')
             
             # 4. CRIAR USUÁRIOS TRANSPORTADORAS
             self.stdout.write('\n👥 CRIANDO USUÁRIOS TRANSPORTADORAS:')
@@ -84,24 +97,27 @@ class Command(BaseCommand):
             ]
             
             for user_data in usuarios_transportadoras:
-                transportadora = Transportadora.objects.get(nome=user_data['transportadora'])
-                user = User.objects.create_user(
-                    username=user_data['username'],
-                    email=user_data['email'],
-                    password='123456',
-                    is_staff=False,
-                    is_superuser=False,
-                    is_active=True
-                )
-                
-                # Criar UserProfile
-                UserProfile.objects.create(
-                    user=user,
-                    tipo_usuario='transportadora',
-                    transportadora=transportadora
-                )
-                
-                self.stdout.write(f'   ✅ {user.username} criado (senha: 123456)')
+                if not User.objects.filter(username=user_data['username']).exists():
+                    transportadora = Transportadora.objects.get(nome=user_data['transportadora'])
+                    user = User.objects.create_user(
+                        username=user_data['username'],
+                        email=user_data['email'],
+                        password='123456',
+                        is_staff=False,
+                        is_superuser=False,
+                        is_active=True
+                    )
+                    
+                    # Criar UserProfile
+                    UserProfile.objects.create(
+                        user=user,
+                        tipo_usuario='transportadora',
+                        transportadora=transportadora
+                    )
+                    
+                    self.stdout.write(f'   ✅ {user.username} criado (senha: 123456)')
+                else:
+                    self.stdout.write(f'   ⚠️ {user_data["username"]} já existe')
             
             # 5. CRIAR USUÁRIOS SOLICITADORES
             self.stdout.write('\n👤 CRIANDO USUÁRIOS SOLICITADORES:')
@@ -113,22 +129,25 @@ class Command(BaseCommand):
             ]
             
             for user_data in usuarios_solicitadores:
-                user = User.objects.create_user(
-                    username=user_data['username'],
-                    email=user_data['email'],
-                    password='123456',
-                    is_staff=False,
-                    is_superuser=False,
-                    is_active=True
-                )
-                
-                # Criar UserProfile
-                UserProfile.objects.create(
-                    user=user,
-                    tipo_usuario='solicitador'
-                )
-                
-                self.stdout.write(f'   ✅ {user.username} criado (senha: 123456)')
+                if not User.objects.filter(username=user_data['username']).exists():
+                    user = User.objects.create_user(
+                        username=user_data['username'],
+                        email=user_data['email'],
+                        password='123456',
+                        is_staff=False,
+                        is_superuser=False,
+                        is_active=True
+                    )
+                    
+                    # Criar UserProfile
+                    UserProfile.objects.create(
+                        user=user,
+                        tipo_usuario='solicitador'
+                    )
+                    
+                    self.stdout.write(f'   ✅ {user.username} criado (senha: 123456)')
+                else:
+                    self.stdout.write(f'   ⚠️ {user_data["username"]} já existe')
             
             # 6. TESTAR LOGIN
             self.stdout.write('\n🔐 TESTANDO LOGIN:')
