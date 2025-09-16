@@ -307,11 +307,15 @@ def detalhe_frete_transportadora(request, frete_id):
     if agendamento:
         tracking_history = agendamento.tracking.all().order_by('-data_atualizacao')
     
+    # Calcular volume total dos destinos
+    volume_total = sum(destino.volume for destino in frete.destinos.all())
+    
     return render(request, 'fretes/detalhe_frete_transportadora.html', {
         'frete': frete,
         'agendamento': agendamento,
         'tracking_history': tracking_history,
-        'user_profile': user_profile
+        'user_profile': user_profile,
+        'volume_total': volume_total
     })
 
 

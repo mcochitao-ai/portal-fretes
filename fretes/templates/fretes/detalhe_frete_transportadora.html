@@ -132,7 +132,7 @@
                         {{ destino.endereco_completo }}<br>
                         {% if destino.cep %}CEP: {{ destino.cep }}<br>{% endif %}
                         {% if destino.telefone %}Tel: {{ destino.telefone }}<br>{% endif %}
-                        <strong>Volume:</strong> {{ destino.volume }}m³
+                        <strong>Volume:</strong> {{ destino.volume }}
                     </p>
                     {% if destino.observacao %}
                         <div class="observacoes">
@@ -141,6 +141,10 @@
                     {% endif %}
                 </div>
             {% endfor %}
+            <!-- Volume Total -->
+            <div class="volume-total">
+                <strong>Volume Total: {{ volume_total }}</strong>
+            </div>
         </div>
 
         <!-- Informações do Veículo e Motorista -->
@@ -351,6 +355,20 @@
 /* Informações de Endereço */
 .address-info, .destination-item {
     margin-bottom: 1rem;
+}
+
+.volume-total {
+    background: #f0f9ff;
+    border: 2px solid #0ea5e9;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.volume-total strong {
+    color: #0369a1;
+    font-size: 1.125rem;
 }
 
 .address-name, .destination-name {
