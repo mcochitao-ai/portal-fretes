@@ -1,0 +1,415 @@
+{% extends 'fretes/base.html' %}
+
+{% block title %}Fretes em Tracking{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="header header-renner">
+    <div class="header-content">
+        <h1>Fretes em Tracking</h1>
+        <div class="subtitle">Acompanhe o status dos fretes em andamento</div>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <!-- Estatísticas -->
+    <div class="stats-grid mb-8">
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+                <h3>{{ total_em_tracking }}</h3>
+                <p>Total em Tracking</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-content">
+                <h3>{{ fretes_agendados }}</h3>
+                <p>Agendados</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🚚</div>
+            <div class="stat-content">
+                <h3>{{ fretes_em_transito }}</h3>
+                <p>Em Trânsito</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🎉</div>
+            <div class="stat-content">
+                <h3>{{ fretes_entregues }}</h3>
+                <p>Entregues</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Fretes -->
+    {% if fretes_em_tracking %}
+        <div class="freight-list">
+            {% for frete in fretes_em_tracking %}
+                <div class="freight-card">
+                    <div class="freight-header">
+                        <div class="freight-info">
+                            <h3>Frete #{{ frete.id }}</h3>
+                            <p class="freight-route">
+                                <strong>{{ frete.origem.nome }}</strong> → 
+                                {% for destino in frete.destinos.all %}
+                                    <strong>{{ destino.loja.nome }}</strong>{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                            <p class="freight-details">
+                                <span class="detail-item">
+                                    <strong>Volume:</strong> {{ frete.volume }}m³
+                                </span>
+                                <span class="detail-item">
+                                    <strong>Peso:</strong> {{ frete.peso }}kg
+                                </span>
+                                <span class="detail-item">
+                                    <strong>Data Coleta:</strong> {{ frete.horario_coleta|date:"d/m/Y H:i" }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="freight-status">
+                            {% if frete.status == 'agendado' %}
+                                <span class="badge badge-scheduled">📅 Agendado</span>
+                            {% elif frete.status == 'em_transito' %}
+                                <span class="badge badge-transit">🚚 Em Trânsito</span>
+                            {% elif frete.status == 'entregue' %}
+                                <span class="badge badge-delivered">🎉 Entregue</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Informações do Agendamento -->
+                    {% if frete.agendamento %}
+                        <div class="agendamento-info">
+                            <h4>📋 Dados do Agendamento</h4>
+                            <div class="agendamento-grid">
+                                <div class="agendamento-item">
+                                    <strong>Veículo:</strong> {{ frete.agendamento.veiculo_info }}
+                                </div>
+                                <div class="agendamento-item">
+                                    <strong>Motorista:</strong> {{ frete.agendamento.motorista_info }}
+                                </div>
+                                <div class="agendamento-item">
+                                    <strong>Data Coleta:</strong> {{ frete.agendamento.data_coleta|date:"d/m/Y H:i" }}
+                                </div>
+                                <div class="agendamento-item">
+                                    <strong>Previsão Entrega:</strong> {{ frete.agendamento.data_entrega_prevista|date:"d/m/Y H:i" }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Último Status do Tracking -->
+                    {% if frete.agendamento.tracking.first %}
+                        <div class="tracking-info">
+                            <h4>📍 Status Atual</h4>
+                            <div class="tracking-status">
+                                <span class="tracking-icon">{{ frete.agendamento.tracking.first.status_icon }}</span>
+                                <span class="tracking-text">{{ frete.agendamento.tracking.first.get_status_display }}</span>
+                                <span class="tracking-time">{{ frete.agendamento.tracking.first.data_atualizacao|date:"d/m/Y H:i" }}</span>
+                            </div>
+                            {% if frete.agendamento.tracking.first.localizacao_atual %}
+                                <p class="tracking-location">
+                                    <strong>📍 Localização:</strong> {{ frete.agendamento.tracking.first.localizacao_atual }}
+                                </p>
+                            {% endif %}
+                            {% if frete.agendamento.tracking.first.observacoes %}
+                                <p class="tracking-notes">
+                                    <strong>📝 Observações:</strong> {{ frete.agendamento.tracking.first.observacoes }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Ações -->
+                    <div class="freight-actions">
+                        <a href="{% url 'frete_detalhe' frete.id %}" class="btn btn-outline">
+                            Ver Detalhes
+                        </a>
+                        <a href="{% url 'tracking_frete' frete.id %}" class="btn btn-info">
+                            Ver Tracking Completo
+                        </a>
+                        {% if user_profile.is_transportadora or user_profile.is_usuario_master %}
+                            <a href="{% url 'atualizar_tracking' frete.id %}" class="btn btn-primary">
+                                Atualizar Status
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📦</div>
+            <h3>Nenhum frete em tracking</h3>
+            <p>Não há fretes sendo acompanhados no momento.</p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+/* Header Renner Styles */
+.header-renner {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.header-renner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+}
+
+.header-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+}
+
+.header-renner h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.header-renner .subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+/* Estatísticas */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-icon {
+    font-size: 2rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    border-radius: 12px;
+}
+
+.stat-content h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0;
+}
+
+.stat-content p {
+    color: #6b7280;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Lista de Fretes */
+.freight-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.freight-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
+}
+
+.freight-card:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+}
+
+.freight-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.freight-info h3 {
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.freight-route {
+    color: #374151;
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+}
+
+.freight-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 0;
+}
+
+.detail-item {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+/* Informações do Agendamento */
+.agendamento-info {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid #3b82f6;
+}
+
+.agendamento-info h4 {
+    color: #1e40af;
+    margin: 0 0 0.75rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.agendamento-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 0.5rem;
+}
+
+.agendamento-item {
+    color: #374151;
+    font-size: 0.875rem;
+}
+
+/* Tracking Info */
+.tracking-info {
+    background: #f0fdf4;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-left: 4px solid #10b981;
+}
+
+.tracking-info h4 {
+    color: #047857;
+    margin: 0 0 0.75rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.tracking-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.tracking-icon {
+    font-size: 1.25rem;
+}
+
+.tracking-text {
+    font-weight: 600;
+    color: #047857;
+}
+
+.tracking-time {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin-left: auto;
+}
+
+.tracking-location,
+.tracking-notes {
+    color: #374151;
+    font-size: 0.875rem;
+    margin: 0.25rem 0;
+}
+
+/* Ações */
+.freight-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #6b7280;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .freight-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .freight-actions {
+        justify-content: stretch;
+    }
+    
+    .freight-actions .btn {
+        flex: 1;
+        text-align: center;
+    }
+    
+    .agendamento-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

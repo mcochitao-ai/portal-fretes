@@ -278,6 +278,59 @@ def tracking_frete(request, frete_id):
 
 
 @login_required(login_url='/login/')
+def fretes_em_tracking(request):
+    """Lista de fretes em tracking para o transportador"""
+    ensure_tables_exist()  # Garantir que as tabelas existam
+    try:
+        user_profile = request.user.userprofile
+        if not (user_profile.is_transportadora() or user_profile.is_usuario_master()):
+            messages.error(request, 'Você não tem permissão para acessar esta área.')
+            return redirect('home')
+    except UserProfile.DoesNotExist:
+        messages.error(request, 'Perfil de usuário não encontrado.')
+        return redirect('home')
+    
+    # Buscar fretes com agendamento da transportadora do usuário
+    if user_profile.is_usuario_master():
+        # Master vê todos os fretes em tracking
+        fretes_em_tracking = FreteRequest.objects.filter(
+            status__in=['agendado', 'em_transito', 'entregue']
+        ).select_related(
+            'usuario', 'origem', 'transportadora_selecionada'
+        ).prefetch_related(
+            'destinos', 'agendamento__tracking'
+        ).order_by('-data_criacao')
+    else:
+        # Transportadora vê apenas seus fretes em tracking
+        if user_profile.transportadora:
+            fretes_em_tracking = FreteRequest.objects.filter(
+                status__in=['agendado', 'em_transito', 'entregue'],
+                transportadora_selecionada=user_profile.transportadora
+            ).select_related(
+                'usuario', 'origem', 'transportadora_selecionada'
+            ).prefetch_related(
+                'destinos', 'agendamento__tracking'
+            ).order_by('-data_criacao')
+        else:
+            fretes_em_tracking = FreteRequest.objects.none()
+    
+    # Estatísticas
+    total_em_tracking = fretes_em_tracking.count()
+    fretes_agendados = fretes_em_tracking.filter(status='agendado').count()
+    fretes_em_transito = fretes_em_tracking.filter(status='em_transito').count()
+    fretes_entregues = fretes_em_tracking.filter(status='entregue').count()
+    
+    return render(request, 'fretes/fretes_em_tracking.html', {
+        'fretes_em_tracking': fretes_em_tracking,
+        'total_em_tracking': total_em_tracking,
+        'fretes_agendados': fretes_agendados,
+        'fretes_em_transito': fretes_em_transito,
+        'fretes_entregues': fretes_entregues,
+        'user_profile': user_profile
+    })
+
+
+@login_required(login_url='/login/')
 def atualizar_tracking(request, frete_id):
     """Atualizar status do tracking"""
     ensure_tables_exist()  # Garantir que as tabelas existam
