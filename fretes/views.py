@@ -1652,11 +1652,23 @@ def excluir_usuario(request, user_id):
             return redirect('gerenciar_usuarios')
         
         username = usuario.username
+        
+        # Excluir logs do admin primeiro (se a tabela existir)
+        try:
+            from django.contrib.admin.models import LogEntry
+            LogEntry.objects.filter(user=usuario).delete()
+        except Exception:
+            # Se a tabela não existir, continua normalmente
+            pass
+        
+        # Excluir o usuário
         usuario.delete()
         messages.success(request, f'Usuário {username} excluído com sucesso!')
         
     except User.DoesNotExist:
         messages.error(request, 'Usuário não encontrado.')
+    except Exception as e:
+        messages.error(request, f'Erro ao excluir usuário: {str(e)}')
     
     return redirect('gerenciar_usuarios')
 
