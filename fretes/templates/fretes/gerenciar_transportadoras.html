@@ -14,7 +14,7 @@
                     <p class="text-muted mb-0">Gerencie todas as transportadoras do sistema</p>
                 </div>
                 <div class="ms-3">
-                    <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#criarTransportadoraModal">
+                    <button type="button" class="btn btn-primary btn-lg" onclick="mostrarFormularioCriacao()">
                         <i class="fas fa-plus me-2"></i>Nova Transportadora
                     </button>
                 </div>
@@ -65,6 +65,97 @@
         {% endfor %}
     {% endif %}
 
+    <!-- Formulário de Criação (oculto por padrão) -->
+    <div class="card mb-4" id="formularioCriacao" style="display: none;">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-plus me-2"></i>Cadastrar Nova Transportadora
+                <button type="button" class="btn btn-sm btn-outline-light float-end" onclick="ocultarFormularioCriacao()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </h5>
+        </div>
+        <div class="card-body">
+            <form id="criarTransportadoraForm">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="nomeTransportadora" class="form-label fw-bold">
+                                <i class="fas fa-building me-1 text-primary"></i>Nome da Transportadora
+                            </label>
+                            <input type="text" class="form-control" id="nomeTransportadora" name="nome" required 
+                                   placeholder="Ex: Transportadora ABC Ltda">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="emailTransportadora" class="form-label fw-bold">
+                                <i class="fas fa-envelope me-1 text-primary"></i>Email de Contato
+                            </label>
+                            <input type="email" class="form-control" id="emailTransportadora" name="email" required 
+                                   placeholder="Ex: contato@transportadora.com.br">
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary" onclick="ocultarFormularioCriacao()">
+                        <i class="fas fa-times me-1"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="salvarTransportadoraBtn">
+                        <i class="fas fa-save me-1"></i>Cadastrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Formulário de Edição (oculto por padrão) -->
+    <div class="card mb-4" id="formularioEdicao" style="display: none;">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-edit me-2"></i>Editar Transportadora
+                <button type="button" class="btn btn-sm btn-outline-light float-end" onclick="ocultarFormularioEdicao()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </h5>
+        </div>
+        <div class="card-body">
+            <form id="editarTransportadoraForm">
+                {% csrf_token %}
+                <input type="hidden" id="editarTransportadoraId" name="id">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="editarNomeTransportadora" class="form-label fw-bold">
+                                <i class="fas fa-building me-1 text-success"></i>Nome da Transportadora
+                            </label>
+                            <input type="text" class="form-control" id="editarNomeTransportadora" name="nome" required 
+                                   placeholder="Ex: Transportadora ABC Ltda">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="editarEmailTransportadora" class="form-label fw-bold">
+                                <i class="fas fa-envelope me-1 text-success"></i>Email de Contato
+                            </label>
+                            <input type="email" class="form-control" id="editarEmailTransportadora" name="email" required 
+                                   placeholder="Ex: contato@transportadora.com.br">
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="button" class="btn btn-secondary" onclick="ocultarFormularioEdicao()">
+                        <i class="fas fa-times me-1"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success" id="salvarEdicaoBtn">
+                        <i class="fas fa-save me-1"></i>Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Transportadoras Table -->
     <div class="card">
         <div class="card-header">
@@ -113,7 +204,7 @@
                                                 <i class="fas fa-users"></i>
                                             </button>
                                             <button type="button" class="btn btn-outline-success btn-sm" 
-                                                    onclick="editarTransportadora({{ transportadora.id }}, '{{ transportadora.nome }}', '{{ transportadora.email }}')"
+                                                    onclick="mostrarFormularioEdicao({{ transportadora.id }}, '{{ transportadora.nome }}', '{{ transportadora.email }}')"
                                                     title="Editar transportadora">
                                                 <i class="fas fa-edit"></i>
                                             </button>
@@ -137,7 +228,7 @@
                     </div>
                     <h3 class="text-muted mb-3">Nenhuma transportadora cadastrada</h3>
                     <p class="text-muted mb-4">Comece cadastrando sua primeira transportadora</p>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#criarTransportadoraModal">
+                    <button type="button" class="btn btn-primary" onclick="mostrarFormularioCriacao()">
                         <i class="fas fa-plus me-2"></i>Cadastrar Primeira Transportadora
                     </button>
                 </div>
@@ -146,88 +237,6 @@
     </div>
 </div>
 
-<!-- Modal para Criar Transportadora -->
-<div class="modal fade" id="criarTransportadoraModal" tabindex="-1" aria-labelledby="criarTransportadoraModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="criarTransportadoraModalLabel">
-                    <i class="fas fa-plus me-2"></i>Nova Transportadora
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="criarTransportadoraForm">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="nomeTransportadora" class="form-label fw-bold">
-                            <i class="fas fa-building me-1 text-primary"></i>Nome da Transportadora
-                        </label>
-                        <input type="text" class="form-control" id="nomeTransportadora" name="nome" required 
-                               placeholder="Ex: Transportadora ABC Ltda">
-                    </div>
-                    <div class="mb-3">
-                        <label for="emailTransportadora" class="form-label fw-bold">
-                            <i class="fas fa-envelope me-1 text-primary"></i>Email de Contato
-                        </label>
-                        <input type="email" class="form-control" id="emailTransportadora" name="email" required 
-                               placeholder="Ex: contato@transportadora.com.br">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-1"></i>Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-primary" id="salvarTransportadoraBtn">
-                        <i class="fas fa-save me-1"></i>Cadastrar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Modal para Editar Transportadora -->
-<div class="modal fade" id="editarTransportadoraModal" tabindex="-1" aria-labelledby="editarTransportadoraModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title" id="editarTransportadoraModalLabel">
-                    <i class="fas fa-edit me-2"></i>Editar Transportadora
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="editarTransportadoraForm">
-                {% csrf_token %}
-                <input type="hidden" id="editarTransportadoraId" name="id">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="editarNomeTransportadora" class="form-label fw-bold">
-                            <i class="fas fa-building me-1 text-success"></i>Nome da Transportadora
-                        </label>
-                        <input type="text" class="form-control" id="editarNomeTransportadora" name="nome" required 
-                               placeholder="Ex: Transportadora ABC Ltda">
-                    </div>
-                    <div class="mb-3">
-                        <label for="editarEmailTransportadora" class="form-label fw-bold">
-                            <i class="fas fa-envelope me-1 text-success"></i>Email de Contato
-                        </label>
-                        <input type="email" class="form-control" id="editarEmailTransportadora" name="email" required 
-                               placeholder="Ex: contato@transportadora.com.br">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-1"></i>Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-success" id="salvarEdicaoBtn">
-                        <i class="fas fa-save me-1"></i>Salvar Alterações
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
 <style>
 /* Custom Styles */
@@ -374,8 +383,63 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     searchInput.addEventListener('input', filterTransportadoras);
+});
+
+// Funções para mostrar/esconder formulários
+function mostrarFormularioCriacao() {
+    // Esconder formulário de edição se estiver visível
+    document.getElementById('formularioEdicao').style.display = 'none';
     
-    // Processar criação de transportadora
+    // Mostrar formulário de criação
+    document.getElementById('formularioCriacao').style.display = 'block';
+    
+    // Scroll suave para o formulário
+    document.getElementById('formularioCriacao').scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+    });
+    
+    // Focar no primeiro campo
+    setTimeout(() => {
+        document.getElementById('nomeTransportadora').focus();
+    }, 300);
+}
+
+function ocultarFormularioCriacao() {
+    document.getElementById('formularioCriacao').style.display = 'none';
+    document.getElementById('criarTransportadoraForm').reset();
+}
+
+function mostrarFormularioEdicao(id, nome, email) {
+    // Esconder formulário de criação se estiver visível
+    document.getElementById('formularioCriacao').style.display = 'none';
+    
+    // Preencher dados no formulário de edição
+    document.getElementById('editarTransportadoraId').value = id;
+    document.getElementById('editarNomeTransportadora').value = nome;
+    document.getElementById('editarEmailTransportadora').value = email;
+    
+    // Mostrar formulário de edição
+    document.getElementById('formularioEdicao').style.display = 'block';
+    
+    // Scroll suave para o formulário
+    document.getElementById('formularioEdicao').scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+    });
+    
+    // Focar no primeiro campo
+    setTimeout(() => {
+        document.getElementById('editarNomeTransportadora').focus();
+    }, 300);
+}
+
+function ocultarFormularioEdicao() {
+    document.getElementById('formularioEdicao').style.display = 'none';
+    document.getElementById('editarTransportadoraForm').reset();
+}
+
+// Processar criação de transportadora
     document.getElementById('criarTransportadoraForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -396,12 +460,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 showAlert('success', data.message);
                 
-                // Fechar modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('criarTransportadoraModal'));
-                modal.hide();
-                
-                // Limpar formulário
-                document.getElementById('criarTransportadoraForm').reset();
+                // Esconder formulário
+                ocultarFormularioCriacao();
                 
                 // Recarregar página para mostrar nova transportadora
                 setTimeout(() => {
@@ -443,9 +503,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 showAlert('success', data.message);
                 
-                // Fechar modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('editarTransportadoraModal'));
-                modal.hide();
+                // Esconder formulário
+                ocultarFormularioEdicao();
                 
                 // Recarregar página para mostrar alterações
                 setTimeout(() => {
@@ -467,14 +526,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-function editarTransportadora(id, nome, email) {
-    document.getElementById('editarTransportadoraId').value = id;
-    document.getElementById('editarNomeTransportadora').value = nome;
-    document.getElementById('editarEmailTransportadora').value = email;
-    
-    const modal = new bootstrap.Modal(document.getElementById('editarTransportadoraModal'));
-    modal.show();
-}
 
 function excluirTransportadora(id, nome) {
     if (!confirm(`Tem certeza que deseja excluir a transportadora "${nome}"?\n\nEsta ação não pode ser desfeita e todos os usuários associados serão desvinculados.`)) {
