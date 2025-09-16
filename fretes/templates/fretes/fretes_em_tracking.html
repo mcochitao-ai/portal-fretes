@@ -44,6 +44,21 @@
         </div>
     </div>
 
+    <!-- Filtro de Status -->
+    <div class="filter-section mb-6">
+        <form method="GET" class="filter-form">
+            <div class="filter-group">
+                <label for="status" class="filter-label">Filtrar por Status:</label>
+                <select name="status" id="status" class="filter-select" onchange="this.form.submit()">
+                    <option value="">Todos os Status</option>
+                    <option value="agendado" {% if status_selected == 'agendado' %}selected{% endif %}>📅 Agendado</option>
+                    <option value="em_transito" {% if status_selected == 'em_transito' %}selected{% endif %}>🚚 Em Trânsito</option>
+                    <option value="entregue" {% if status_selected == 'entregue' %}selected{% endif %}>🎉 Entregue</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
     <!-- Lista de Fretes -->
     {% if fretes_com_volume %}
         <div class="freight-list">
@@ -389,6 +404,55 @@
 .empty-state h3 {
     color: #374151;
     margin-bottom: 0.5rem;
+}
+
+/* Filter Styles */
+.filter-section {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.filter-form {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.filter-label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.95rem;
+}
+
+.filter-select {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    font-size: 0.95rem;
+    color: #374151;
+    min-width: 200px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.filter-select:hover {
+    border-color: #cbd5e1;
 }
 
 /* Responsive */

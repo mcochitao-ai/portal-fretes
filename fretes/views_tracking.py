@@ -323,6 +323,10 @@ def detalhe_frete_transportadora(request, frete_id):
 def fretes_em_tracking(request):
     """Lista de fretes em tracking para o transportador"""
     ensure_tables_exist()  # Garantir que as tabelas existam
+    
+    # Obter filtro de status
+    status_filter = request.GET.get('status', '')
+    
     try:
         user_profile = request.user.userprofile
         if not (user_profile.is_transportadora() or user_profile.is_usuario_master()):
@@ -356,6 +360,10 @@ def fretes_em_tracking(request):
         else:
             fretes_em_tracking = FreteRequest.objects.none()
     
+    # Aplicar filtro de status se selecionado
+    if status_filter in ['agendado', 'em_transito', 'entregue']:
+        fretes_em_tracking = fretes_em_tracking.filter(status=status_filter)
+    
     # Estatísticas
     total_em_tracking = fretes_em_tracking.count()
     fretes_agendados = fretes_em_tracking.filter(status='agendado').count()
@@ -377,7 +385,8 @@ def fretes_em_tracking(request):
         'fretes_agendados': fretes_agendados,
         'fretes_em_transito': fretes_em_transito,
         'fretes_entregues': fretes_entregues,
-        'user_profile': user_profile
+        'user_profile': user_profile,
+        'status_selected': status_filter
     })
 
 
