@@ -70,15 +70,14 @@
                     <select name="status" class="form-control status-select">
                         <option value="">Todos os status</option>
                         <option value="pendente" {% if status_selected == 'pendente' %}selected{% endif %}>Pendente</option>
-                        <option value="aguardando_aprovacao" {% if status_selected == 'aguardando_aprovacao' %}selected{% endif %}>Aguardando Aprovação</option>
-                        <option value="aprovado" {% if status_selected == 'aprovado' %}selected{% endif %}>Aprovado</option>
-                        <option value="rejeitado" {% if status_selected == 'rejeitado' %}selected{% endif %}>Rejeitado</option>
-                        <option value="cotacao_enviada" {% if status_selected == 'cotacao_enviada' %}selected{% endif %}>Cotação enviada</option>
-                        <option value="cotacao_recebida" {% if status_selected == 'cotacao_recebida' %}selected{% endif %}>Cotação recebida</option>
-                        <option value="cotacao_aprovada" {% if status_selected == 'cotacao_aprovada' %}selected{% endif %}>Cotação aprovada</option>
+                        <option value="cotacao_enviada" {% if status_selected == 'cotacao_enviada' %}selected{% endif %}>Cotação Enviada</option>
+                        <option value="cotacao_recebida" {% if status_selected == 'cotacao_recebida' %}selected{% endif %}>Cotação Recebida</option>
+                        <option value="cotacao_aprovada" {% if status_selected == 'cotacao_aprovada' %}selected{% endif %}>Cotação Aprovada</option>
                         <option value="agendado" {% if status_selected == 'agendado' %}selected{% endif %}>Agendado</option>
                         <option value="em_transito" {% if status_selected == 'em_transito' %}selected{% endif %}>Em Trânsito</option>
                         <option value="entregue" {% if status_selected == 'entregue' %}selected{% endif %}>Entregue</option>
+                        <option value="rejeitado" {% if status_selected == 'rejeitado' %}selected{% endif %}>Rejeitado</option>
+                        <option value="rejeitado_transportadora" {% if status_selected == 'rejeitado_transportadora' %}selected{% endif %}>Rejeitado pela Transportadora</option>
                         <option value="cancelado" {% if status_selected == 'cancelado' %}selected{% endif %}>Cancelado</option>
                         <option value="finalizado" {% if status_selected == 'finalizado' %}selected{% endif %}>Finalizado</option>
                     </select>
