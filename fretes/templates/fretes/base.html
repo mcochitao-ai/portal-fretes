@@ -1241,9 +1241,10 @@ a.modern-nav-btn.active p {
         <div class="container navbar-container">
             <ul class="navbar-nav">
                 {% if user.is_authenticated and user.userprofile.tipo_usuario == 'transportadora' and not user.userprofile.is_master %}
-                    <!-- Menu para Transportadora - Fretes para Cotação e Histórico -->
+                    <!-- Menu para Transportadora - Fretes para Cotação, Agendamento e Histórico -->
                     <li><a class="nav-link modern-nav-btn" href="/">Início</a></li>
                     <li><a class="nav-link modern-nav-btn" href="/fretes-para-cotacao/">Fretes para Cotação</a></li>
+                    <li><a class="nav-link modern-nav-btn" href="/fretes-para-agendamento/">📅 Agendamento</a></li>
                     <li><a class="nav-link modern-nav-btn" href="/cotacoes-historico-transportadora/">Histórico</a></li>
                 {% elif user.is_authenticated and user.userprofile.tipo_usuario == 'gerente' and not user.userprofile.is_master %}
                     <!-- Menu para Gerente - Apenas Aprovar Cotações -->
@@ -1259,6 +1260,7 @@ a.modern-nav-btn.active p {
                             <li><a class="nav-link modern-nav-btn" href="/fretes-para-aprovacao/">Direcionar Fretes</a></li>
                             <li><a class="nav-link modern-nav-btn" href="/cotacoes-recebidas/">Aprovar Cotações</a></li>
                             <li><a class="nav-link modern-nav-btn" href="/fretes-para-cotacao/">Fretes para Cotação</a></li>
+                            <li><a class="nav-link modern-nav-btn" href="/fretes-para-agendamento/">📅 Agendamento</a></li>
                             <li><a class="nav-link modern-nav-btn" href="/gerenciar-usuarios/">Gerenciar Usuários</a></li>
                     {% endif %}
                 {% endif %}
