@@ -1,617 +1,144 @@
 {% extends 'fretes/base.html' %}
 {% load static %}
 
-{% block title %}Dashboard de Transportadoras - Portal de Fretes{% endblock %}
-
-{% block extra_css %}
-<link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-<style>
-:root {
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    --warning-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-    --danger-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-    --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-    --glass-bg: rgba(255, 255, 255, 0.1);
-    --glass-border: rgba(255, 255, 255, 0.2);
-}
-
-body {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-.dashboard-container {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    margin: 20px;
-    padding: 30px;
-}
-
-.dashboard-header {
-    background: var(--glass-bg);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    padding: 25px;
-    margin-bottom: 30px;
-    border: 1px solid var(--glass-border);
-}
-
-.dashboard-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    background: linear-gradient(135deg, #fff 0%, #f0f0f0 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 10px;
-}
-
-.dashboard-subtitle {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 1.1rem;
-    font-weight: 400;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.stat-card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(15px);
-    border-radius: 15px;
-    padding: 25px;
-    border: 1px solid var(--glass-border);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--primary-gradient);
-}
-
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-}
-
-.stat-value {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: white;
-    margin-bottom: 5px;
-}
-
-.stat-label {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 0.9rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.stat-icon {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 2rem;
-    opacity: 0.3;
-    color: white;
-}
-
-.controls-section {
-    background: var(--glass-bg);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    padding: 25px;
-    margin-bottom: 30px;
-    border: 1px solid var(--glass-border);
-}
-
-.search-container {
-    position: relative;
-    margin-bottom: 20px;
-}
-
-.search-input {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 50px;
-    padding: 15px 50px 15px 20px;
-    color: white;
-    font-size: 1rem;
-    width: 100%;
-    transition: all 0.3s ease;
-}
-
-.search-input::placeholder {
-    color: rgba(255, 255, 255, 0.6);
-}
-
-.search-input:focus {
-    outline: none;
-    border-color: rgba(255, 255, 255, 0.4);
-    background: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-}
-
-.search-icon {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 1.1rem;
-}
-
-.filters-row {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.filter-select {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
-    padding: 12px 15px;
-    color: white;
-    font-size: 0.9rem;
-    min-width: 150px;
-    transition: all 0.3s ease;
-}
-
-.filter-select:focus {
-    outline: none;
-    border-color: rgba(255, 255, 255, 0.4);
-    background: rgba(255, 255, 255, 0.15);
-}
-
-.filter-select option {
-    background: #2c3e50;
-    color: white;
-}
-
-.btn-modern {
-    background: var(--primary-gradient);
-    border: none;
-    border-radius: 10px;
-    padding: 12px 25px;
-    color: white;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.btn-modern::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.6s ease;
-}
-
-.btn-modern:hover::before {
-    left: 100%;
-}
-
-.btn-modern:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-}
-
-.transportadoras-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 25px;
-    margin-top: 30px;
-}
-
-.transportadora-card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(15px);
-    border-radius: 20px;
-    padding: 25px;
-    border: 1px solid var(--glass-border);
-    transition: all 0.4s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.transportadora-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--success-gradient);
-}
-
-.transportadora-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    border-color: rgba(255, 255, 255, 0.3);
-}
-
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.card-title {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: white;
-    margin: 0;
-}
-
-.card-id {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.card-content {
-    margin-bottom: 20px;
-}
-
-.info-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12px;
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.info-icon {
-    width: 20px;
-    margin-right: 12px;
-    color: rgba(255, 255, 255, 0.6);
-}
-
-.metrics-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin: 20px 0;
-}
-
-.metric-item {
-    text-align: center;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.metric-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: white;
-    margin-bottom: 5px;
-}
-
-.metric-label {
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.7);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.card-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.action-btn {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-}
-
-.btn-users {
-    background: var(--success-gradient);
-    color: white;
-}
-
-.btn-edit {
-    background: var(--warning-gradient);
-    color: white;
-}
-
-.btn-delete {
-    background: var(--danger-gradient);
-    color: white;
-}
-
-.action-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-}
-
-.modal-content {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-}
-
-.modal-header {
-    background: var(--primary-gradient);
-    color: white;
-    border-radius: 20px 20px 0 0;
-    border: none;
-    padding: 25px;
-}
-
-.modal-title {
-    font-weight: 700;
-    font-size: 1.3rem;
-}
-
-.form-control {
-    border: 2px solid #e9ecef;
-    border-radius: 10px;
-    padding: 15px;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-}
-
-.form-control:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-}
-
-.form-label {
-    font-weight: 600;
-    color: #495057;
-    margin-bottom: 8px;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.empty-icon {
-    font-size: 4rem;
-    margin-bottom: 20px;
-    opacity: 0.5;
-}
-
-.empty-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 10px;
-    color: white;
-}
-
-.empty-subtitle {
-    font-size: 1rem;
-    margin-bottom: 30px;
-}
-
-.loading-spinner {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: white;
-    animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-.fade-in {
-    animation: fadeIn 0.6s ease forwards;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .dashboard-container {
-        margin: 10px;
-        padding: 20px;
-    }
-    
-    .dashboard-title {
-        font-size: 2rem;
-    }
-    
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .transportadoras-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .filters-row {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .filter-select {
-        min-width: auto;
-    }
-}
-
-/* Advanced Animations */
-.transportadora-card {
-    animation: slideInUp 0.6s ease forwards;
-    opacity: 0;
-    transform: translateY(50px);
-}
-
-.transportadora-card:nth-child(1) { animation-delay: 0.1s; }
-.transportadora-card:nth-child(2) { animation-delay: 0.2s; }
-.transportadora-card:nth-child(3) { animation-delay: 0.3s; }
-.transportadora-card:nth-child(4) { animation-delay: 0.4s; }
-.transportadora-card:nth-child(5) { animation-delay: 0.5s; }
-.transportadora-card:nth-child(6) { animation-delay: 0.6s; }
-
-@keyframes slideInUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Glass morphism effects */
-.glass-effect {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* Hover effects */
-.hover-lift {
-    transition: all 0.3s ease;
-}
-
-.hover-lift:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-}
-</style>
-{% endblock %}
+{% block title %}Gerenciar Transportadoras - Portal de Fretes{% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-    <!-- Dashboard Header -->
-    <div class="dashboard-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h1 class="dashboard-title">
-                    <i class="fas fa-truck me-3"></i>Dashboard de Transportadoras
-                </h1>
-                <p class="dashboard-subtitle">
-                    Centro de controle avançado para gerenciamento completo de transportadoras
-                </p>
-            </div>
-            <div>
-                <button type="button" class="btn-modern" data-bs-toggle="modal" data-bs-target="#criarTransportadoraModal">
-                    <i class="fas fa-plus me-2"></i>Nova Transportadora
-                </button>
+<div class="container-fluid mt-4">
+    <!-- Header Section -->
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="flex-grow-1 text-center">
+                    <h2 class="mb-1">🚛 Gerenciar Transportadoras</h2>
+                    <p class="text-muted mb-0">Centralize todas as operações de transportadoras em um só lugar</p>
+                </div>
+                <div class="ms-3">
+                    <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#criarTransportadoraModal">
+                        <i class="fas fa-plus me-2"></i>Nova Transportadora
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Statistics Dashboard -->
-    <div class="stats-grid">
-        <div class="stat-card hover-lift">
-            <div class="stat-value">{{ transportadoras.count }}</div>
-            <div class="stat-label">Total de Transportadoras</div>
-            <i class="fas fa-truck stat-icon"></i>
-        </div>
-        <div class="stat-card hover-lift">
-            <div class="stat-value">
-                {% for transportadora in transportadoras %}
-                    {% if forloop.first %}{{ transportadora.userprofile_set.count }}{% endif %}
-                {% empty %}0{% endfor %}
+    <!-- Statistics Cards -->
+    <div class="row mt-4 mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">{{ transportadoras.count }}</h4>
+                            <p class="card-text">Total de Transportadoras</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-truck fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="stat-label">Usuários Ativos</div>
-            <i class="fas fa-users stat-icon"></i>
         </div>
-        <div class="stat-card hover-lift">
-            <div class="stat-value">
-                {% for transportadora in transportadoras %}
-                    {% if forloop.first %}{{ transportadora.cotacaofrete_set.count }}{% endif %}
-                {% empty %}0{% endfor %}
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">
+                                {% for transportadora in transportadoras %}
+                                    {% if forloop.first %}{{ transportadora.userprofile_set.count }}{% endif %}
+                                {% empty %}0{% endfor %}
+                            </h4>
+                            <p class="card-text">Usuários Ativos</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="stat-label">Cotações Enviadas</div>
-            <i class="fas fa-chart-line stat-icon"></i>
         </div>
-        <div class="stat-card hover-lift">
-            <div class="stat-value">
-                {% for transportadora in transportadoras %}
-                    {% if transportadora.cotacaofrete_set.exists and forloop.first %}
-                        {{ transportadora.cotacaofrete_set.first.data_cotacao|date:"d/m" }}
-                    {% endif %}
-                {% empty %}N/A{% endfor %}
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">
+                                {% for transportadora in transportadoras %}
+                                    {% if forloop.first %}{{ transportadora.cotacaofrete_set.count }}{% endif %}
+                                {% empty %}0{% endfor %}
+                            </h4>
+                            <p class="card-text">Cotações Enviadas</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-line fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="stat-label">Última Atividade</div>
-            <i class="fas fa-clock stat-icon"></i>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">
+                                {% for transportadora in transportadoras %}
+                                    {% if transportadora.cotacaofrete_set.exists and forloop.first %}
+                                        {{ transportadora.cotacaofrete_set.first.data_cotacao|date:"d/m" }}
+                                    {% endif %}
+                                {% empty %}N/A{% endfor %}
+                            </h4>
+                            <p class="card-text">Última Atividade</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-clock fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Advanced Controls -->
-    <div class="controls-section">
-        <div class="search-container">
-            <input type="text" class="search-input" id="searchInput" placeholder="Buscar transportadoras por nome, email ou ID...">
-            <i class="fas fa-search search-icon"></i>
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtros e Busca</h5>
         </div>
-        
-        <div class="filters-row">
-            <select class="filter-select" id="statusFilter">
-                <option value="">Todos os Status</option>
-                <option value="active">Ativas</option>
-                <option value="inactive">Inativas</option>
-            </select>
-            
-            <select class="filter-select" id="sortBy">
-                <option value="nome">Ordenar por Nome</option>
-                <option value="usuarios">Ordenar por Usuários</option>
-                <option value="cotacoes">Ordenar por Cotações</option>
-                <option value="atividade">Ordenar por Atividade</option>
-            </select>
-            
-            <button class="btn-modern" onclick="exportData()">
-                <i class="fas fa-download me-2"></i>Exportar Dados
-            </button>
-            
-            <button class="btn-modern" onclick="refreshData()">
-                <i class="fas fa-sync-alt me-2"></i>Atualizar
-            </button>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control" id="searchInput" placeholder="Buscar transportadoras por nome, email ou ID...">
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <select class="form-select" id="statusFilter">
+                        <option value="">Todos os Status</option>
+                        <option value="active">Ativas</option>
+                        <option value="inactive">Inativas</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <select class="form-select" id="sortBy">
+                        <option value="nome">Ordenar por Nome</option>
+                        <option value="usuarios">Ordenar por Usuários</option>
+                        <option value="cotacoes">Ordenar por Cotações</option>
+                        <option value="atividade">Ordenar por Atividade</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <button class="btn btn-outline-primary me-2" onclick="exportData()">
+                        <i class="fas fa-download me-1"></i>Exportar Dados
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="refreshData()">
+                        <i class="fas fa-sync-alt me-1"></i>Atualizar
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -626,72 +153,94 @@ body {
     {% endif %}
 
     <!-- Transportadoras Grid -->
-    <div id="transportadorasContainer">
-        {% if transportadoras %}
-            <div class="transportadoras-grid" id="transportadorasGrid">
-                {% for transportadora in transportadoras %}
-                    <div class="transportadora-card" data-transportadora-id="{{ transportadora.id }}" data-nome="{{ transportadora.nome|lower }}" data-email="{{ transportadora.email|lower }}">
-                        <div class="card-header">
-                            <h3 class="card-title">{{ transportadora.nome }}</h3>
-                            <span class="card-id">#{{ transportadora.id }}</span>
-                        </div>
-                        
-                        <div class="card-content">
-                            <div class="info-item">
-                                <i class="fas fa-envelope info-icon"></i>
-                                <span>{{ transportadora.email }}</span>
-                            </div>
-                            
-                            <div class="metrics-row">
-                                <div class="metric-item">
-                                    <div class="metric-value">{{ transportadora.userprofile_set.count }}</div>
-                                    <div class="metric-label">Usuários</div>
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-truck me-2"></i>Transportadoras Cadastradas</h5>
+        </div>
+        <div class="card-body">
+            {% if transportadoras %}
+                <div class="row" id="transportadorasGrid">
+                    {% for transportadora in transportadoras %}
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100 transportadora-card" data-transportadora-id="{{ transportadora.id }}" data-nome="{{ transportadora.nome|lower }}" data-email="{{ transportadora.email|lower }}">
+                                <div class="card-header bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5 class="card-title mb-0 text-primary">
+                                            <i class="fas fa-building me-2"></i>{{ transportadora.nome }}
+                                        </h5>
+                                        <span class="badge bg-secondary">#{{ transportadora.id }}</span>
+                                    </div>
                                 </div>
-                                <div class="metric-item">
-                                    <div class="metric-value">{{ transportadora.cotacaofrete_set.count }}</div>
-                                    <div class="metric-label">Cotações</div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-envelope text-muted me-2"></i>
+                                            <span class="text-muted">{{ transportadora.email }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row text-center mb-3">
+                                        <div class="col-6">
+                                            <div class="border-end">
+                                                <h6 class="text-success mb-1">{{ transportadora.userprofile_set.count }}</h6>
+                                                <small class="text-muted">Usuários</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <h6 class="text-info mb-1">{{ transportadora.cotacaofrete_set.count }}</h6>
+                                            <small class="text-muted">Cotações</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Última atividade: 
+                                            {% if transportadora.cotacaofrete_set.exists %}
+                                                {{ transportadora.cotacaofrete_set.first.data_cotacao|date:"d/m/Y H:i" }}
+                                            {% else %}
+                                                Nunca
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <div class="btn-group w-100" role="group">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                onclick="gerenciarUsuarios({{ transportadora.id }}, '{{ transportadora.nome }}')"
+                                                title="Gerenciar usuários">
+                                            <i class="fas fa-users me-1"></i>Usuários
+                                        </button>
+                                        <button type="button" class="btn btn-outline-success btn-sm" 
+                                                onclick="editarTransportadora({{ transportadora.id }}, '{{ transportadora.nome }}', '{{ transportadora.email }}')"
+                                                title="Editar transportadora">
+                                            <i class="fas fa-edit me-1"></i>Editar
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                onclick="excluirTransportadora({{ transportadora.id }}, '{{ transportadora.nome }}')"
+                                                title="Excluir transportadora">
+                                            <i class="fas fa-trash me-1"></i>Excluir
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                            
-                            <div class="info-item">
-                                <i class="fas fa-clock info-icon"></i>
-                                <span>
-                                    Última atividade: 
-                                    {% if transportadora.cotacaofrete_set.exists %}
-                                        {{ transportadora.cotacaofrete_set.first.data_cotacao|date:"d/m/Y H:i" }}
-                                    {% else %}
-                                        Nunca
-                                    {% endif %}
-                                </span>
-                            </div>
                         </div>
-                        
-                        <div class="card-actions">
-                            <button class="action-btn btn-users" onclick="gerenciarUsuarios({{ transportadora.id }}, '{{ transportadora.nome }}')" title="Gerenciar usuários">
-                                <i class="fas fa-users me-1"></i>Usuários
-                            </button>
-                            <button class="action-btn btn-edit" onclick="editarTransportadora({{ transportadora.id }}, '{{ transportadora.nome }}', '{{ transportadora.email }}')" title="Editar transportadora">
-                                <i class="fas fa-edit me-1"></i>Editar
-                            </button>
-                            <button class="action-btn btn-delete" onclick="excluirTransportadora({{ transportadora.id }}, '{{ transportadora.nome }}')" title="Excluir transportadora">
-                                <i class="fas fa-trash me-1"></i>Excluir
-                            </button>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="empty-state">
-                <div class="empty-icon">
-                    <i class="fas fa-truck"></i>
+                    {% endfor %}
                 </div>
-                <h3 class="empty-title">Nenhuma transportadora encontrada</h3>
-                <p class="empty-subtitle">Comece criando sua primeira transportadora para gerenciar o sistema</p>
-                <button type="button" class="btn-modern" data-bs-toggle="modal" data-bs-target="#criarTransportadoraModal">
-                    <i class="fas fa-plus me-2"></i>Criar Primeira Transportadora
-                </button>
-            </div>
-        {% endif %}
+            {% else %}
+                <!-- Empty State -->
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-truck fa-5x text-muted opacity-50"></i>
+                    </div>
+                    <h3 class="text-muted mb-3">Nenhuma transportadora cadastrada</h3>
+                    <p class="text-muted mb-4">Comece criando sua primeira transportadora para gerenciar o sistema</p>
+                    <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#criarTransportadoraModal">
+                        <i class="fas fa-plus me-2"></i>Criar Primeira Transportadora
+                    </button>
+                </div>
+            {% endif %}
+        </div>
     </div>
 </div>
 
@@ -699,7 +248,7 @@ body {
 <div class="modal fade" id="criarTransportadoraModal" tabindex="-1" aria-labelledby="criarTransportadoraModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="criarTransportadoraModalLabel">
                     <i class="fas fa-truck me-2"></i>Nova Transportadora
                 </h5>
@@ -711,8 +260,8 @@ body {
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="nomeTransportadora" class="form-label">
-                                    <i class="fas fa-building me-1"></i>Nome da Transportadora
+                                <label for="nomeTransportadora" class="form-label fw-bold">
+                                    <i class="fas fa-building me-1 text-primary"></i>Nome da Transportadora
                                 </label>
                                 <input type="text" class="form-control" id="nomeTransportadora" name="nome" required 
                                        placeholder="Ex: Transportadora ABC Ltda">
@@ -720,8 +269,8 @@ body {
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="emailTransportadora" class="form-label">
-                                    <i class="fas fa-envelope me-1"></i>Email de Contato
+                                <label for="emailTransportadora" class="form-label fw-bold">
+                                    <i class="fas fa-envelope me-1 text-primary"></i>Email de Contato
                                 </label>
                                 <input type="email" class="form-control" id="emailTransportadora" name="email" required 
                                        placeholder="Ex: contato@transportadora.com.br">
@@ -750,7 +299,7 @@ body {
 <div class="modal fade" id="editarTransportadoraModal" tabindex="-1" aria-labelledby="editarTransportadoraModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-success text-white">
                 <h5 class="modal-title" id="editarTransportadoraModalLabel">
                     <i class="fas fa-edit me-2"></i>Editar Transportadora
                 </h5>
@@ -763,8 +312,8 @@ body {
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="editarNomeTransportadora" class="form-label">
-                                    <i class="fas fa-building me-1"></i>Nome da Transportadora
+                                <label for="editarNomeTransportadora" class="form-label fw-bold">
+                                    <i class="fas fa-building me-1 text-success"></i>Nome da Transportadora
                                 </label>
                                 <input type="text" class="form-control" id="editarNomeTransportadora" name="nome" required 
                                        placeholder="Ex: Transportadora ABC Ltda">
@@ -772,8 +321,8 @@ body {
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="editarEmailTransportadora" class="form-label">
-                                    <i class="fas fa-envelope me-1"></i>Email de Contato
+                                <label for="editarEmailTransportadora" class="form-label fw-bold">
+                                    <i class="fas fa-envelope me-1 text-success"></i>Email de Contato
                                 </label>
                                 <input type="email" class="form-control" id="editarEmailTransportadora" name="email" required 
                                        placeholder="Ex: contato@transportadora.com.br">
@@ -794,7 +343,110 @@ body {
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+<style>
+/* Custom Styles para manter consistência */
+.transportadora-card {
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+.transportadora-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+    border-color: #dc2626;
+}
+
+.card-header {
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.btn-group .btn {
+    border-radius: 0;
+}
+
+.btn-group .btn:first-child {
+    border-top-left-radius: 0.375rem;
+    border-bottom-left-radius: 0.375rem;
+}
+
+.btn-group .btn:last-child {
+    border-top-right-radius: 0.375rem;
+    border-bottom-right-radius: 0.375rem;
+}
+
+/* Statistics Cards */
+.card.bg-primary,
+.card.bg-success,
+.card.bg-info,
+.card.bg-warning {
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.card.bg-primary:hover,
+.card.bg-success:hover,
+.card.bg-info:hover,
+.card.bg-warning:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+/* Modal Enhancements */
+.modal-header {
+    border-bottom: none;
+}
+
+.modal-footer {
+    border-top: 1px solid #e9ecef;
+    background-color: #f8f9fa;
+}
+
+/* Form Enhancements */
+.form-control:focus {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 0.2rem rgba(220, 38, 38, 0.25);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .btn-group .btn {
+        font-size: 0.8rem;
+        padding: 0.375rem 0.5rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Animation for cards */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.transportadora-card {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.transportadora-card:nth-child(1) { animation-delay: 0.1s; }
+.transportadora-card:nth-child(2) { animation-delay: 0.2s; }
+.transportadora-card:nth-child(3) { animation-delay: 0.3s; }
+.transportadora-card:nth-child(4) { animation-delay: 0.4s; }
+.transportadora-card:nth-child(5) { animation-delay: 0.5s; }
+.transportadora-card:nth-child(6) { animation-delay: 0.6s; }
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Advanced Search Functionality
@@ -833,12 +485,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 case 'nome':
                     return a.dataset.nome.localeCompare(b.dataset.nome);
                 case 'usuarios':
-                    const usersA = parseInt(a.querySelector('.metric-value').textContent);
-                    const usersB = parseInt(b.querySelector('.metric-value').textContent);
+                    const usersA = parseInt(a.querySelector('.text-success').textContent);
+                    const usersB = parseInt(b.querySelector('.text-success').textContent);
                     return usersB - usersA;
                 case 'cotacoes':
-                    const cotacoesA = parseInt(a.querySelectorAll('.metric-value')[1].textContent);
-                    const cotacoesB = parseInt(b.querySelectorAll('.metric-value')[1].textContent);
+                    const cotacoesA = parseInt(a.querySelector('.text-info').textContent);
+                    const cotacoesB = parseInt(b.querySelector('.text-info').textContent);
                     return cotacoesB - cotacoesA;
                 default:
                     return 0;
@@ -864,7 +516,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const salvarBtn = document.getElementById('salvarTransportadoraBtn');
         
         // Mostrar loading
-        salvarBtn.innerHTML = '<span class="loading-spinner me-2"></span>Salvando...';
+        salvarBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Salvando...';
         salvarBtn.disabled = true;
         
         // Fazer requisição AJAX
@@ -875,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showAdvancedAlert('success', data.message);
+                showAlert('success', data.message);
                 
                 // Fechar modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('criarTransportadoraModal'));
@@ -889,12 +541,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.reload();
                 }, 1500);
             } else {
-                showAdvancedAlert('danger', 'Erro: ' + data.error);
+                showAlert('danger', 'Erro: ' + data.error);
             }
         })
         .catch(error => {
             console.error('Erro:', error);
-            showAdvancedAlert('danger', 'Erro ao criar transportadora. Tente novamente.');
+            showAlert('danger', 'Erro ao criar transportadora. Tente novamente.');
         })
         .finally(() => {
             // Restaurar botão
@@ -911,7 +563,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const salvarBtn = document.getElementById('salvarEdicaoBtn');
         
         // Mostrar loading
-        salvarBtn.innerHTML = '<span class="loading-spinner me-2"></span>Salvando...';
+        salvarBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Salvando...';
         salvarBtn.disabled = true;
         
         // Fazer requisição AJAX
@@ -922,7 +574,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showAdvancedAlert('success', data.message);
+                showAlert('success', data.message);
                 
                 // Fechar modal
                 const modal = bootstrap.Modal.getInstance(document.getElementById('editarTransportadoraModal'));
@@ -933,12 +585,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.location.reload();
                 }, 1500);
             } else {
-                showAdvancedAlert('danger', 'Erro: ' + data.error);
+                showAlert('danger', 'Erro: ' + data.error);
             }
         })
         .catch(error => {
             console.error('Erro:', error);
-            showAdvancedAlert('danger', 'Erro ao editar transportadora. Tente novamente.');
+            showAlert('danger', 'Erro ao editar transportadora. Tente novamente.');
         })
         .finally(() => {
             // Restaurar botão
@@ -974,19 +626,19 @@ function excluirTransportadora(id, nome) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showAdvancedAlert('success', data.message);
+            showAlert('success', data.message);
             
             // Recarregar página para remover transportadora
             setTimeout(() => {
                 window.location.reload();
             }, 1500);
         } else {
-            showAdvancedAlert('danger', 'Erro: ' + data.error);
+            showAlert('danger', 'Erro: ' + data.error);
         }
     })
     .catch(error => {
         console.error('Erro:', error);
-        showAdvancedAlert('danger', 'Erro ao excluir transportadora. Tente novamente.');
+        showAlert('danger', 'Erro ao excluir transportadora. Tente novamente.');
     });
 }
 
@@ -1000,36 +652,28 @@ function gerenciarUsuarios(transportadoraId, transportadoraNome) {
 
 function exportData() {
     // Implementar exportação de dados
-    showAdvancedAlert('info', 'Funcionalidade de exportação será implementada em breve!');
+    showAlert('info', 'Funcionalidade de exportação será implementada em breve!');
 }
 
 function refreshData() {
     window.location.reload();
 }
 
-function showAdvancedAlert(type, message) {
+function showAlert(type, message) {
     // Remover alertas existentes
     document.querySelectorAll('.alert').forEach(alert => alert.remove());
     
     // Criar novo alerta
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-    alertDiv.style.cssText = `
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: white;
-        border-radius: 15px;
-        margin-bottom: 20px;
-    `;
     alertDiv.innerHTML = `
         ${message}
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
     
-    // Inserir no topo do dashboard
-    const dashboard = document.querySelector('.dashboard-container');
-    dashboard.insertBefore(alertDiv, dashboard.firstChild);
+    // Inserir no topo do container
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
     
     // Auto-remover após 5 segundos
     setTimeout(() => {
@@ -1038,25 +682,5 @@ function showAdvancedAlert(type, message) {
         }
     }, 5000);
 }
-
-// Advanced animations on scroll
-const observerOptions = {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
-};
-
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
-        }
-    });
-}, observerOptions);
-
-// Observe all cards
-document.querySelectorAll('.transportadora-card').forEach(card => {
-    observer.observe(card);
-});
 </script>
 {% endblock %}
