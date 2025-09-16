@@ -1,0 +1,159 @@
+{% extends 'fretes/base.html' %}
+
+{% block title %}Fretes para Agendamento{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="header mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">📅 Fretes para Agendamento</h1>
+        <p class="text-gray-600">Fretes aprovados que precisam ser agendados</p>
+    </div>
+
+    <!-- Estatísticas -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Para Agendamento</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_para_agendamento }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Agendados</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ fretes_agendados }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ total_para_agendamento|add:fretes_agendados }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de Fretes -->
+    {% if fretes_para_agendamento %}
+        <div class="grid gap-6">
+            {% for frete in fretes_para_agendamento %}
+                <div class="bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-800 mb-1">
+                                    Frete #{{ frete.id }}
+                                </h3>
+                                <p class="text-gray-600">
+                                    <strong>Solicitante:</strong> {{ frete.usuario.get_full_name|default:frete.usuario.username }}
+                                </p>
+                            </div>
+                            <div class="text-right">
+                                <span class="badge badge-approved">✅ Cotação Aprovada</span>
+                                <p class="text-sm text-gray-500 mt-1">
+                                    {{ frete.data_criacao|date:"d/m/Y H:i" }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-700 mb-2">📍 Origem</h4>
+                                <p class="text-gray-600">
+                                    {% if frete.origem %}
+                                        {{ frete.origem.nome }}<br>
+                                        <small>{{ frete.origem.endereco_completo }}</small>
+                                    {% else %}
+                                        <span class="text-gray-400">Não informada</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-700 mb-2">🎯 Destinos</h4>
+                                {% for destino in frete.destinos.all %}
+                                    <p class="text-gray-600">
+                                        {{ destino.cidade }}/{{ destino.estado }}<br>
+                                        <small>Vol: {{ destino.volume }}</small>
+                                    </p>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        {% if frete.valor_total %}
+                            <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                                <h4 class="font-semibold text-gray-700 mb-2">💰 Valores</h4>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                    <div>
+                                        <span class="text-gray-600">Frete:</span><br>
+                                        <span class="font-semibold">R$ {{ frete.valor_frete|floatformat:2 }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">Pedágio:</span><br>
+                                        <span class="font-semibold">R$ {{ frete.valor_pedagio|floatformat:2 }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">Ajudante:</span><br>
+                                        <span class="font-semibold">R$ {{ frete.valor_ajudante|floatformat:2 }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">Total:</span><br>
+                                        <span class="font-bold text-lg text-green-600">R$ {{ frete.valor_total|floatformat:2 }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="flex justify-between items-center">
+                            <div class="text-sm text-gray-500">
+                                <p><strong>Transportadora:</strong> {{ frete.transportadora_selecionada.nome }}</p>
+                                {% if frete.centro_custo %}
+                                    <p><strong>Centro de Custo:</strong> {{ frete.centro_custo }}</p>
+                                {% endif %}
+                            </div>
+                            <div class="flex gap-2">
+                                <a href="{% url 'frete_detalhe' frete.id %}" class="btn btn-outline">
+                                    Ver Detalhes
+                                </a>
+                                <a href="{% url 'agendar_frete' frete.id %}" class="btn btn-primary">
+                                    📅 Agendar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-12">
+            <div class="text-gray-400 mb-4">
+                <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+            </div>
+            <h3 class="text-xl font-semibold text-gray-600 mb-2">Nenhum frete para agendamento</h3>
+            <p class="text-gray-500">Não há fretes aprovados aguardando agendamento no momento.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

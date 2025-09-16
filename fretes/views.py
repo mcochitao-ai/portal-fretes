@@ -754,7 +754,7 @@ def meus_fretes(request):
         )
     
     # Filtro por status
-    if status in ['pendente', 'aguardando_aprovacao', 'aprovado', 'rejeitado', 'cotacao_enviada', 'cotacao_recebida', 'cotacao_aprovada', 'finalizado']:
+    if status in ['pendente', 'aguardando_aprovacao', 'aprovado', 'rejeitado', 'cotacao_enviada', 'cotacao_recebida', 'cotacao_aprovada', 'agendado', 'em_transito', 'entregue', 'finalizado']:
         qs = qs.filter(status=status)
     
     # Filtro por pesquisa - OTIMIZADO com índices

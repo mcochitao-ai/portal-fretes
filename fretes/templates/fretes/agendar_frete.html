@@ -1,0 +1,188 @@
+{% extends 'fretes/base.html' %}
+
+{% block title %}Agendar Frete #{{ frete.id }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="header mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">📅 Agendar Frete #{{ frete.id }}</h1>
+        <p class="text-gray-600">Preencha os dados do veículo e motorista para agendar o frete</p>
+    </div>
+
+    <!-- Informações do Frete -->
+    <div class="bg-white rounded-lg shadow-md border border-gray-200 mb-8">
+        <div class="p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">📋 Informações do Frete</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-2">📍 Origem</h3>
+                    <p class="text-gray-600">
+                        {% if frete.origem %}
+                            {{ frete.origem.nome }}<br>
+                            <small>{{ frete.origem.endereco_completo }}</small>
+                        {% else %}
+                            <span class="text-gray-400">Não informada</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-2">🎯 Destinos</h3>
+                    {% for destino in destinos %}
+                        <p class="text-gray-600">
+                            {{ destino.cidade }}/{{ destino.estado }}<br>
+                            <small>Vol: {{ destino.volume }}</small>
+                        </p>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            {% if frete.valor_total %}
+                <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-semibold text-gray-700 mb-2">💰 Valor Total</h3>
+                    <p class="text-2xl font-bold text-green-600">R$ {{ frete.valor_total|floatformat:2 }}</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Formulário de Agendamento -->
+    <div class="bg-white rounded-lg shadow-md border border-gray-200">
+        <div class="p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">🚚 Dados do Veículo e Motorista</h2>
+            
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Dados do Veículo -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label for="placa_veiculo" class="block text-sm font-medium text-gray-700 mb-2">
+                            Placa do Veículo *
+                        </label>
+                        <input type="text" id="placa_veiculo" name="placa_veiculo" 
+                               class="form-control" placeholder="ABC-1234" required
+                               maxlength="10" style="text-transform: uppercase;">
+                    </div>
+                    <div>
+                        <label for="modelo_veiculo" class="block text-sm font-medium text-gray-700 mb-2">
+                            Modelo do Veículo *
+                        </label>
+                        <input type="text" id="modelo_veiculo" name="modelo_veiculo" 
+                               class="form-control" placeholder="Ex: Mercedes-Benz Actros" required>
+                    </div>
+                    <div>
+                        <label for="cor_veiculo" class="block text-sm font-medium text-gray-700 mb-2">
+                            Cor do Veículo *
+                        </label>
+                        <input type="text" id="cor_veiculo" name="cor_veiculo" 
+                               class="form-control" placeholder="Ex: Branco" required>
+                    </div>
+                </div>
+
+                <!-- Dados do Motorista -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label for="motorista_nome" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nome do Motorista *
+                        </label>
+                        <input type="text" id="motorista_nome" name="motorista_nome" 
+                               class="form-control" placeholder="Nome completo" required>
+                    </div>
+                    <div>
+                        <label for="motorista_cpf" class="block text-sm font-medium text-gray-700 mb-2">
+                            CPF do Motorista *
+                        </label>
+                        <input type="text" id="motorista_cpf" name="motorista_cpf" 
+                               class="form-control" placeholder="000.000.000-00" required
+                               maxlength="14">
+                    </div>
+                    <div>
+                        <label for="motorista_telefone" class="block text-sm font-medium text-gray-700 mb-2">
+                            Telefone do Motorista *
+                        </label>
+                        <input type="tel" id="motorista_telefone" name="motorista_telefone" 
+                               class="form-control" placeholder="(11) 99999-9999" required>
+                    </div>
+                </div>
+
+                <!-- Datas -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="data_coleta" class="block text-sm font-medium text-gray-700 mb-2">
+                            Data/Hora da Coleta *
+                        </label>
+                        <input type="datetime-local" id="data_coleta" name="data_coleta" 
+                               class="form-control" required>
+                    </div>
+                    <div>
+                        <label for="data_entrega_prevista" class="block text-sm font-medium text-gray-700 mb-2">
+                            Data/Hora Prevista de Entrega *
+                        </label>
+                        <input type="datetime-local" id="data_entrega_prevista" name="data_entrega_prevista" 
+                               class="form-control" required>
+                    </div>
+                </div>
+
+                <!-- Observações -->
+                <div>
+                    <label for="observacoes_agendamento" class="block text-sm font-medium text-gray-700 mb-2">
+                        Observações do Agendamento
+                    </label>
+                    <textarea id="observacoes_agendamento" name="observacoes_agendamento" 
+                              class="form-control" rows="3" 
+                              placeholder="Observações adicionais sobre o agendamento..."></textarea>
+                </div>
+
+                <!-- Botões -->
+                <div class="flex justify-end gap-4 pt-6 border-t border-gray-200">
+                    <a href="{% url 'fretes_para_agendamento' %}" class="btn btn-outline">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        📅 Agendar Frete
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Formatação automática dos campos
+document.getElementById('placa_veiculo').addEventListener('input', function(e) {
+    e.target.value = e.target.value.toUpperCase();
+});
+
+document.getElementById('motorista_cpf').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+    value = value.replace(/(\d{3})(\d)/, '$1.$2');
+    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    e.target.value = value;
+});
+
+document.getElementById('motorista_telefone').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    value = value.replace(/(\d{2})(\d)/, '($1) $2');
+    value = value.replace(/(\d{5})(\d)/, '$1-$2');
+    e.target.value = value;
+});
+
+// Definir data mínima para hoje
+const today = new Date().toISOString().slice(0, 16);
+document.getElementById('data_coleta').min = today;
+document.getElementById('data_entrega_prevista').min = today;
+
+// Validar que a data de entrega seja posterior à coleta
+document.getElementById('data_coleta').addEventListener('change', function() {
+    const coleta = this.value;
+    const entrega = document.getElementById('data_entrega_prevista');
+    if (coleta) {
+        entrega.min = coleta;
+        if (entrega.value && entrega.value <= coleta) {
+            entrega.value = '';
+        }
+    }
+});
+</script>
+{% endblock %}

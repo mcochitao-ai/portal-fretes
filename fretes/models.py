@@ -79,6 +79,9 @@ class FreteRequest(models.Model):
 		('cotacao_enviada', 'Cotação Enviada'),
 		('cotacao_recebida', 'Cotação Recebida'),
 		('cotacao_aprovada', 'Cotação Aprovada'),
+		('agendado', 'Agendado'),
+		('em_transito', 'Em Trânsito'),
+		('entregue', 'Entregue'),
 		('rejeitado', 'Rejeitado'),
 		('rejeitado_transportadora', 'Rejeitado pela Transportadora'),
 		('cancelado', 'Cancelado'),
@@ -269,3 +272,86 @@ def create_user_profile(sender, instance, created, **kwargs):
 # def save_user_profile(sender, instance, created, **kwargs):
 # 	if not created and hasattr(instance, 'userprofile'):
 # 		instance.userprofile.save()
+
+
+class AgendamentoFrete(models.Model):
+	"""Modelo para agendamento de fretes pela transportadora"""
+	frete = models.OneToOneField(FreteRequest, on_delete=models.CASCADE, related_name='agendamento')
+	transportadora = models.ForeignKey(Transportadora, on_delete=models.CASCADE)
+	
+	# Dados do veículo
+	placa_veiculo = models.CharField(max_length=10, verbose_name="Placa do Veículo")
+	modelo_veiculo = models.CharField(max_length=100, verbose_name="Modelo do Veículo")
+	cor_veiculo = models.CharField(max_length=50, verbose_name="Cor do Veículo")
+	motorista_nome = models.CharField(max_length=100, verbose_name="Nome do Motorista")
+	motorista_cpf = models.CharField(max_length=14, verbose_name="CPF do Motorista")
+	motorista_telefone = models.CharField(max_length=20, verbose_name="Telefone do Motorista")
+	
+	# Dados do agendamento
+	data_coleta = models.DateTimeField(verbose_name="Data/Hora da Coleta")
+	data_entrega_prevista = models.DateTimeField(verbose_name="Data/Hora Prevista de Entrega")
+	observacoes_agendamento = models.TextField(blank=True, null=True, verbose_name="Observações do Agendamento")
+	
+	# Controle
+	data_agendamento = models.DateTimeField(auto_now_add=True)
+	usuario_agendamento = models.ForeignKey(User, on_delete=models.CASCADE)
+	
+	def __str__(self):
+		return f"Agendamento Frete #{self.frete.id} - {self.placa_veiculo}"
+	
+	@property
+	def motorista_info(self):
+		"""Retorna informações completas do motorista"""
+		return f"{self.motorista_nome} - {self.motorista_telefone}"
+	
+	@property
+	def veiculo_info(self):
+		"""Retorna informações completas do veículo"""
+		return f"{self.modelo_veiculo} - {self.cor_veiculo} - {self.placa_veiculo}"
+
+
+class TrackingFrete(models.Model):
+	"""Modelo para tracking/rastreamento de fretes"""
+	agendamento = models.ForeignKey(AgendamentoFrete, on_delete=models.CASCADE, related_name='tracking')
+	
+	STATUS_TRACKING_CHOICES = [
+		('agendado', 'Agendado'),
+		('coleta_iniciada', 'Coleta Iniciada'),
+		('coleta_concluida', 'Coleta Concluída'),
+		('em_transito', 'Em Trânsito'),
+		('entregando', 'Entregando'),
+		('entregue', 'Entregue'),
+		('problema', 'Problema na Entrega'),
+		('cancelado', 'Cancelado'),
+	]
+	
+	status = models.CharField(max_length=20, choices=STATUS_TRACKING_CHOICES)
+	data_atualizacao = models.DateTimeField(auto_now_add=True)
+	localizacao_atual = models.CharField(max_length=255, blank=True, null=True, verbose_name="Localização Atual")
+	observacoes = models.TextField(blank=True, null=True, verbose_name="Observações")
+	usuario_atualizacao = models.ForeignKey(User, on_delete=models.CASCADE)
+	
+	# Para problemas
+	tipo_problema = models.CharField(max_length=100, blank=True, null=True, verbose_name="Tipo do Problema")
+	descricao_problema = models.TextField(blank=True, null=True, verbose_name="Descrição do Problema")
+	
+	class Meta:
+		ordering = ['-data_atualizacao']
+	
+	def __str__(self):
+		return f"Tracking #{self.id} - {self.get_status_display()}"
+	
+	@property
+	def status_icon(self):
+		"""Retorna ícone para o status"""
+		icons = {
+			'agendado': '📅',
+			'coleta_iniciada': '🚚',
+			'coleta_concluida': '✅',
+			'em_transito': '🛣️',
+			'entregando': '📦',
+			'entregue': '🎉',
+			'problema': '⚠️',
+			'cancelado': '❌',
+		}
+		return icons.get(self.status, '📋')

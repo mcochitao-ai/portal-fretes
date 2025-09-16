@@ -1,6 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
+from . import views_tracking
 
 urlpatterns = [
     # ...existing code...
@@ -41,4 +42,10 @@ urlpatterns = [
     path('health/', views.health_check, name='health_check'),
     path('', views.home, name='home'),
     path('solicitar-frete/', views.selecionar_origem, name='solicitar_frete'),
+    
+    # URLs de Agendamento e Tracking
+    path('fretes-para-agendamento/', views_tracking.fretes_para_agendamento, name='fretes_para_agendamento'),
+    path('agendar-frete/<int:frete_id>/', views_tracking.agendar_frete, name='agendar_frete'),
+    path('tracking-frete/<int:frete_id>/', views_tracking.tracking_frete, name='tracking_frete'),
+    path('atualizar-tracking/<int:frete_id>/', views_tracking.atualizar_tracking, name='atualizar_tracking'),
 ]

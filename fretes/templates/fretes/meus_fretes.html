@@ -76,6 +76,9 @@
                         <option value="cotacao_enviada" {% if status_selected == 'cotacao_enviada' %}selected{% endif %}>Cotação enviada</option>
                         <option value="cotacao_recebida" {% if status_selected == 'cotacao_recebida' %}selected{% endif %}>Cotação recebida</option>
                         <option value="cotacao_aprovada" {% if status_selected == 'cotacao_aprovada' %}selected{% endif %}>Cotação aprovada</option>
+                        <option value="agendado" {% if status_selected == 'agendado' %}selected{% endif %}>Agendado</option>
+                        <option value="em_transito" {% if status_selected == 'em_transito' %}selected{% endif %}>Em Trânsito</option>
+                        <option value="entregue" {% if status_selected == 'entregue' %}selected{% endif %}>Entregue</option>
                         <option value="cancelado" {% if status_selected == 'cancelado' %}selected{% endif %}>Cancelado</option>
                         <option value="finalizado" {% if status_selected == 'finalizado' %}selected{% endif %}>Finalizado</option>
                     </select>
@@ -124,6 +127,12 @@
                                 <span class="badge badge-received">📥 Cotação Recebida</span>
                             {% elif frete.status == 'cotacao_aprovada' %}
                                 <span class="badge badge-approved">✅ Cotação Aprovada</span>
+                            {% elif frete.status == 'agendado' %}
+                                <span class="badge badge-scheduled">📅 Agendado</span>
+                            {% elif frete.status == 'em_transito' %}
+                                <span class="badge badge-transit">🚚 Em Trânsito</span>
+                            {% elif frete.status == 'entregue' %}
+                                <span class="badge badge-delivered">🎉 Entregue</span>
                             {% elif frete.status == 'cancelado' %}
                                 <span class="badge badge-danger">❌ Cancelado</span>
                             {% elif frete.status == 'finalizado' %}
@@ -244,6 +253,14 @@
                                         <line x1="9" y1="9" x2="15" y2="15"></line>
                                     </svg>
                                 </button>
+                            {% endif %}
+                            {% if frete.status in 'agendado,em_transito,entregue' %}
+                                <a href="{% url 'tracking_frete' frete.id %}" class="btn btn-info action-btn" title="Ver tracking">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 3h18v18H3zM9 9h6v6H9z"></path>
+                                        <path d="M9 1v6M15 1v6M9 17v6M15 17v6M1 9h6M17 9h6M1 15h6M17 15h6"></path>
+                                    </svg>
+                                </a>
                             {% endif %}
                         </div>
                     </div>
