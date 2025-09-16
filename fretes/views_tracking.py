@@ -441,8 +441,8 @@ def atualizar_tracking(request, frete_id):
             elif status == 'em_transito':
                 frete.status = 'em_transito'
                 frete.save()
-            elif status == 'cancelado':
-                frete.status = 'cancelado'
+            elif status == 'agendado':
+                frete.status = 'agendado'
                 frete.save()
             
             messages.success(request, f'Status atualizado para: {tracking.get_status_display()}')

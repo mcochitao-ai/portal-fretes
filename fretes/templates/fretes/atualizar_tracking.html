@@ -49,13 +49,10 @@
                     </label>
                     <select id="status" name="status" class="form-control" required>
                         <option value="">Selecione o status</option>
-                        <option value="coleta_iniciada">🚚 Coleta Iniciada</option>
-                        <option value="coleta_concluida">✅ Coleta Concluída</option>
+                        <option value="agendado">📅 Agendado</option>
                         <option value="em_transito">🛣️ Em Trânsito</option>
-                        <option value="entregando">📦 Entregando</option>
                         <option value="entregue">🎉 Entregue</option>
                         <option value="problema">⚠️ Problema na Entrega</option>
-                        <option value="cancelado">❌ Cancelado</option>
                     </select>
                 </div>
 
@@ -153,7 +150,7 @@ document.getElementById('trackingForm').addEventListener('submit', function(e) {
     }
     
     // Para alguns status, localização é recomendada
-    if (['em_transito', 'entregando', 'problema'].includes(status) && !localizacao.trim()) {
+    if (['em_transito', 'problema'].includes(status) && !localizacao.trim()) {
         if (!confirm('Localização não informada. Deseja continuar mesmo assim?')) {
             e.preventDefault();
             return;

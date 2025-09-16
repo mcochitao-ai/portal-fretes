@@ -316,13 +316,9 @@ class TrackingFrete(models.Model):
 	
 	STATUS_TRACKING_CHOICES = [
 		('agendado', 'Agendado'),
-		('coleta_iniciada', 'Coleta Iniciada'),
-		('coleta_concluida', 'Coleta Concluída'),
 		('em_transito', 'Em Trânsito'),
-		('entregando', 'Entregando'),
 		('entregue', 'Entregue'),
 		('problema', 'Problema na Entrega'),
-		('cancelado', 'Cancelado'),
 	]
 	
 	status = models.CharField(max_length=20, choices=STATUS_TRACKING_CHOICES)
@@ -346,12 +342,8 @@ class TrackingFrete(models.Model):
 		"""Retorna ícone para o status"""
 		icons = {
 			'agendado': '📅',
-			'coleta_iniciada': '🚚',
-			'coleta_concluida': '✅',
 			'em_transito': '🛣️',
-			'entregando': '📦',
 			'entregue': '🎉',
 			'problema': '⚠️',
-			'cancelado': '❌',
 		}
 		return icons.get(self.status, '📋')
