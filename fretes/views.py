@@ -301,10 +301,10 @@ def home(request):
                     status='pendente'
                 ).count()
                 
-                # Fretes finalizados do usuário
-                fretes_finalizados = FreteRequest.objects.filter(
+                # Fretes concluídos do usuário (entregues + finalizados)
+                fretes_concluidos = FreteRequest.objects.filter(
                     usuario=request.user, 
-                    status='finalizado'
+                    status__in=['entregue', 'finalizado']
                 ).count()
                 
                 # Fretes deste mês do usuário
@@ -318,7 +318,7 @@ def home(request):
                 estatisticas = {
                     'total_fretes': total_fretes,
                     'fretes_pendentes': fretes_pendentes,
-                    'fretes_finalizados': fretes_finalizados,
+                    'fretes_finalizados': fretes_concluidos,
                     'fretes_mes': fretes_mes,
                 }
                 
