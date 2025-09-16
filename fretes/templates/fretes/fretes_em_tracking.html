@@ -45,9 +45,10 @@
     </div>
 
     <!-- Lista de Fretes -->
-    {% if fretes_em_tracking %}
+    {% if fretes_com_volume %}
         <div class="freight-list">
-            {% for frete in fretes_em_tracking %}
+            {% for item in fretes_com_volume %}
+                {% with frete=item.frete volume_total=item.volume_total %}
                 <div class="freight-card">
                     <div class="freight-header">
                         <div class="freight-info">
@@ -55,15 +56,12 @@
                             <p class="freight-route">
                                 <strong>{{ frete.origem.nome }}</strong> → 
                                 {% for destino in frete.destinos.all %}
-                                    <strong>{{ destino.loja.nome }}</strong>{% if not forloop.last %}, {% endif %}
+                                    <strong>{{ destino.loja }}</strong>{% if not forloop.last %}, {% endif %}
                                 {% endfor %}
                             </p>
                             <p class="freight-details">
                                 <span class="detail-item">
-                                    <strong>Volume:</strong> {{ frete.volume }}m³
-                                </span>
-                                <span class="detail-item">
-                                    <strong>Peso:</strong> {{ frete.peso }}kg
+                                    <strong>Volume:</strong> {{ volume_total }}m³
                                 </span>
                                 <span class="detail-item">
                                     <strong>Data Coleta:</strong> {{ frete.horario_coleta|date:"d/m/Y H:i" }}
@@ -139,6 +137,7 @@
                         {% endif %}
                     </div>
                 </div>
+                {% endwith %}
             {% endfor %}
         </div>
     {% else %}

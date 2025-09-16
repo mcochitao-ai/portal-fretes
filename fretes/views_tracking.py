@@ -362,8 +362,17 @@ def fretes_em_tracking(request):
     fretes_em_transito = fretes_em_tracking.filter(status='em_transito').count()
     fretes_entregues = fretes_em_tracking.filter(status='entregue').count()
     
+    # Calcular volume total para cada frete
+    fretes_com_volume = []
+    for frete in fretes_em_tracking:
+        volume_total = sum(destino.volume for destino in frete.destinos.all())
+        fretes_com_volume.append({
+            'frete': frete,
+            'volume_total': volume_total
+        })
+    
     return render(request, 'fretes/fretes_em_tracking.html', {
-        'fretes_em_tracking': fretes_em_tracking,
+        'fretes_com_volume': fretes_com_volume,
         'total_em_tracking': total_em_tracking,
         'fretes_agendados': fretes_agendados,
         'fretes_em_transito': fretes_em_transito,
