@@ -355,24 +355,32 @@ def home(request):
 # Views para criação de fretes
 @login_required(login_url='/login/')
 def selecionar_origem(request):
-    """Tela 1: Seleção de origem"""
-    lojas_qs = Loja.objects.all()
+    """Tela 1: Seleção de origem - OTIMIZADO com cache"""
+    from django.core.cache import cache
     
-    def loja_numero(loja):
-        try:
-            # Extrair número do nome "Loja 18" -> 18
-            if loja.nome.startswith('Loja '):
-                return int(loja.nome.replace('Loja ', ''))
-            else:
-                return int(loja.nome)
-        except (ValueError, TypeError):
-            return 0
+    # Cache das lojas por 30 minutos (dados estáticos)
+    cache_key = 'lojas_choices_sorted'
+    lojas_choices = cache.get(cache_key)
     
-    lojas_list = sorted(lojas_qs, key=loja_numero)
-    lojas_choices = [
-        (str(loja.id), loja.nome, loja.latitude, loja.longitude) 
-        for loja in lojas_list
-    ]
+    if lojas_choices is None:
+        lojas_qs = Loja.objects.all().order_by('nome')
+        
+        def loja_numero(loja):
+            try:
+                # Extrair número do nome "Loja 18" -> 18
+                if loja.nome.startswith('Loja '):
+                    return int(loja.nome.replace('Loja ', ''))
+                else:
+                    return int(loja.nome)
+            except (ValueError, TypeError):
+                return 0
+        
+        lojas_list = sorted(lojas_qs, key=loja_numero)
+        lojas_choices = [
+            (str(loja.id), loja.nome, loja.latitude, loja.longitude) 
+            for loja in lojas_list
+        ]
+        cache.set(cache_key, lojas_choices, 1800)  # 30 minutos
     
     if request.method == 'POST':
         loja_id = request.POST.get('origem')
@@ -715,25 +723,41 @@ def meus_fretes(request):
     try:
         user_profile = request.user.userprofile
         if user_profile.is_usuario_master():
-            # Master vê todos os fretes
-            qs = FreteRequest.objects.all()
+            # Master vê todos os fretes - OTIMIZADO com select_related e prefetch_related
+            qs = FreteRequest.objects.select_related(
+                'usuario', 'origem', 'transportadora_selecionada', 'aprovador'
+            ).prefetch_related(
+                'destinos', 'cotacoes__transportadora'
+            )
         elif user_profile.is_transportadora() and user_profile.transportadora:
-            # Transportadora vê apenas fretes direcionados para ela
+            # Transportadora vê apenas fretes direcionados para ela - OTIMIZADO
             qs = FreteRequest.objects.filter(
                 cotacaofrete__transportadora=user_profile.transportadora
+            ).select_related(
+                'usuario', 'origem', 'transportadora_selecionada', 'aprovador'
+            ).prefetch_related(
+                'destinos', 'cotacoes__transportadora'
             ).distinct()
         else:
-            # Usuário normal vê apenas seus fretes
-            qs = FreteRequest.objects.filter(usuario=request.user)
+            # Usuário normal vê apenas seus fretes - OTIMIZADO
+            qs = FreteRequest.objects.filter(usuario=request.user).select_related(
+                'usuario', 'origem', 'transportadora_selecionada', 'aprovador'
+            ).prefetch_related(
+                'destinos', 'cotacoes__transportadora'
+            )
     except UserProfile.DoesNotExist:
-        # Se não tem perfil, vê apenas seus fretes
-        qs = FreteRequest.objects.filter(usuario=request.user)
+        # Se não tem perfil, vê apenas seus fretes - OTIMIZADO
+        qs = FreteRequest.objects.filter(usuario=request.user).select_related(
+            'usuario', 'origem', 'transportadora_selecionada', 'aprovador'
+        ).prefetch_related(
+            'destinos', 'cotacoes__transportadora'
+        )
     
     # Filtro por status
     if status in ['pendente', 'aguardando_aprovacao', 'aprovado', 'rejeitado', 'cotacao_enviada', 'cotacao_recebida', 'cotacao_aprovada', 'finalizado']:
         qs = qs.filter(status=status)
     
-    # Filtro por pesquisa
+    # Filtro por pesquisa - OTIMIZADO com índices
     if search:
         from django.db.models import Q
         qs = qs.filter(
@@ -756,7 +780,15 @@ def meus_fretes(request):
 @login_required(login_url='/login/')
 def frete_detalhe(request, frete_id):
     """Detalhes de um frete específico"""
-    frete = get_object_or_404(FreteRequest, id=frete_id)
+    # OTIMIZADO: Carregar todas as relações necessárias em uma única consulta
+    frete = get_object_or_404(
+        FreteRequest.objects.select_related(
+            'usuario', 'origem', 'transportadora_selecionada', 'aprovador', 'usuario_cancelamento'
+        ).prefetch_related(
+            'destinos', 'cotacoes__transportadora', 'cotacoes__aprovador'
+        ), 
+        id=frete_id
+    )
     
     # Verificar se o usuário pode ver detalhes do frete
     try:
@@ -1041,10 +1073,14 @@ def fretes_para_aprovacao(request):
         messages.error(request, 'Perfil de usuário não encontrado.')
         return redirect('home')
     
-    # Buscar fretes pendentes
+    # Buscar fretes pendentes - OTIMIZADO
     fretes_pendentes = FreteRequest.objects.filter(
         status='pendente'
-    ).select_related('usuario', 'origem').prefetch_related('destinos').order_by('-data_criacao')
+    ).select_related(
+        'usuario', 'origem', 'transportadora_selecionada'
+    ).prefetch_related(
+        'destinos', 'cotacoes__transportadora'
+    ).order_by('-data_criacao')
     
     # Buscar transportadoras disponíveis
     transportadoras = Transportadora.objects.all().order_by('nome')
@@ -2175,7 +2211,14 @@ def gerenciar_transportadoras(request):
             messages.error(request, 'Apenas usuários master podem gerenciar transportadoras.')
             return redirect('home')
         
-        transportadoras = Transportadora.objects.all().order_by('nome')
+        # OTIMIZADO: Cache das transportadoras por 30 minutos
+        from django.core.cache import cache
+        cache_key = 'transportadoras_list'
+        transportadoras = cache.get(cache_key)
+        
+        if transportadoras is None:
+            transportadoras = Transportadora.objects.all().order_by('nome')
+            cache.set(cache_key, transportadoras, 1800)  # 30 minutos
         
         return render(request, 'fretes/gerenciar_transportadoras.html', {
             'transportadoras': transportadoras

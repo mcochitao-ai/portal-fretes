@@ -102,3 +102,4 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS('=== CORREÇÕES PÓS-DEPLOY CONCLUÍDAS ===')
         )
+

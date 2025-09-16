@@ -89,15 +89,25 @@ SESSION_COOKIE_SECURE = not DEBUG  # HTTPS em produção
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 
-# Cache para performance (opcional)
+# Cache para performance - OTIMIZADO
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'unique-snowflake',
         'TIMEOUT': 300,  # 5 minutos
         'OPTIONS': {
-            'MAX_ENTRIES': 1000,
+            'MAX_ENTRIES': 2000,  # Aumentado para mais cache
         }
+    }
+}
+
+# Cache específico para dados que mudam pouco
+CACHES['static'] = {
+    'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    'LOCATION': 'static-cache',
+    'TIMEOUT': 1800,  # 30 minutos para dados estáticos
+    'OPTIONS': {
+        'MAX_ENTRIES': 500,
     }
 }
 
