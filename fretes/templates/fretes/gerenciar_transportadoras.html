@@ -24,7 +24,7 @@
 
     <!-- Statistics Cards -->
     <div class="row mt-4 mb-4">
-        <div class="col-md-3 mb-3">
+        <div class="col-md-4 mb-3 mx-auto">
             <div class="card bg-primary text-white h-100">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
@@ -34,65 +34,6 @@
                         </div>
                         <div class="align-self-center">
                             <i class="fas fa-truck fa-2x opacity-75"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card bg-success text-white h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">
-                                {% for transportadora in transportadoras %}
-                                    {% if forloop.first %}{{ transportadora.userprofile_set.count }}{% endif %}
-                                {% empty %}0{% endfor %}
-                            </h4>
-                            <p class="card-text">Usuários Ativos</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-users fa-2x opacity-75"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card bg-info text-white h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">
-                                {% for transportadora in transportadoras %}
-                                    {% if forloop.first %}{{ transportadora.cotacaofrete_set.count }}{% endif %}
-                                {% empty %}0{% endfor %}
-                            </h4>
-                            <p class="card-text">Cotações Enviadas</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-chart-line fa-2x opacity-75"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card bg-warning text-white h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="card-title">
-                                {% for transportadora in transportadoras %}
-                                    {% if transportadora.cotacaofrete_set.exists and forloop.first %}
-                                        {{ transportadora.cotacaofrete_set.first.data_cotacao|date:"d/m" }}
-                                    {% endif %}
-                                {% empty %}N/A{% endfor %}
-                            </h4>
-                            <p class="card-text">Última Atividade</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-clock fa-2x opacity-75"></i>
                         </div>
                     </div>
                 </div>
@@ -124,8 +65,6 @@
                     <select class="form-select" id="sortBy">
                         <option value="nome">Ordenar por Nome</option>
                         <option value="usuarios">Ordenar por Usuários</option>
-                        <option value="cotacoes">Ordenar por Cotações</option>
-                        <option value="atividade">Ordenar por Atividade</option>
                     </select>
                 </div>
             </div>
@@ -179,30 +118,11 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="row text-center mb-3">
-                                        <div class="col-6">
-                                            <div class="border-end">
-                                                <h6 class="text-success mb-1">{{ transportadora.userprofile_set.count }}</h6>
-                                                <small class="text-muted">Usuários</small>
-                                            </div>
-                                        </div>
-                                        <div class="col-6">
-                                            <h6 class="text-info mb-1">{{ transportadora.cotacaofrete_set.count }}</h6>
-                                            <small class="text-muted">Cotações</small>
-                                        </div>
+                                    <div class="text-center mb-3">
+                                        <h6 class="text-success mb-1">{{ transportadora.userprofile_set.count }}</h6>
+                                        <small class="text-muted">Usuários Associados</small>
                                     </div>
 
-                                    <div class="mb-3">
-                                        <small class="text-muted">
-                                            <i class="fas fa-clock me-1"></i>
-                                            Última atividade: 
-                                            {% if transportadora.cotacaofrete_set.exists %}
-                                                {{ transportadora.cotacaofrete_set.first.data_cotacao|date:"d/m/Y H:i" }}
-                                            {% else %}
-                                                Nunca
-                                            {% endif %}
-                                        </small>
-                                    </div>
                                 </div>
                                 <div class="card-footer bg-transparent">
                                     <div class="btn-group w-100" role="group">
@@ -488,10 +408,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     const usersA = parseInt(a.querySelector('.text-success').textContent);
                     const usersB = parseInt(b.querySelector('.text-success').textContent);
                     return usersB - usersA;
-                case 'cotacoes':
-                    const cotacoesA = parseInt(a.querySelector('.text-info').textContent);
-                    const cotacoesB = parseInt(b.querySelector('.text-info').textContent);
-                    return cotacoesB - cotacoesA;
                 default:
                     return 0;
             }
