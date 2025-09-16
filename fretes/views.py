@@ -785,7 +785,7 @@ def frete_detalhe(request, frete_id):
         FreteRequest.objects.select_related(
             'usuario', 'origem', 'transportadora_selecionada', 'aprovador', 'usuario_cancelamento'
         ).prefetch_related(
-            'destinos', 'cotacoes__transportadora', 'cotacoes__aprovador'
+            'destinos', 'cotacoes__transportadora', 'cotacoes__aprovador', 'agendamento__tracking'
         ), 
         id=frete_id
     )
@@ -829,6 +829,12 @@ def frete_detalhe(request, frete_id):
         if cotacao_aprovada:
             transportadora_aprovada = cotacao_aprovada.transportadora
     
+    # Buscar informações de agendamento se existir
+    agendamento = getattr(frete, 'agendamento', None)
+    tracking_history = []
+    if agendamento:
+        tracking_history = agendamento.tracking.all().order_by('-data_atualizacao')
+    
     if request.method == 'POST':
         transportadora_id = request.POST.get('transportadora_id')
         if transportadora_id:
@@ -842,7 +848,9 @@ def frete_detalhe(request, frete_id):
         'destinos': destinos,
         'transportadoras': transportadoras,
         'cotacao_aprovada': cotacao_aprovada,
-        'transportadora_aprovada': transportadora_aprovada
+        'transportadora_aprovada': transportadora_aprovada,
+        'agendamento': agendamento,
+        'tracking_history': tracking_history
     })
 
 

@@ -93,6 +93,33 @@
                 </div>
             </div>
 
+            <!-- Informações de Agendamento -->
+            {% if agendamento %}
+            <div class="card mb-6">
+                <div class="card-header">
+                    <h3>🚛 Informações do Agendamento</h3>
+                </div>
+                <div class="card-body">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div><strong>Data/Hora da Coleta:</strong> {{ agendamento.data_coleta|date:'d/m/Y H:i' }}</div>
+                        <div><strong>Previsão de Entrega:</strong> {{ agendamento.data_entrega_prevista|date:'d/m/Y H:i' }}</div>
+                        <div><strong>Placa do Veículo:</strong> {{ agendamento.placa_veiculo }}</div>
+                        <div><strong>Modelo do Veículo:</strong> {{ agendamento.modelo_veiculo }}</div>
+                        <div><strong>Cor do Veículo:</strong> {{ agendamento.cor_veiculo }}</div>
+                        <div><strong>Nome do Motorista:</strong> {{ agendamento.motorista_nome }}</div>
+                        <div><strong>CPF do Motorista:</strong> {{ agendamento.motorista_cpf }}</div>
+                        <div><strong>Telefone do Motorista:</strong> {{ agendamento.motorista_telefone }}</div>
+                    </div>
+                    {% if agendamento.observacoes_agendamento %}
+                        <div class="mt-4 p-3 bg-blue-50 border-l-4 border-blue-400 rounded">
+                            <h5 class="text-blue-800 font-semibold mb-2">📝 Observações do Agendamento</h5>
+                            <p class="text-blue-700">{{ agendamento.observacoes_agendamento }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Origem -->
             <div class="card mb-6">
                 <div class="card-header">
@@ -411,6 +438,45 @@
             <div class="card-body">
                 <div class="p-3 bg-green-50 border-l-4 border-green-400 rounded">
                     <p class="text-green-700">{{ frete.observacoes_aprovacao }}</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Histórico de Tracking -->
+    {% if tracking_history %}
+        <div class="card mt-6">
+            <div class="card-header">
+                <h3>📊 Histórico de Tracking</h3>
+            </div>
+            <div class="card-body">
+                <div class="space-y-4">
+                    {% for tracking in tracking_history %}
+                        <div class="border-l-4 border-blue-400 pl-4 py-2">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-semibold text-gray-800">{{ tracking.status_icon }} {{ tracking.get_status_display }}</h4>
+                                    {% if tracking.localizacao_atual %}
+                                        <p class="text-sm text-gray-600 mt-1">📍 {{ tracking.localizacao_atual }}</p>
+                                    {% endif %}
+                                    {% if tracking.observacoes %}
+                                        <p class="text-sm text-gray-700 mt-1">{{ tracking.observacoes }}</p>
+                                    {% endif %}
+                                    {% if tracking.tipo_problema %}
+                                        <div class="mt-2 p-2 bg-red-50 border border-red-200 rounded">
+                                            <p class="text-sm text-red-800"><strong>Problema:</strong> {{ tracking.tipo_problema }}</p>
+                                            {% if tracking.descricao_problema %}
+                                                <p class="text-sm text-red-700 mt-1">{{ tracking.descricao_problema }}</p>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    {{ tracking.data_atualizacao|date:'d/m/Y H:i' }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>
