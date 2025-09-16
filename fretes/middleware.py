@@ -1,4 +1,5 @@
 from django.utils.deprecation import MiddlewareMixin
+from django.contrib import messages
 import os
 import threading
 
@@ -59,3 +60,18 @@ class DatabaseSetupMiddleware(MiddlewareMixin):
             print(f"❌ [MIDDLEWARE] Erro ao configurar banco: {e}")
             # Não imprimir traceback completo para evitar spam no log
             print("⚠️ [MIDDLEWARE] Setup falhou, mas aplicação continuará funcionando")
+
+
+class ClearMessagesOnLogoutMiddleware(MiddlewareMixin):
+    """
+    Middleware que limpa as mensagens da sessão quando o usuário é deslogado
+    """
+    
+    def process_request(self, request):
+        # Verificar se o usuário está acessando a página de login
+        if request.path == '/login/' and not request.user.is_authenticated:
+            # Limpar todas as mensagens da sessão
+            messages.get_messages(request).used = True
+            # Também limpar manualmente a sessão
+            if 'messages' in request.session:
+                del request.session['messages']
