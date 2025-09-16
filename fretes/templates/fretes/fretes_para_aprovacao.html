@@ -22,13 +22,6 @@
                         </svg>
                         Gerenciar Transportadoras
                     </a>
-                    <button type="button" class="btn btn-modern btn-create" data-bs-toggle="modal" data-bs-target="#criarTransportadoraModal" title="Criar nova transportadora">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                        Nova Transportadora
-                    </button>
                 </div>
                 {% endif %}
             </div>
@@ -172,48 +165,6 @@
     </div>
 </div>
 
-<!-- Modal para Criar Transportadora -->
-{% if user.userprofile.is_master %}
-<div class="modal fade" id="criarTransportadoraModal" tabindex="-1" aria-labelledby="criarTransportadoraModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="criarTransportadoraModalLabel">
-                    <i class="fas fa-truck me-2"></i>Nova Transportadora
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="criarTransportadoraForm">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="nomeTransportadora" class="form-label">
-                            <i class="fas fa-building me-1"></i>Nome da Transportadora
-                        </label>
-                        <input type="text" class="form-control" id="nomeTransportadora" name="nome" required 
-                               placeholder="Ex: Transportadora ABC">
-                    </div>
-                    <div class="mb-3">
-                        <label for="emailTransportadora" class="form-label">
-                            <i class="fas fa-envelope me-1"></i>Email
-                        </label>
-                        <input type="email" class="form-control" id="emailTransportadora" name="email" required 
-                               placeholder="Ex: contato@transportadora.com.br">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-1"></i>Cancelar
-                    </button>
-                    <button type="submit" class="btn btn-primary" id="salvarTransportadoraBtn">
-                        <i class="fas fa-save me-1"></i>Salvar Transportadora
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-{% endif %}
 
 <style>
 .table th {
@@ -739,51 +690,5 @@ function updatePendingCount() {
     }
 }
 
-// Processar criação de transportadora
-document.getElementById('criarTransportadoraForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const salvarBtn = document.getElementById('salvarTransportadoraBtn');
-    
-    // Mostrar loading
-    salvarBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Salvando...';
-    salvarBtn.disabled = true;
-    
-    // Fazer requisição AJAX
-    fetch('{% url "criar_transportadora_ajax" %}', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showAlert('success', data.message);
-            
-            // Fechar modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('criarTransportadoraModal'));
-            modal.hide();
-            
-            // Limpar formulário
-            document.getElementById('criarTransportadoraForm').reset();
-            
-            // Recarregar página para mostrar nova transportadora
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
-        } else {
-            showAlert('danger', 'Erro: ' + data.error);
-        }
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        showAlert('danger', 'Erro ao criar transportadora. Tente novamente.');
-    })
-    .finally(() => {
-        // Restaurar botão
-        salvarBtn.innerHTML = '<i class="fas fa-save me-1"></i>Salvar Transportadora';
-        salvarBtn.disabled = false;
-    });
-});
 </script>
 {% endblock %}
