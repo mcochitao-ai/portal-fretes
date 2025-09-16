@@ -1653,17 +1653,33 @@ def excluir_usuario(request, user_id):
         
         username = usuario.username
         
-        # Excluir logs do admin primeiro (se a tabela existir)
-        try:
-            from django.contrib.admin.models import LogEntry
-            LogEntry.objects.filter(user=usuario).delete()
-        except Exception:
-            # Se a tabela não existir, continua normalmente
-            pass
+        # Excluir usando SQL direto para evitar problemas com django_admin_log
+        from django.db import connection
         
-        # Excluir o usuário
-        usuario.delete()
-        messages.success(request, f'Usuário {username} excluído com sucesso!')
+        try:
+            with connection.cursor() as cursor:
+                # Excluir logs do admin se a tabela existir
+                cursor.execute("""
+                    DELETE FROM django_admin_log 
+                    WHERE user_id = %s
+                """, [usuario.id])
+                
+                # Excluir o usuário
+                cursor.execute("""
+                    DELETE FROM auth_user 
+                    WHERE id = %s
+                """, [usuario.id])
+                
+            messages.success(request, f'Usuário {username} excluído com sucesso!')
+            
+        except Exception as sql_error:
+            # Se der erro no SQL, tentar método normal do Django
+            try:
+                usuario.delete()
+                messages.success(request, f'Usuário {username} excluído com sucesso!')
+            except Exception as django_error:
+                # Se ambos falharem, mostrar erro
+                messages.error(request, f'Erro ao excluir usuário: {str(django_error)}')
         
     except User.DoesNotExist:
         messages.error(request, 'Usuário não encontrado.')
