@@ -33,7 +33,15 @@ class Command(BaseCommand):
             else:
                 self.stdout.write('✅ Banco já configurado')
             
-            # 4. Associar usuários às transportadoras
+            # 4. Migrar dados do SQLite para PostgreSQL (se necessário)
+            self.stdout.write('🔄 Verificando migração de dados...')
+            try:
+                call_command('migrate_to_postgres', verbosity=0)
+                self.stdout.write('✅ Dados migrados para PostgreSQL')
+            except Exception as e:
+                self.stdout.write(f'⚠️ Erro na migração de dados: {e}')
+            
+            # 5. Associar usuários às transportadoras
             self.stdout.write('🔗 Associando usuários às transportadoras...')
             try:
                 call_command('associar_transportadoras', verbosity=0)
@@ -41,7 +49,7 @@ class Command(BaseCommand):
             except Exception as e:
                 self.stdout.write(f'⚠️ Erro ao associar usuários: {e}')
             
-            # 5. Coletar arquivos estáticos (se não foi feito no build)
+            # 6. Coletar arquivos estáticos (se não foi feito no build)
             if not os.path.exists('staticfiles'):
                 self.stdout.write('📁 Coletando arquivos estáticos...')
                 call_command('collectstatic', verbosity=0, interactive=False)
