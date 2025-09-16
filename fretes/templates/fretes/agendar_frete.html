@@ -3,11 +3,15 @@
 {% block title %}Agendar Frete #{{ frete.id }}{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="header mb-8">
-        <h1 class="text-4xl font-bold text-gray-800 mb-2">📅 Agendar Frete #{{ frete.id }}</h1>
-        <p class="text-gray-600">Preencha os dados do veículo e motorista para agendar o frete</p>
+<!-- Header -->
+<div class="header header-renner">
+    <div class="header-content">
+        <h1>Agendar Frete #{{ frete.id }}</h1>
+        <div class="subtitle">Preencha os dados do veículo e motorista para agendar o frete</div>
     </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
 
     <!-- Informações do Frete -->
     <div class="bg-white rounded-lg shadow-md border border-gray-200 mb-8">
@@ -182,7 +186,113 @@ document.getElementById('data_coleta').addEventListener('change', function() {
         if (entrega.value && entrega.value <= coleta) {
             entrega.value = '';
         }
+        
+        // Validar horário de coleta solicitado
+        const horarioSolicitado = '{{ frete.horario_coleta|default:"" }}';
+        if (horarioSolicitado) {
+            try {
+                // Converter horário solicitado para formato datetime-local
+                const hoje = new Date().toISOString().split('T')[0];
+                const horarioSolicitadoCompleto = hoje + 'T' + horarioSolicitado;
+                
+                // Comparar horários
+                const dataColetaAgendada = new Date(coleta);
+                const dataColetaSolicitada = new Date(horarioSolicitadoCompleto);
+                
+                // Se o horário agendado for maior que o solicitado, mostrar aviso
+                if (dataColetaAgendada > dataColetaSolicitada) {
+                    const diferenca = Math.round((dataColetaAgendada - dataColetaSolicitada) / (1000 * 60)); // diferença em minutos
+                    
+                    let mensagem = `⚠️ Horário acima do solicitado!\n\n`;
+                    mensagem += `Horário solicitado: ${horarioSolicitado}\n`;
+                    mensagem += `Horário agendado: ${coleta.split('T')[1]}\n`;
+                    mensagem += `Diferença: ${diferenca} minutos\n\n`;
+                    mensagem += `Deseja continuar mesmo assim?`;
+                    
+                    if (!confirm(mensagem)) {
+                        this.value = '';
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.log('Erro ao validar horário:', e);
+            }
+        }
     }
 });
 </script>
+
+<style>
+/* Header Renner Styles */
+.header-renner {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.header-renner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    pointer-events: none;
+}
+
+.header-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.header-renner h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: white;
+    text-shadow: 0 3px 6px rgba(0,0,0,0.3);
+    letter-spacing: -0.02em;
+}
+
+.header-renner .subtitle {
+    font-size: 1.125rem;
+    opacity: 0.9;
+    margin-bottom: 1rem;
+    font-weight: 400;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .header-renner h1 {
+        font-size: 2rem;
+    }
+    
+    .header-renner .subtitle {
+        font-size: 1rem;
+    }
+    
+    .header-content {
+        padding: 0 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-renner h1 {
+        font-size: 1.75rem;
+    }
+    
+    .header-renner .subtitle {
+        font-size: 0.9rem;
+    }
+}
+</style>
 {% endblock %}
