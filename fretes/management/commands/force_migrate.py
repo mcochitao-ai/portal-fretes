@@ -38,7 +38,7 @@ class Command(BaseCommand):
                     
                     # Executar migrações específicas
                     from django.core.management import call_command
-                    call_command('migrate', 'fretes', '0027', verbosity=2)
+                    call_command('migrate', 'fretes', '0028', verbosity=2)
                     
                     self.stdout.write('✅ Migrações executadas com sucesso!')
                 else:
