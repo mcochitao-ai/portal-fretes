@@ -278,6 +278,44 @@ def tracking_frete(request, frete_id):
 
 
 @login_required(login_url='/login/')
+def detalhe_frete_transportadora(request, frete_id):
+    """Detalhes do frete para a transportadora"""
+    ensure_tables_exist()  # Garantir que as tabelas existam
+    try:
+        user_profile = request.user.userprofile
+        if not (user_profile.is_transportadora() or user_profile.is_usuario_master()):
+            messages.error(request, 'Você não tem permissão para acessar esta área.')
+            return redirect('home')
+    except UserProfile.DoesNotExist:
+        messages.error(request, 'Perfil de usuário não encontrado.')
+        return redirect('home')
+    
+    # Buscar o frete
+    frete = get_object_or_404(FreteRequest, id=frete_id)
+    
+    # Verificar se a transportadora tem acesso a este frete
+    if not user_profile.is_usuario_master():
+        if not user_profile.transportadora or frete.transportadora_selecionada != user_profile.transportadora:
+            messages.error(request, 'Você não tem permissão para visualizar este frete.')
+            return redirect('fretes_para_agendamento')
+    
+    # Buscar agendamento se existir
+    agendamento = getattr(frete, 'agendamento', None)
+    
+    # Buscar histórico de tracking se existir
+    tracking_history = []
+    if agendamento:
+        tracking_history = agendamento.tracking.all().order_by('-data_atualizacao')
+    
+    return render(request, 'fretes/detalhe_frete_transportadora.html', {
+        'frete': frete,
+        'agendamento': agendamento,
+        'tracking_history': tracking_history,
+        'user_profile': user_profile
+    })
+
+
+@login_required(login_url='/login/')
 def fretes_em_tracking(request):
     """Lista de fretes em tracking para o transportador"""
     ensure_tables_exist()  # Garantir que as tabelas existam

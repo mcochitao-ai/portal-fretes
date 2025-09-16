@@ -1,0 +1,533 @@
+{% extends 'fretes/base.html' %}
+
+{% block title %}Detalhes do Frete #{{ frete.id }}{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="header header-renner">
+    <div class="header-content">
+        <h1>Detalhes do Frete #{{ frete.id }}</h1>
+        <div class="subtitle">Informações completas para agendamento e acompanhamento</div>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 py-8">
+    <!-- Status e Ações -->
+    <div class="flex justify-between items-center mb-6">
+        <div class="status-badge">
+            {% if frete.status == 'cotacao_aprovada' %}
+                <span class="badge badge-approved">✅ Cotação Aprovada</span>
+            {% elif frete.status == 'agendado' %}
+                <span class="badge badge-scheduled">📅 Agendado</span>
+            {% elif frete.status == 'em_transito' %}
+                <span class="badge badge-transit">🚚 Em Trânsito</span>
+            {% elif frete.status == 'entregue' %}
+                <span class="badge badge-delivered">🎉 Entregue</span>
+            {% endif %}
+        </div>
+        <div class="action-buttons">
+            {% if frete.status == 'cotacao_aprovada' %}
+                <a href="{% url 'agendar_frete' frete.id %}" class="btn btn-primary">
+                    Agendar Frete
+                </a>
+            {% elif frete.status in 'agendado,em_transito,entregue' %}
+                <a href="{% url 'atualizar_tracking' frete.id %}" class="btn btn-primary">
+                    Atualizar Status
+                </a>
+            {% endif %}
+            <a href="{% url 'fretes_para_agendamento' %}" class="btn btn-outline">
+                Voltar
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Informações Básicas -->
+        <div class="info-card">
+            <h2 class="card-title">📋 Informações Básicas</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>ID do Frete:</label>
+                    <span>#{{ frete.id }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Solicitante:</label>
+                    <span>{{ frete.usuario.get_full_name|default:frete.usuario.username }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Data de Criação:</label>
+                    <span>{{ frete.data_criacao|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Status Atual:</label>
+                    <span>{{ frete.get_status_display }}</span>
+                </div>
+                {% if frete.observacoes %}
+                <div class="info-item full-width">
+                    <label>Observações:</label>
+                    <span>{{ frete.observacoes }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Informações de Coleta e Entrega -->
+        <div class="info-card">
+            <h2 class="card-title">🚚 Coleta e Entrega</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Data/Hora Coleta Solicitada:</label>
+                    <span>{{ frete.horario_coleta|date:"d/m/Y H:i" }}</span>
+                </div>
+                {% if agendamento %}
+                <div class="info-item">
+                    <label>Data/Hora Coleta Agendada:</label>
+                    <span>{{ agendamento.data_coleta|date:"d/m/Y H:i" }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Previsão de Entrega:</label>
+                    <span>{{ agendamento.data_entrega_prevista|date:"d/m/Y H:i" }}</span>
+                </div>
+                {% endif %}
+                <div class="info-item">
+                    <label>Tipo de Veículo:</label>
+                    <span>{{ frete.get_tipo_veiculo_display }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Precisa Ajudante:</label>
+                    <span>{% if frete.precisa_ajudante %}Sim{% else %}Não{% endif %}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Origem -->
+        <div class="info-card">
+            <h2 class="card-title">📍 Origem</h2>
+            {% if frete.origem %}
+                <div class="address-info">
+                    <h3 class="address-name">{{ frete.origem.nome }}</h3>
+                    <p class="address-details">
+                        {{ frete.origem.endereco_completo }}<br>
+                        {% if frete.origem.cep %}CEP: {{ frete.origem.cep }}<br>{% endif %}
+                        {% if frete.origem.telefone %}Tel: {{ frete.origem.telefone }}{% endif %}
+                    </p>
+                    {% if frete.observacoes_origem %}
+                        <div class="observacoes">
+                            <strong>Observações:</strong> {{ frete.observacoes_origem }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p class="text-gray-500">Origem não informada</p>
+            {% endif %}
+        </div>
+
+        <!-- Destinos -->
+        <div class="info-card">
+            <h2 class="card-title">🎯 Destinos</h2>
+            {% for destino in frete.destinos.all %}
+                <div class="destination-item">
+                    <h3 class="destination-name">{{ destino.loja.nome }}</h3>
+                    <p class="destination-details">
+                        {{ destino.endereco_completo }}<br>
+                        {% if destino.cep %}CEP: {{ destino.cep }}<br>{% endif %}
+                        {% if destino.telefone %}Tel: {{ destino.telefone }}<br>{% endif %}
+                        <strong>Volume:</strong> {{ destino.volume }}m³
+                    </p>
+                    {% if destino.observacao %}
+                        <div class="observacoes">
+                            <strong>Observações:</strong> {{ destino.observacao }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Informações do Veículo e Motorista -->
+        {% if agendamento %}
+        <div class="info-card">
+            <h2 class="card-title">🚛 Veículo e Motorista</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Placa do Veículo:</label>
+                    <span>{{ agendamento.placa_veiculo }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Modelo do Veículo:</label>
+                    <span>{{ agendamento.modelo_veiculo }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Cor do Veículo:</label>
+                    <span>{{ agendamento.cor_veiculo }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Nome do Motorista:</label>
+                    <span>{{ agendamento.motorista_nome }}</span>
+                </div>
+                <div class="info-item">
+                    <label>CPF do Motorista:</label>
+                    <span>{{ agendamento.motorista_cpf }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Telefone do Motorista:</label>
+                    <span>{{ agendamento.motorista_telefone }}</span>
+                </div>
+                {% if agendamento.observacoes_agendamento %}
+                <div class="info-item full-width">
+                    <label>Observações do Agendamento:</label>
+                    <span>{{ agendamento.observacoes_agendamento }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Valores -->
+        {% if frete.valor_total %}
+        <div class="info-card">
+            <h2 class="card-title">💰 Valores</h2>
+            <div class="values-grid">
+                <div class="value-item">
+                    <label>Valor do Frete:</label>
+                    <span class="value">R$ {{ frete.valor_frete|floatformat:2 }}</span>
+                </div>
+                <div class="value-item">
+                    <label>Pedágio:</label>
+                    <span class="value">R$ {{ frete.valor_pedagio|floatformat:2 }}</span>
+                </div>
+                {% if frete.valor_ajudante %}
+                <div class="value-item">
+                    <label>Ajudante:</label>
+                    <span class="value">R$ {{ frete.valor_ajudante|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                <div class="value-item total">
+                    <label>Valor Total:</label>
+                    <span class="value total-value">R$ {{ frete.valor_total|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Histórico de Tracking -->
+    {% if tracking_history %}
+    <div class="info-card full-width mt-8">
+        <h2 class="card-title">📊 Histórico de Tracking</h2>
+        <div class="tracking-timeline">
+            {% for tracking in tracking_history %}
+                <div class="tracking-item">
+                    <div class="tracking-icon">{{ tracking.status_icon }}</div>
+                    <div class="tracking-content">
+                        <div class="tracking-header">
+                            <h4>{{ tracking.get_status_display }}</h4>
+                            <span class="tracking-time">{{ tracking.data_atualizacao|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        {% if tracking.localizacao_atual %}
+                            <p class="tracking-location">📍 {{ tracking.localizacao_atual }}</p>
+                        {% endif %}
+                        {% if tracking.observacoes %}
+                            <p class="tracking-notes">{{ tracking.observacoes }}</p>
+                        {% endif %}
+                        {% if tracking.tipo_problema %}
+                            <div class="tracking-problem">
+                                <strong>Problema:</strong> {{ tracking.tipo_problema }}
+                                {% if tracking.descricao_problema %}
+                                    <br><strong>Descrição:</strong> {{ tracking.descricao_problema }}
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+/* Header Renner Styles */
+.header-renner {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.header-renner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    opacity: 0.3;
+}
+
+.header-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+}
+
+.header-renner h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.header-renner .subtitle {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    font-weight: 400;
+}
+
+/* Status e Ações */
+.status-badge {
+    display: flex;
+    align-items: center;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* Cards de Informação */
+.info-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+}
+
+.info-card.full-width {
+    grid-column: 1 / -1;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+/* Grid de Informações */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.info-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.info-item label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.875rem;
+}
+
+.info-item span {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+/* Informações de Endereço */
+.address-info, .destination-item {
+    margin-bottom: 1rem;
+}
+
+.address-name, .destination-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 0.5rem 0;
+}
+
+.address-details, .destination-details {
+    color: #6b7280;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.5;
+}
+
+.observacoes {
+    background: #f3f4f6;
+    padding: 0.75rem;
+    border-radius: 6px;
+    color: #374151;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+/* Valores */
+.values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.value-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.value-item.total {
+    background: #ecfdf5;
+    border: 2px solid #10b981;
+}
+
+.value-item label {
+    font-weight: 600;
+    color: #374151;
+}
+
+.value {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.total-value {
+    font-size: 1.25rem;
+    color: #059669;
+    font-weight: 700;
+}
+
+/* Timeline de Tracking */
+.tracking-timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.tracking-timeline::before {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e5e7eb;
+}
+
+.tracking-item {
+    position: relative;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.tracking-icon {
+    position: absolute;
+    left: -2rem;
+    top: 0;
+    width: 2rem;
+    height: 2rem;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    z-index: 1;
+}
+
+.tracking-content {
+    flex: 1;
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.tracking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.tracking-header h4 {
+    margin: 0;
+    color: #1f2937;
+    font-weight: 600;
+}
+
+.tracking-time {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.tracking-location, .tracking-notes {
+    color: #374151;
+    margin: 0.25rem 0;
+    font-size: 0.875rem;
+}
+
+.tracking-problem {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    padding: 0.75rem;
+    border-radius: 6px;
+    color: #991b1b;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .flex.justify-between {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .action-buttons {
+        width: 100%;
+        justify-content: stretch;
+    }
+    
+    .action-buttons .btn {
+        flex: 1;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .values-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .tracking-timeline {
+        padding-left: 1.5rem;
+    }
+    
+    .tracking-icon {
+        left: -1.5rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        font-size: 0.875rem;
+    }
+}
+</style>
+{% endblock %}

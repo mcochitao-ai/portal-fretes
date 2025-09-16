@@ -46,6 +46,7 @@ urlpatterns = [
     # URLs de Agendamento e Tracking
     path('fretes-para-agendamento/', views_tracking.fretes_para_agendamento, name='fretes_para_agendamento'),
     path('agendar-frete/<int:frete_id>/', views_tracking.agendar_frete, name='agendar_frete'),
+    path('detalhe-frete-transportadora/<int:frete_id>/', views_tracking.detalhe_frete_transportadora, name='detalhe_frete_transportadora'),
     path('fretes-em-tracking/', views_tracking.fretes_em_tracking, name='fretes_em_tracking'),
     path('tracking-frete/<int:frete_id>/', views_tracking.tracking_frete, name='tracking_frete'),
     path('atualizar-tracking/<int:frete_id>/', views_tracking.atualizar_tracking, name='atualizar_tracking'),
