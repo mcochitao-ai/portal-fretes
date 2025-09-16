@@ -14,9 +14,9 @@
                     <p class="text-muted mb-0">Gerencie todas as transportadoras do sistema</p>
                 </div>
                 <div class="ms-3">
-                    <a href="{% url 'criar_transportadora' %}" class="btn btn-primary btn-lg">
+                    <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#criarTransportadoraModal">
                         <i class="fas fa-plus me-2"></i>Nova Transportadora
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -112,10 +112,11 @@
                                                     title="Vincular usuários">
                                                 <i class="fas fa-users"></i>
                                             </button>
-                                            <a href="{% url 'editar_transportadora' transportadora.id %}" class="btn btn-outline-success btn-sm" 
-                                               title="Editar transportadora">
+                                            <button type="button" class="btn btn-outline-success btn-sm" 
+                                                    onclick="editarTransportadora({{ transportadora.id }}, '{{ transportadora.nome }}', '{{ transportadora.email }}')"
+                                                    title="Editar transportadora">
                                                 <i class="fas fa-edit"></i>
-                                            </a>
+                                            </button>
                                             <button type="button" class="btn btn-outline-danger btn-sm" 
                                                     onclick="excluirTransportadora({{ transportadora.id }}, '{{ transportadora.nome }}')"
                                                     title="Excluir transportadora">
@@ -136,15 +137,97 @@
                     </div>
                     <h3 class="text-muted mb-3">Nenhuma transportadora cadastrada</h3>
                     <p class="text-muted mb-4">Comece cadastrando sua primeira transportadora</p>
-                    <a href="{% url 'criar_transportadora' %}" class="btn btn-primary">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#criarTransportadoraModal">
                         <i class="fas fa-plus me-2"></i>Cadastrar Primeira Transportadora
-                    </a>
+                    </button>
                 </div>
             {% endif %}
         </div>
     </div>
 </div>
 
+<!-- Modal para Criar Transportadora -->
+<div class="modal fade" id="criarTransportadoraModal" tabindex="-1" aria-labelledby="criarTransportadoraModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="criarTransportadoraModalLabel">
+                    <i class="fas fa-plus me-2"></i>Nova Transportadora
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="criarTransportadoraForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="nomeTransportadora" class="form-label fw-bold">
+                            <i class="fas fa-building me-1 text-primary"></i>Nome da Transportadora
+                        </label>
+                        <input type="text" class="form-control" id="nomeTransportadora" name="nome" required 
+                               placeholder="Ex: Transportadora ABC Ltda">
+                    </div>
+                    <div class="mb-3">
+                        <label for="emailTransportadora" class="form-label fw-bold">
+                            <i class="fas fa-envelope me-1 text-primary"></i>Email de Contato
+                        </label>
+                        <input type="email" class="form-control" id="emailTransportadora" name="email" required 
+                               placeholder="Ex: contato@transportadora.com.br">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="salvarTransportadoraBtn">
+                        <i class="fas fa-save me-1"></i>Cadastrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Editar Transportadora -->
+<div class="modal fade" id="editarTransportadoraModal" tabindex="-1" aria-labelledby="editarTransportadoraModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="editarTransportadoraModalLabel">
+                    <i class="fas fa-edit me-2"></i>Editar Transportadora
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editarTransportadoraForm">
+                {% csrf_token %}
+                <input type="hidden" id="editarTransportadoraId" name="id">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editarNomeTransportadora" class="form-label fw-bold">
+                            <i class="fas fa-building me-1 text-success"></i>Nome da Transportadora
+                        </label>
+                        <input type="text" class="form-control" id="editarNomeTransportadora" name="nome" required 
+                               placeholder="Ex: Transportadora ABC Ltda">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editarEmailTransportadora" class="form-label fw-bold">
+                            <i class="fas fa-envelope me-1 text-success"></i>Email de Contato
+                        </label>
+                        <input type="email" class="form-control" id="editarEmailTransportadora" name="email" required 
+                               placeholder="Ex: contato@transportadora.com.br">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success" id="salvarEdicaoBtn">
+                        <i class="fas fa-save me-1"></i>Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <style>
 /* Custom Styles */
@@ -291,8 +374,107 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     searchInput.addEventListener('input', filterTransportadoras);
+    
+    // Processar criação de transportadora
+    document.getElementById('criarTransportadoraForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const salvarBtn = document.getElementById('salvarTransportadoraBtn');
+        
+        // Mostrar loading
+        salvarBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Cadastrando...';
+        salvarBtn.disabled = true;
+        
+        // Fazer requisição AJAX
+        fetch('{% url "criar_transportadora_ajax" %}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('success', data.message);
+                
+                // Fechar modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('criarTransportadoraModal'));
+                modal.hide();
+                
+                // Limpar formulário
+                document.getElementById('criarTransportadoraForm').reset();
+                
+                // Recarregar página para mostrar nova transportadora
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showAlert('danger', 'Erro: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            showAlert('danger', 'Erro ao cadastrar transportadora. Tente novamente.');
+        })
+        .finally(() => {
+            // Restaurar botão
+            salvarBtn.innerHTML = '<i class="fas fa-save me-1"></i>Cadastrar';
+            salvarBtn.disabled = false;
+        });
+    });
+
+    // Processar edição de transportadora
+    document.getElementById('editarTransportadoraForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const salvarBtn = document.getElementById('salvarEdicaoBtn');
+        
+        // Mostrar loading
+        salvarBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Salvando...';
+        salvarBtn.disabled = true;
+        
+        // Fazer requisição AJAX
+        fetch('{% url "editar_transportadora_ajax" %}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showAlert('success', data.message);
+                
+                // Fechar modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editarTransportadoraModal'));
+                modal.hide();
+                
+                // Recarregar página para mostrar alterações
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showAlert('danger', 'Erro: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            showAlert('danger', 'Erro ao editar transportadora. Tente novamente.');
+        })
+        .finally(() => {
+            // Restaurar botão
+            salvarBtn.innerHTML = '<i class="fas fa-save me-1"></i>Salvar Alterações';
+            salvarBtn.disabled = false;
+        });
+    });
 });
 
+function editarTransportadora(id, nome, email) {
+    document.getElementById('editarTransportadoraId').value = id;
+    document.getElementById('editarNomeTransportadora').value = nome;
+    document.getElementById('editarEmailTransportadora').value = email;
+    
+    const modal = new bootstrap.Modal(document.getElementById('editarTransportadoraModal'));
+    modal.show();
+}
 
 function excluirTransportadora(id, nome) {
     if (!confirm(`Tem certeza que deseja excluir a transportadora "${nome}"?\n\nEsta ação não pode ser desfeita e todos os usuários associados serão desvinculados.`)) {
