@@ -128,19 +128,13 @@
                             </div>
                         {% endif %}
 
-                        <div class="flex justify-between items-center">
-                            <div class="text-sm text-gray-500">
-                                <p><strong>Transportadora:</strong> {{ frete.transportadora_selecionada.nome }}</p>
-                                {% if frete.centro_custo %}
-                                    <p><strong>Centro de Custo:</strong> {{ frete.centro_custo }}</p>
-                                {% endif %}
-                            </div>
+                        <div class="flex justify-end items-center">
                             <div class="flex gap-2">
                                 <a href="{% url 'frete_detalhe' frete.id %}" class="btn btn-outline">
                                     Ver Detalhes
                                 </a>
                                 <a href="{% url 'agendar_frete' frete.id %}" class="btn btn-primary">
-                                    📅 Agendar
+                                    Agendar
                                 </a>
                             </div>
                         </div>
