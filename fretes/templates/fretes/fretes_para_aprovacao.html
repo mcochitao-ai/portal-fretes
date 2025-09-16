@@ -517,10 +517,12 @@
     overflow: hidden;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
     min-width: 180px;
-    justify-content: center;
+    text-align: center;
+    vertical-align: middle;
 }
 
 .btn-modern:hover {
@@ -571,10 +573,27 @@
 .btn-modern svg {
     flex-shrink: 0;
     transition: transform 0.3s ease;
+    margin: 0;
 }
 
 .btn-modern:hover svg {
     transform: scale(1.1);
+}
+
+.btn-modern span,
+.btn-modern {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1.2;
+}
+
+/* Garantir centralização perfeita */
+.btn-modern {
+    flex-direction: row;
+    align-content: center;
+    justify-items: center;
 }
 
 /* Responsive adjustments for modern buttons */
