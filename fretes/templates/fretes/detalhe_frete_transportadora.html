@@ -95,7 +95,7 @@
                 </div>
                 <div class="info-item">
                     <label>Precisa Ajudante:</label>
-                    <span>{% if frete.precisa_ajudante %}Sim{% else %}Não{% endif %}</span>
+                    <span>{% if frete.precisa_ajudante %}Sim{% if frete.quantidade_ajudantes > 0 %} ({{ frete.quantidade_ajudantes }} ajudante{{ frete.quantidade_ajudantes|pluralize }}){% endif %}{% else %}Não{% endif %}</span>
                 </div>
             </div>
         </div>
