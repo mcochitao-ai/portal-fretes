@@ -189,15 +189,22 @@ document.getElementById('data_coleta').addEventListener('change', function() {
         
         // Validar horário de coleta solicitado
         const horarioSolicitado = '{{ frete.horario_coleta|default:"" }}';
+        console.log('Horário solicitado:', horarioSolicitado);
+        console.log('Data coleta agendada:', coleta);
+        
         if (horarioSolicitado) {
             try {
                 // Converter horário solicitado para formato datetime-local
                 const hoje = new Date().toISOString().split('T')[0];
                 const horarioSolicitadoCompleto = hoje + 'T' + horarioSolicitado;
+                console.log('Horário solicitado completo:', horarioSolicitadoCompleto);
                 
                 // Comparar horários
                 const dataColetaAgendada = new Date(coleta);
                 const dataColetaSolicitada = new Date(horarioSolicitadoCompleto);
+                console.log('Data coleta agendada (Date):', dataColetaAgendada);
+                console.log('Data coleta solicitada (Date):', dataColetaSolicitada);
+                console.log('Agendada > Solicitada:', dataColetaAgendada > dataColetaSolicitada);
                 
                 // Se o horário agendado for maior que o solicitado, mostrar aviso
                 if (dataColetaAgendada > dataColetaSolicitada) {
@@ -209,14 +216,19 @@ document.getElementById('data_coleta').addEventListener('change', function() {
                     mensagem += `Diferença: ${diferenca} minutos\n\n`;
                     mensagem += `Deseja continuar mesmo assim?`;
                     
+                    console.log('Mostrando popup de validação');
                     if (!confirm(mensagem)) {
                         this.value = '';
                         return;
                     }
+                } else {
+                    console.log('Horário agendado é menor ou igual ao solicitado - não mostrar popup');
                 }
             } catch (e) {
                 console.log('Erro ao validar horário:', e);
             }
+        } else {
+            console.log('Nenhum horário solicitado encontrado');
         }
     }
 });
