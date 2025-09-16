@@ -41,26 +41,15 @@
         </div>
     </div>
 
-    <!-- Search and Filters -->
+    <!-- Search -->
     <div class="card mb-4">
         <div class="card-body">
             <div class="row">
-                <div class="col-md-6 mb-3">
+                <div class="col-md-6">
                     <div class="input-group">
                         <span class="input-group-text"><i class="fas fa-search"></i></span>
                         <input type="text" class="form-control" id="searchInput" placeholder="Buscar transportadoras por nome, email ou ID...">
                     </div>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <select class="form-select" id="sortBy">
-                        <option value="nome">Ordenar por Nome</option>
-                        <option value="usuarios">Ordenar por Usuários</option>
-                    </select>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <button class="btn btn-outline-secondary w-100" onclick="refreshData()">
-                        <i class="fas fa-sync-alt me-1"></i>Atualizar
-                    </button>
                 </div>
             </div>
         </div>
@@ -365,14 +354,11 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Search Functionality
     const searchInput = document.getElementById('searchInput');
-    const sortBy = document.getElementById('sortBy');
     
-    function filterAndSortTransportadoras() {
+    function filterTransportadoras() {
         const searchTerm = searchInput.value.toLowerCase();
-        const sortValue = sortBy.value;
         
         const rows = document.querySelectorAll('#transportadorasTableBody tr');
-        let visibleRows = [];
         
         rows.forEach(row => {
             const nome = row.dataset.nome;
@@ -385,35 +371,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (matchesSearch) {
                 row.style.display = '';
-                visibleRows.push(row);
             } else {
                 row.style.display = 'none';
             }
         });
-        
-        // Sort visible rows
-        visibleRows.sort((a, b) => {
-            switch(sortValue) {
-                case 'nome':
-                    return a.dataset.nome.localeCompare(b.dataset.nome);
-                case 'usuarios':
-                    const usersA = parseInt(a.querySelector('.badge').textContent);
-                    const usersB = parseInt(b.querySelector('.badge').textContent);
-                    return usersB - usersA;
-                default:
-                    return 0;
-            }
-        });
-        
-        // Reorder rows in DOM
-        const tbody = document.getElementById('transportadorasTableBody');
-        if (tbody) {
-            visibleRows.forEach(row => tbody.appendChild(row));
-        }
     }
     
-    searchInput.addEventListener('input', filterAndSortTransportadoras);
-    sortBy.addEventListener('change', filterAndSortTransportadoras);
+    searchInput.addEventListener('input', filterTransportadoras);
     
     // Processar criação de transportadora
     document.getElementById('criarTransportadoraForm').addEventListener('submit', function(e) {
@@ -557,9 +521,6 @@ function gerenciarUsuarios(transportadoraId, transportadoraNome) {
     window.location.href = url;
 }
 
-function refreshData() {
-    window.location.reload();
-}
 
 function showAlert(type, message) {
     // Remover alertas existentes
