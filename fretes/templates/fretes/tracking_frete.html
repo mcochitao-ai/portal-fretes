@@ -82,45 +82,83 @@
 
     <!-- Status Atual -->
     {% if status_atual %}
-        <div class="bg-white rounded-lg shadow-md border border-gray-200 mb-8">
-            <div class="p-6">
-                <h2 class="text-xl font-bold text-gray-800 mb-4">📍 Status Atual</h2>
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <div class="text-4xl">{{ status_atual.status_icon }}</div>
-                        <div>
-                            <h3 class="text-2xl font-bold text-gray-800">{{ status_atual.get_status_display }}</h3>
-                            {% if status_atual.localizacao_atual %}
-                                <p class="text-gray-600">
-                                    <strong>Localização:</strong> {{ status_atual.localizacao_atual }}
-                                </p>
-                            {% endif %}
-                            <p class="text-sm text-gray-500">
-                                Última atualização: {{ status_atual.data_atualizacao|date:"d/m/Y H:i" }}
-                            </p>
+        <div class="status-current-card">
+            <div class="status-header">
+                <div class="status-icon-large">
+                    <span class="status-emoji">{{ status_atual.status_icon }}</span>
+                </div>
+                <div class="status-info">
+                    <h2 class="status-title">{{ status_atual.get_status_display }}</h2>
+                    <p class="status-subtitle">Status atual do frete</p>
+                </div>
+                {% if user.userprofile.is_transportadora or user.userprofile.is_usuario_master %}
+                    <a href="{% url 'atualizar_tracking' frete.id %}" class="status-update-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 3h18v18H3zM9 9h6v6H9z"></path>
+                            <path d="M9 1v6M15 1v6M9 17v6M15 17v6M1 9h6M17 9h6M1 15h6M17 15h6"></path>
+                        </svg>
+                        Atualizar Status
+                    </a>
+                {% endif %}
+            </div>
+            
+            <div class="status-details">
+                <div class="status-detail-grid">
+                    {% if status_atual.localizacao_atual %}
+                        <div class="status-detail-item">
+                            <div class="status-detail-icon">📍</div>
+                            <div class="status-detail-content">
+                                <span class="status-detail-label">Localização</span>
+                                <span class="status-detail-value">{{ status_atual.localizacao_atual }}</span>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="status-detail-item">
+                        <div class="status-detail-icon">🕒</div>
+                        <div class="status-detail-content">
+                            <span class="status-detail-label">Última Atualização</span>
+                            <span class="status-detail-value">{{ status_atual.data_atualizacao|date:"d/m/Y H:i" }}</span>
                         </div>
                     </div>
-                    {% if user.userprofile.is_transportadora or user.userprofile.is_usuario_master %}
-                        <a href="{% url 'atualizar_tracking' frete.id %}" class="btn btn-primary">
-                            Atualizar Status
-                        </a>
-                    {% endif %}
+                    
+                    <div class="status-detail-item">
+                        <div class="status-detail-icon">👤</div>
+                        <div class="status-detail-content">
+                            <span class="status-detail-label">Atualizado por</span>
+                            <span class="status-detail-value">{{ status_atual.usuario_atualizacao.get_full_name|default:status_atual.usuario_atualizacao.username }}</span>
+                        </div>
+                    </div>
                 </div>
                 
                 {% if status_atual.observacoes %}
-                    <div class="mt-4 p-4 bg-gray-50 rounded-lg">
-                        <h4 class="font-semibold text-gray-700 mb-2">Observações:</h4>
-                        <p class="text-gray-600">{{ status_atual.observacoes }}</p>
+                    <div class="status-observations">
+                        <div class="status-obs-header">
+                            <span class="status-obs-icon">📝</span>
+                            <span class="status-obs-title">Observações</span>
+                        </div>
+                        <p class="status-obs-text">{{ status_atual.observacoes }}</p>
                     </div>
                 {% endif %}
                 
                 {% if status_atual.tipo_problema %}
-                    <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                        <h4 class="font-semibold text-red-700 mb-2">⚠️ Problema Reportado:</h4>
-                        <p class="text-red-600"><strong>Tipo:</strong> {{ status_atual.tipo_problema }}</p>
-                        {% if status_atual.descricao_problema %}
-                            <p class="text-red-600 mt-2"><strong>Descrição:</strong> {{ status_atual.descricao_problema }}</p>
-                        {% endif %}
+                    <div class="status-problem">
+                        <div class="status-problem-header">
+                            <span class="status-problem-icon">⚠️</span>
+                            <span class="status-problem-title">Problema Reportado</span>
+                        </div>
+                        <div class="status-problem-content">
+                            <div class="status-problem-item">
+                                <span class="status-problem-label">Tipo:</span>
+                                <span class="status-problem-value">{{ status_atual.tipo_problema }}</span>
+                            </div>
+                            {% if status_atual.descricao_problema %}
+                                <div class="status-problem-item">
+                                    <span class="status-problem-label">Descrição:</span>
+                                    <span class="status-problem-value">{{ status_atual.descricao_problema }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
                 {% endif %}
             </div>
@@ -254,6 +292,230 @@
     font-size: 1.1rem;
     opacity: 0.9;
     font-weight: 400;
+}
+
+/* Status Current Styles */
+.status-current-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border: 1px solid #cbd5e1;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.status-current-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8, #1e40af);
+}
+
+.status-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.status-icon-large {
+    width: 4rem;
+    height: 4rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    border: 4px solid white;
+}
+
+.status-emoji {
+    font-size: 2rem;
+}
+
+.status-info {
+    flex: 1;
+}
+
+.status-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin: 0 0 0.25rem 0;
+    line-height: 1.2;
+}
+
+.status-subtitle {
+    font-size: 1rem;
+    color: #6b7280;
+    margin: 0;
+    font-weight: 500;
+}
+
+.status-update-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.status-update-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+.status-details {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.status-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.status-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+}
+
+.status-detail-icon {
+    font-size: 1.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.status-detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.status-detail-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-detail-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.status-observations {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.status-obs-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.status-obs-icon {
+    font-size: 1.25rem;
+}
+
+.status-obs-title {
+    font-weight: 600;
+    color: #0369a1;
+    font-size: 1rem;
+}
+
+.status-obs-text {
+    color: #0c4a6e;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.status-problem {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    padding: 1.25rem;
+}
+
+.status-problem-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.status-problem-icon {
+    font-size: 1.25rem;
+}
+
+.status-problem-title {
+    font-weight: 600;
+    color: #dc2626;
+    font-size: 1rem;
+}
+
+.status-problem-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.status-problem-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.status-problem-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #991b1b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-problem-value {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #dc2626;
 }
 
 /* Timeline Styles */
