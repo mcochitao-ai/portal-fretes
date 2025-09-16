@@ -189,7 +189,9 @@ document.getElementById('data_coleta').addEventListener('change', function() {
         
         // Validar horário de coleta solicitado
         const horarioSolicitado = '{{ frete.horario_coleta|default:"" }}';
+        const dataSolicitada = '{{ frete.data_criacao|date:"Y-m-d" }}';
         console.log('Horário solicitado:', horarioSolicitado);
+        console.log('Data solicitada:', dataSolicitada);
         console.log('Data coleta agendada:', coleta);
         
         if (horarioSolicitado && horarioSolicitado.trim() !== '') {
@@ -199,12 +201,13 @@ document.getElementById('data_coleta').addEventListener('change', function() {
                 const [anoAgendada, mesAgendada, diaAgendada] = dataAgendada.split('-');
                 const [horaAgendadaH, minutoAgendada] = horaAgendada.split(':');
                 
-                // Extrair hora solicitada
+                // Extrair data e hora solicitada
+                const [anoSolicitada, mesSolicitada, diaSolicitada] = dataSolicitada.split('-');
                 const [horaSolicitadaH, minutoSolicitada] = horarioSolicitado.split(':');
                 
-                // Criar objetos Date para comparação (usando a mesma data)
+                // Criar objetos Date para comparação completa
                 const dataAgendadaObj = new Date(anoAgendada, mesAgendada - 1, diaAgendada, parseInt(horaAgendadaH), parseInt(minutoAgendada));
-                const dataSolicitadaObj = new Date(anoAgendada, mesAgendada - 1, diaAgendada, parseInt(horaSolicitadaH), parseInt(minutoSolicitada));
+                const dataSolicitadaObj = new Date(anoSolicitada, mesSolicitada - 1, diaSolicitada, parseInt(horaSolicitadaH), parseInt(minutoSolicitada));
                 
                 console.log('Data agendada (Date):', dataAgendadaObj);
                 console.log('Data solicitada (Date):', dataSolicitadaObj);
@@ -212,12 +215,39 @@ document.getElementById('data_coleta').addEventListener('change', function() {
                 
                 // Se o horário agendado for maior que o solicitado, mostrar aviso
                 if (dataAgendadaObj > dataSolicitadaObj) {
-                    const diferenca = Math.round((dataAgendadaObj - dataSolicitadaObj) / (1000 * 60)); // diferença em minutos
+                    const diferencaMs = dataAgendadaObj - dataSolicitadaObj;
+                    const diferencaMinutos = Math.round(diferencaMs / (1000 * 60));
+                    const diferencaHoras = Math.floor(diferencaMinutos / 60);
+                    const diferencaDias = Math.floor(diferencaHoras / 24);
+                    const horasRestantes = diferencaHoras % 24;
+                    const minutosRestantes = diferencaMinutos % 60;
                     
-                    let mensagem = `⚠️ Horário acima do solicitado!\n\n`;
-                    mensagem += `Horário solicitado: ${horarioSolicitado}\n`;
-                    mensagem += `Horário agendado: ${horaAgendada}\n`;
-                    mensagem += `Diferença: ${diferenca} minutos\n\n`;
+                    // Formatar diferença
+                    let diferencaTexto = '';
+                    if (diferencaDias > 0) {
+                        diferencaTexto += `${diferencaDias} dia${diferencaDias > 1 ? 's' : ''}`;
+                        if (horasRestantes > 0 || minutosRestantes > 0) {
+                            diferencaTexto += ', ';
+                        }
+                    }
+                    if (horasRestantes > 0) {
+                        diferencaTexto += `${horasRestantes} hora${horasRestantes > 1 ? 's' : ''}`;
+                        if (minutosRestantes > 0) {
+                            diferencaTexto += ' e ';
+                        }
+                    }
+                    if (minutosRestantes > 0) {
+                        diferencaTexto += `${minutosRestantes} minuto${minutosRestantes > 1 ? 's' : ''}`;
+                    }
+                    
+                    // Formatar datas para exibição
+                    const dataSolicitadaFormatada = `${diaSolicitada}/${mesSolicitada}/${anoSolicitada}`;
+                    const dataAgendadaFormatada = `${diaAgendada}/${mesAgendada}/${anoAgendada}`;
+                    
+                    let mensagem = `⚠️ Data/Horário acima do solicitado!\n\n`;
+                    mensagem += `Solicitado: ${dataSolicitadaFormatada} às ${horarioSolicitado}\n`;
+                    mensagem += `Agendado: ${dataAgendadaFormatada} às ${horaAgendada}\n`;
+                    mensagem += `Diferença: ${diferencaTexto}\n\n`;
                     mensagem += `Deseja continuar mesmo assim?`;
                     
                     console.log('Mostrando popup de validação');
@@ -226,7 +256,7 @@ document.getElementById('data_coleta').addEventListener('change', function() {
                         return;
                     }
                 } else {
-                    console.log('Horário agendado é menor ou igual ao solicitado - não mostrar popup');
+                    console.log('Data/horário agendado é menor ou igual ao solicitado - não mostrar popup');
                 }
             } catch (e) {
                 console.log('Erro ao validar horário:', e);
