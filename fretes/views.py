@@ -727,7 +727,7 @@ def meus_fretes(request):
             qs = FreteRequest.objects.select_related(
                 'usuario', 'origem', 'transportadora_selecionada', 'aprovador'
             ).prefetch_related(
-                'destinos', 'cotacoes__transportadora'
+                'destinos', 'cotacoes__transportadora', 'agendamento__tracking'
             )
         elif user_profile.is_transportadora() and user_profile.transportadora:
             # Transportadora vê apenas fretes direcionados para ela - OTIMIZADO
@@ -736,21 +736,21 @@ def meus_fretes(request):
             ).select_related(
                 'usuario', 'origem', 'transportadora_selecionada', 'aprovador'
             ).prefetch_related(
-                'destinos', 'cotacoes__transportadora'
+                'destinos', 'cotacoes__transportadora', 'agendamento__tracking'
             ).distinct()
         else:
             # Usuário normal vê apenas seus fretes - OTIMIZADO
             qs = FreteRequest.objects.filter(usuario=request.user).select_related(
                 'usuario', 'origem', 'transportadora_selecionada', 'aprovador'
             ).prefetch_related(
-                'destinos', 'cotacoes__transportadora'
+                'destinos', 'cotacoes__transportadora', 'agendamento__tracking'
             )
     except UserProfile.DoesNotExist:
         # Se não tem perfil, vê apenas seus fretes - OTIMIZADO
         qs = FreteRequest.objects.filter(usuario=request.user).select_related(
             'usuario', 'origem', 'transportadora_selecionada', 'aprovador'
         ).prefetch_related(
-            'destinos', 'cotacoes__transportadora'
+            'destinos', 'cotacoes__transportadora', 'agendamento__tracking'
         )
     
     # Filtro por status

@@ -223,6 +223,26 @@
                                 </div>
                             </div>
                             {% endif %}
+
+                            <!-- Status de Tracking em Tempo Real -->
+                            {% if frete.agendamento and frete.agendamento.tracking.exists %}
+                                {% with ultimo_tracking=frete.agendamento.tracking.first %}
+                                <div class="flex items-start gap-2">
+                                    <span class="text-secondary">{{ ultimo_tracking.status_icon }}</span>
+                                    <div>
+                                        <strong>Status Atual:</strong><br>
+                                        <span class="text-sm font-semibold">{{ ultimo_tracking.get_status_display }}</span>
+                                        {% if ultimo_tracking.localizacao_atual %}
+                                            <br><span class="text-xs text-secondary">📍 {{ ultimo_tracking.localizacao_atual }}</span>
+                                        {% endif %}
+                                        <br><span class="text-xs text-secondary">Atualizado em: {{ ultimo_tracking.data_atualizacao|date:'d/m/Y H:i' }}</span>
+                                        {% if ultimo_tracking.observacoes %}
+                                            <br><span class="text-xs text-info">{{ ultimo_tracking.observacoes }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endwith %}
+                            {% endif %}
                         </div>
                     </div>
                     
