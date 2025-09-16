@@ -401,7 +401,8 @@ def atualizar_tracking(request, frete_id):
         descricao_problema = request.POST.get('descricao_problema', '').strip()
         
         if not status:
-            return JsonResponse({'error': 'Status é obrigatório'}, status=400)
+            messages.error(request, 'Status é obrigatório')
+            return redirect('atualizar_tracking', frete_id=frete.id)
         
         try:
             # Criar novo registro de tracking
@@ -426,15 +427,12 @@ def atualizar_tracking(request, frete_id):
                 frete.status = 'cancelado'
                 frete.save()
             
-            return JsonResponse({
-                'success': True, 
-                'tracking_id': tracking.id,
-                'status': tracking.get_status_display(),
-                'data_atualizacao': tracking.data_atualizacao.strftime('%d/%m/%Y %H:%M')
-            })
+            messages.success(request, f'Status atualizado para: {tracking.get_status_display()}')
+            return redirect('tracking_frete', frete_id=frete.id)
             
         except Exception as e:
-            return JsonResponse({'error': f'Erro ao atualizar tracking: {str(e)}'}, status=500)
+            messages.error(request, f'Erro ao atualizar tracking: {str(e)}')
+            return redirect('tracking_frete', frete_id=frete.id)
     
     return render(request, 'fretes/atualizar_tracking.html', {
         'frete': frete,
