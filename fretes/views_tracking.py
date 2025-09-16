@@ -3,12 +3,83 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
+from django.db import connection
 from .models import FreteRequest, AgendamentoFrete, TrackingFrete, UserProfile
+
+
+def ensure_tables_exist():
+    """Garante que as tabelas de agendamento e tracking existam"""
+    try:
+        with connection.cursor() as cursor:
+            # Verificar se a tabela AgendamentoFrete existe
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'fretes_agendamentofrete'
+                );
+            """)
+            agendamento_exists = cursor.fetchone()[0]
+            
+            # Verificar se a tabela TrackingFrete existe
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'fretes_trackingfrete'
+                );
+            """)
+            tracking_exists = cursor.fetchone()[0]
+            
+            if not agendamento_exists:
+                # Criar tabela AgendamentoFrete
+                cursor.execute("""
+                    CREATE TABLE fretes_agendamentofrete (
+                        id SERIAL PRIMARY KEY,
+                        frete_id INTEGER UNIQUE NOT NULL,
+                        transportadora_id INTEGER NOT NULL,
+                        placa_veiculo VARCHAR(10) NOT NULL,
+                        modelo_veiculo VARCHAR(100) NOT NULL,
+                        cor_veiculo VARCHAR(50) NOT NULL,
+                        motorista_nome VARCHAR(100) NOT NULL,
+                        motorista_cpf VARCHAR(14) NOT NULL,
+                        motorista_telefone VARCHAR(20) NOT NULL,
+                        data_coleta TIMESTAMP WITH TIME ZONE NOT NULL,
+                        data_entrega_prevista TIMESTAMP WITH TIME ZONE NOT NULL,
+                        observacoes_agendamento TEXT,
+                        data_agendamento TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+                        usuario_agendamento_id INTEGER NOT NULL,
+                        FOREIGN KEY (frete_id) REFERENCES fretes_freterequest(id) ON DELETE CASCADE,
+                        FOREIGN KEY (transportadora_id) REFERENCES fretes_transportadora(id) ON DELETE CASCADE,
+                        FOREIGN KEY (usuario_agendamento_id) REFERENCES auth_user(id) ON DELETE CASCADE
+                    );
+                """)
+                
+            if not tracking_exists:
+                # Criar tabela TrackingFrete
+                cursor.execute("""
+                    CREATE TABLE fretes_trackingfrete (
+                        id SERIAL PRIMARY KEY,
+                        agendamento_id INTEGER NOT NULL,
+                        status VARCHAR(20) NOT NULL,
+                        data_atualizacao TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+                        localizacao_atual VARCHAR(255),
+                        observacoes TEXT,
+                        usuario_atualizacao_id INTEGER NOT NULL,
+                        tipo_problema VARCHAR(100),
+                        descricao_problema TEXT,
+                        FOREIGN KEY (agendamento_id) REFERENCES fretes_agendamentofrete(id) ON DELETE CASCADE,
+                        FOREIGN KEY (usuario_atualizacao_id) REFERENCES auth_user(id) ON DELETE CASCADE
+                    );
+                """)
+                
+    except Exception as e:
+        print(f"Erro ao criar tabelas: {e}")
+        pass
 
 
 @login_required(login_url='/login/')
 def fretes_para_agendamento(request):
     """Lista de fretes aprovados que precisam ser agendados"""
+    ensure_tables_exist()  # Garantir que as tabelas existam
     try:
         user_profile = request.user.userprofile
         if not (user_profile.is_transportadora() or user_profile.is_usuario_master()):
@@ -60,6 +131,7 @@ def fretes_para_agendamento(request):
 @login_required(login_url='/login/')
 def agendar_frete(request, frete_id):
     """Tela para o transportador agendar o frete"""
+    ensure_tables_exist()  # Garantir que as tabelas existam
     try:
         user_profile = request.user.userprofile
         if not (user_profile.is_transportadora() or user_profile.is_usuario_master()):
@@ -167,6 +239,7 @@ def agendar_frete(request, frete_id):
 @login_required(login_url='/login/')
 def tracking_frete(request, frete_id):
     """Dashboard de tracking para acompanhar o frete"""
+    ensure_tables_exist()  # Garantir que as tabelas existam
     frete = get_object_or_404(FreteRequest, id=frete_id)
     agendamento = getattr(frete, 'agendamento', None)
     
@@ -207,6 +280,7 @@ def tracking_frete(request, frete_id):
 @login_required(login_url='/login/')
 def atualizar_tracking(request, frete_id):
     """Atualizar status do tracking"""
+    ensure_tables_exist()  # Garantir que as tabelas existam
     frete = get_object_or_404(FreteRequest, id=frete_id)
     agendamento = getattr(frete, 'agendamento', None)
     
