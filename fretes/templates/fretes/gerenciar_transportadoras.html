@@ -11,18 +11,18 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div class="flex-grow-1 text-center">
                     <h2 class="mb-1">🚛 Gerenciar Transportadoras</h2>
-                    <p class="text-muted mb-0">Centralize todas as operações de transportadoras em um só lugar</p>
+                    <p class="text-muted mb-0">Gerencie todas as transportadoras do sistema</p>
                 </div>
                 <div class="ms-3">
-                    <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#criarTransportadoraModal">
-                        <i class="fas fa-plus me-2"></i>Nova Transportadora
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#criarTransportadoraModal">
+                        <i class="fas fa-plus me-2"></i>Cadastrar Nova Transportadora
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Statistics Cards -->
+    <!-- Statistics -->
     <div class="row mt-4 mb-4">
         <div class="col-md-4 mb-3 mx-auto">
             <div class="card bg-primary text-white h-100">
@@ -41,11 +41,8 @@
         </div>
     </div>
 
-    <!-- Advanced Controls -->
+    <!-- Search and Filters -->
     <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtros e Busca</h5>
-        </div>
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6 mb-3">
@@ -55,25 +52,13 @@
                     </div>
                 </div>
                 <div class="col-md-3 mb-3">
-                    <select class="form-select" id="statusFilter">
-                        <option value="">Todos os Status</option>
-                        <option value="active">Ativas</option>
-                        <option value="inactive">Inativas</option>
-                    </select>
-                </div>
-                <div class="col-md-3 mb-3">
                     <select class="form-select" id="sortBy">
                         <option value="nome">Ordenar por Nome</option>
                         <option value="usuarios">Ordenar por Usuários</option>
                     </select>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col-12">
-                    <button class="btn btn-outline-primary me-2" onclick="exportData()">
-                        <i class="fas fa-download me-1"></i>Exportar Dados
-                    </button>
-                    <button class="btn btn-outline-secondary" onclick="refreshData()">
+                <div class="col-md-3 mb-3">
+                    <button class="btn btn-outline-secondary w-100" onclick="refreshData()">
                         <i class="fas fa-sync-alt me-1"></i>Atualizar
                     </button>
                 </div>
@@ -91,61 +76,69 @@
         {% endfor %}
     {% endif %}
 
-    <!-- Transportadoras Grid -->
+    <!-- Transportadoras Table -->
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-truck me-2"></i>Transportadoras Cadastradas</h5>
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Lista de Transportadoras</h5>
         </div>
-        <div class="card-body">
+        <div class="card-body p-0">
             {% if transportadoras %}
-                <div class="row" id="transportadorasGrid">
-                    {% for transportadora in transportadoras %}
-                        <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="card h-100 transportadora-card" data-transportadora-id="{{ transportadora.id }}" data-nome="{{ transportadora.nome|lower }}" data-email="{{ transportadora.email|lower }}">
-                                <div class="card-header bg-light">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h5 class="card-title mb-0 text-primary">
-                                            <i class="fas fa-building me-2"></i>{{ transportadora.nome }}
-                                        </h5>
-                                        <span class="badge bg-secondary">#{{ transportadora.id }}</span>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <div class="d-flex align-items-center mb-2">
-                                            <i class="fas fa-envelope text-muted me-2"></i>
-                                            <span class="text-muted">{{ transportadora.email }}</span>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th><i class="fas fa-hashtag me-1"></i>ID</th>
+                                <th><i class="fas fa-building me-1"></i>Nome</th>
+                                <th><i class="fas fa-envelope me-1"></i>Email</th>
+                                <th><i class="fas fa-users me-1"></i>Usuários</th>
+                                <th><i class="fas fa-cogs me-1"></i>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transportadorasTableBody">
+                            {% for transportadora in transportadoras %}
+                                <tr data-transportadora-id="{{ transportadora.id }}" data-nome="{{ transportadora.nome|lower }}" data-email="{{ transportadora.email|lower }}">
+                                    <td>
+                                        <strong>#{{ transportadora.id }}</strong>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ transportadora.nome }}</strong>
                                         </div>
-                                    </div>
-                                    
-                                    <div class="text-center mb-3">
-                                        <h6 class="text-success mb-1">{{ transportadora.userprofile_set.count }}</h6>
-                                        <small class="text-muted">Usuários Associados</small>
-                                    </div>
-
-                                </div>
-                                <div class="card-footer bg-transparent">
-                                    <div class="btn-group w-100" role="group">
-                                        <button type="button" class="btn btn-outline-primary btn-sm" 
-                                                onclick="gerenciarUsuarios({{ transportadora.id }}, '{{ transportadora.nome }}')"
-                                                title="Gerenciar usuários">
-                                            <i class="fas fa-users me-1"></i>Usuários
-                                        </button>
-                                        <button type="button" class="btn btn-outline-success btn-sm" 
-                                                onclick="editarTransportadora({{ transportadora.id }}, '{{ transportadora.nome }}', '{{ transportadora.email }}')"
-                                                title="Editar transportadora">
-                                            <i class="fas fa-edit me-1"></i>Editar
-                                        </button>
-                                        <button type="button" class="btn btn-outline-danger btn-sm" 
-                                                onclick="excluirTransportadora({{ transportadora.id }}, '{{ transportadora.nome }}')"
-                                                title="Excluir transportadora">
-                                            <i class="fas fa-trash me-1"></i>Excluir
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <i class="fas fa-envelope text-muted me-1"></i>
+                                            {{ transportadora.email }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">
+                                            {{ transportadora.userprofile_set.count }} usuário(s)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                    onclick="gerenciarUsuarios({{ transportadora.id }}, '{{ transportadora.nome }}')"
+                                                    title="Vincular usuários">
+                                                <i class="fas fa-users"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-success btn-sm" 
+                                                    onclick="editarTransportadora({{ transportadora.id }}, '{{ transportadora.nome }}', '{{ transportadora.email }}')"
+                                                    title="Editar transportadora">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                    onclick="excluirTransportadora({{ transportadora.id }}, '{{ transportadora.nome }}')"
+                                                    title="Excluir transportadora">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             {% else %}
                 <!-- Empty State -->
@@ -154,9 +147,9 @@
                         <i class="fas fa-truck fa-5x text-muted opacity-50"></i>
                     </div>
                     <h3 class="text-muted mb-3">Nenhuma transportadora cadastrada</h3>
-                    <p class="text-muted mb-4">Comece criando sua primeira transportadora para gerenciar o sistema</p>
-                    <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#criarTransportadoraModal">
-                        <i class="fas fa-plus me-2"></i>Criar Primeira Transportadora
+                    <p class="text-muted mb-4">Comece cadastrando sua primeira transportadora</p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#criarTransportadoraModal">
+                        <i class="fas fa-plus me-2"></i>Cadastrar Primeira Transportadora
                     </button>
                 </div>
             {% endif %}
@@ -166,40 +159,34 @@
 
 <!-- Modal para Criar Transportadora -->
 <div class="modal fade" id="criarTransportadoraModal" tabindex="-1" aria-labelledby="criarTransportadoraModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="criarTransportadoraModalLabel">
-                    <i class="fas fa-truck me-2"></i>Nova Transportadora
+                    <i class="fas fa-plus me-2"></i>Cadastrar Nova Transportadora
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="criarTransportadoraForm">
                 {% csrf_token %}
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="nomeTransportadora" class="form-label fw-bold">
-                                    <i class="fas fa-building me-1 text-primary"></i>Nome da Transportadora
-                                </label>
-                                <input type="text" class="form-control" id="nomeTransportadora" name="nome" required 
-                                       placeholder="Ex: Transportadora ABC Ltda">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="emailTransportadora" class="form-label fw-bold">
-                                    <i class="fas fa-envelope me-1 text-primary"></i>Email de Contato
-                                </label>
-                                <input type="email" class="form-control" id="emailTransportadora" name="email" required 
-                                       placeholder="Ex: contato@transportadora.com.br">
-                            </div>
-                        </div>
+                    <div class="mb-3">
+                        <label for="nomeTransportadora" class="form-label fw-bold">
+                            <i class="fas fa-building me-1 text-primary"></i>Nome da Transportadora
+                        </label>
+                        <input type="text" class="form-control" id="nomeTransportadora" name="nome" required 
+                               placeholder="Ex: Transportadora ABC Ltda">
+                    </div>
+                    <div class="mb-3">
+                        <label for="emailTransportadora" class="form-label fw-bold">
+                            <i class="fas fa-envelope me-1 text-primary"></i>Email de Contato
+                        </label>
+                        <input type="email" class="form-control" id="emailTransportadora" name="email" required 
+                               placeholder="Ex: contato@transportadora.com.br">
                     </div>
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
-                        <strong>Dica:</strong> Após criar a transportadora, você poderá associar usuários a ela através do botão "Usuários" no card da transportadora.
+                        <strong>Dica:</strong> Após cadastrar, você poderá vincular usuários através do botão de ações.
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -207,7 +194,7 @@
                         <i class="fas fa-times me-1"></i>Cancelar
                     </button>
                     <button type="submit" class="btn btn-primary" id="salvarTransportadoraBtn">
-                        <i class="fas fa-save me-1"></i>Salvar Transportadora
+                        <i class="fas fa-save me-1"></i>Cadastrar
                     </button>
                 </div>
             </form>
@@ -217,7 +204,7 @@
 
 <!-- Modal para Editar Transportadora -->
 <div class="modal fade" id="editarTransportadoraModal" tabindex="-1" aria-labelledby="editarTransportadoraModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-success text-white">
                 <h5 class="modal-title" id="editarTransportadoraModalLabel">
@@ -229,25 +216,19 @@
                 {% csrf_token %}
                 <input type="hidden" id="editarTransportadoraId" name="id">
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="editarNomeTransportadora" class="form-label fw-bold">
-                                    <i class="fas fa-building me-1 text-success"></i>Nome da Transportadora
-                                </label>
-                                <input type="text" class="form-control" id="editarNomeTransportadora" name="nome" required 
-                                       placeholder="Ex: Transportadora ABC Ltda">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="editarEmailTransportadora" class="form-label fw-bold">
-                                    <i class="fas fa-envelope me-1 text-success"></i>Email de Contato
-                                </label>
-                                <input type="email" class="form-control" id="editarEmailTransportadora" name="email" required 
-                                       placeholder="Ex: contato@transportadora.com.br">
-                            </div>
-                        </div>
+                    <div class="mb-3">
+                        <label for="editarNomeTransportadora" class="form-label fw-bold">
+                            <i class="fas fa-building me-1 text-success"></i>Nome da Transportadora
+                        </label>
+                        <input type="text" class="form-control" id="editarNomeTransportadora" name="nome" required 
+                               placeholder="Ex: Transportadora ABC Ltda">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editarEmailTransportadora" class="form-label fw-bold">
+                            <i class="fas fa-envelope me-1 text-success"></i>Email de Contato
+                        </label>
+                        <input type="email" class="form-control" id="editarEmailTransportadora" name="email" required 
+                               placeholder="Ex: contato@transportadora.com.br">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -264,49 +245,57 @@
 </div>
 
 <style>
-/* Custom Styles para manter consistência */
-.transportadora-card {
-    transition: all 0.3s ease;
-    border: 1px solid #e9ecef;
+/* Custom Styles */
+.table th {
+    border-top: none;
+    font-weight: 600;
+    background-color: #343a40;
+    color: white;
 }
 
-.transportadora-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
-    border-color: #dc2626;
+.table td {
+    vertical-align: middle;
+    padding: 12px 8px;
 }
 
-.card-header {
-    border-bottom: 2px solid #f8f9fa;
+.badge {
+    font-size: 0.8rem;
 }
 
 .btn-group .btn {
-    border-radius: 0;
-}
-
-.btn-group .btn:first-child {
-    border-top-left-radius: 0.375rem;
-    border-bottom-left-radius: 0.375rem;
+    margin-right: 2px;
+    border-radius: 4px;
 }
 
 .btn-group .btn:last-child {
-    border-top-right-radius: 0.375rem;
-    border-bottom-right-radius: 0.375rem;
+    margin-right: 0;
 }
 
-/* Statistics Cards */
-.card.bg-primary,
-.card.bg-success,
-.card.bg-info,
-.card.bg-warning {
+.btn-outline-primary:hover {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+.btn-outline-success:hover {
+    background-color: #198754;
+    border-color: #198754;
+    color: white;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+/* Statistics Card */
+.card.bg-primary {
     border: none;
     transition: all 0.3s ease;
 }
 
-.card.bg-primary:hover,
-.card.bg-success:hover,
-.card.bg-info:hover,
-.card.bg-warning:hover {
+.card.bg-primary:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
@@ -330,12 +319,12 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .btn-group .btn {
+        padding: 0.25rem 0.5rem;
         font-size: 0.8rem;
-        padding: 0.375rem 0.5rem;
     }
     
-    .card-body {
-        padding: 1rem;
+    .table {
+        font-size: 0.9rem;
     }
     
     .h2 {
@@ -343,11 +332,16 @@
     }
 }
 
-/* Animation for cards */
+/* Hover effects */
+.table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Animation for table rows */
 @keyframes fadeInUp {
     from {
         opacity: 0;
-        transform: translateY(30px);
+        transform: translateY(20px);
     }
     to {
         opacity: 1;
@@ -355,73 +349,70 @@
     }
 }
 
-.transportadora-card {
-    animation: fadeInUp 0.6s ease forwards;
+.table tbody tr {
+    animation: fadeInUp 0.3s ease forwards;
 }
 
-.transportadora-card:nth-child(1) { animation-delay: 0.1s; }
-.transportadora-card:nth-child(2) { animation-delay: 0.2s; }
-.transportadora-card:nth-child(3) { animation-delay: 0.3s; }
-.transportadora-card:nth-child(4) { animation-delay: 0.4s; }
-.transportadora-card:nth-child(5) { animation-delay: 0.5s; }
-.transportadora-card:nth-child(6) { animation-delay: 0.6s; }
+.table tbody tr:nth-child(1) { animation-delay: 0.1s; }
+.table tbody tr:nth-child(2) { animation-delay: 0.2s; }
+.table tbody tr:nth-child(3) { animation-delay: 0.3s; }
+.table tbody tr:nth-child(4) { animation-delay: 0.4s; }
+.table tbody tr:nth-child(5) { animation-delay: 0.5s; }
+.table tbody tr:nth-child(6) { animation-delay: 0.6s; }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Advanced Search Functionality
+    // Search Functionality
     const searchInput = document.getElementById('searchInput');
-    const statusFilter = document.getElementById('statusFilter');
     const sortBy = document.getElementById('sortBy');
     
     function filterAndSortTransportadoras() {
         const searchTerm = searchInput.value.toLowerCase();
-        const statusValue = statusFilter.value;
         const sortValue = sortBy.value;
         
-        const cards = document.querySelectorAll('.transportadora-card');
-        let visibleCards = [];
+        const rows = document.querySelectorAll('#transportadorasTableBody tr');
+        let visibleRows = [];
         
-        cards.forEach(card => {
-            const nome = card.dataset.nome;
-            const email = card.dataset.email;
-            const id = card.dataset.transportadoraId;
+        rows.forEach(row => {
+            const nome = row.dataset.nome;
+            const email = row.dataset.email;
+            const id = row.dataset.transportadoraId;
             
             const matchesSearch = nome.includes(searchTerm) || 
                                 email.includes(searchTerm) || 
                                 id.includes(searchTerm);
             
             if (matchesSearch) {
-                card.style.display = 'block';
-                visibleCards.push(card);
+                row.style.display = '';
+                visibleRows.push(row);
             } else {
-                card.style.display = 'none';
+                row.style.display = 'none';
             }
         });
         
-        // Sort visible cards
-        visibleCards.sort((a, b) => {
+        // Sort visible rows
+        visibleRows.sort((a, b) => {
             switch(sortValue) {
                 case 'nome':
                     return a.dataset.nome.localeCompare(b.dataset.nome);
                 case 'usuarios':
-                    const usersA = parseInt(a.querySelector('.text-success').textContent);
-                    const usersB = parseInt(b.querySelector('.text-success').textContent);
+                    const usersA = parseInt(a.querySelector('.badge').textContent);
+                    const usersB = parseInt(b.querySelector('.badge').textContent);
                     return usersB - usersA;
                 default:
                     return 0;
             }
         });
         
-        // Reorder cards in DOM
-        const grid = document.getElementById('transportadorasGrid');
-        if (grid) {
-            visibleCards.forEach(card => grid.appendChild(card));
+        // Reorder rows in DOM
+        const tbody = document.getElementById('transportadorasTableBody');
+        if (tbody) {
+            visibleRows.forEach(row => tbody.appendChild(row));
         }
     }
     
     searchInput.addEventListener('input', filterAndSortTransportadoras);
-    statusFilter.addEventListener('change', filterAndSortTransportadoras);
     sortBy.addEventListener('change', filterAndSortTransportadoras);
     
     // Processar criação de transportadora
@@ -432,7 +423,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const salvarBtn = document.getElementById('salvarTransportadoraBtn');
         
         // Mostrar loading
-        salvarBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Salvando...';
+        salvarBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Cadastrando...';
         salvarBtn.disabled = true;
         
         // Fazer requisição AJAX
@@ -462,11 +453,11 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Erro:', error);
-            showAlert('danger', 'Erro ao criar transportadora. Tente novamente.');
+            showAlert('danger', 'Erro ao cadastrar transportadora. Tente novamente.');
         })
         .finally(() => {
             // Restaurar botão
-            salvarBtn.innerHTML = '<i class="fas fa-save me-1"></i>Salvar Transportadora';
+            salvarBtn.innerHTML = '<i class="fas fa-save me-1"></i>Cadastrar';
             salvarBtn.disabled = false;
         });
     });
@@ -564,11 +555,6 @@ function gerenciarUsuarios(transportadoraId, transportadoraNome) {
     const url = `/gerenciar-transportadoras/${transportadoraId}/usuarios/`;
     console.log('Redirecionando para:', url);
     window.location.href = url;
-}
-
-function exportData() {
-    // Implementar exportação de dados
-    showAlert('info', 'Funcionalidade de exportação será implementada em breve!');
 }
 
 function refreshData() {
