@@ -1658,11 +1658,23 @@ def excluir_usuario(request, user_id):
         
         try:
             with connection.cursor() as cursor:
-                # Excluir logs do admin se a tabela existir
+                # Verificar se a tabela django_admin_log existe
                 cursor.execute("""
-                    DELETE FROM django_admin_log 
-                    WHERE user_id = %s
-                """, [usuario.id])
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        AND table_name = 'django_admin_log'
+                    );
+                """)
+                
+                table_exists = cursor.fetchone()[0]
+                
+                # Excluir logs do admin apenas se a tabela existir
+                if table_exists:
+                    cursor.execute("""
+                        DELETE FROM django_admin_log 
+                        WHERE user_id = %s
+                    """, [usuario.id])
                 
                 # Excluir o usuário
                 cursor.execute("""
