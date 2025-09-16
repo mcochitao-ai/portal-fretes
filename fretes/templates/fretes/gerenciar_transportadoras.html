@@ -383,63 +383,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     searchInput.addEventListener('input', filterTransportadoras);
-});
-
-// Funções para mostrar/esconder formulários
-function mostrarFormularioCriacao() {
-    // Esconder formulário de edição se estiver visível
-    document.getElementById('formularioEdicao').style.display = 'none';
     
-    // Mostrar formulário de criação
-    document.getElementById('formularioCriacao').style.display = 'block';
-    
-    // Scroll suave para o formulário
-    document.getElementById('formularioCriacao').scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start' 
-    });
-    
-    // Focar no primeiro campo
-    setTimeout(() => {
-        document.getElementById('nomeTransportadora').focus();
-    }, 300);
-}
-
-function ocultarFormularioCriacao() {
-    document.getElementById('formularioCriacao').style.display = 'none';
-    document.getElementById('criarTransportadoraForm').reset();
-}
-
-function mostrarFormularioEdicao(id, nome, email) {
-    // Esconder formulário de criação se estiver visível
-    document.getElementById('formularioCriacao').style.display = 'none';
-    
-    // Preencher dados no formulário de edição
-    document.getElementById('editarTransportadoraId').value = id;
-    document.getElementById('editarNomeTransportadora').value = nome;
-    document.getElementById('editarEmailTransportadora').value = email;
-    
-    // Mostrar formulário de edição
-    document.getElementById('formularioEdicao').style.display = 'block';
-    
-    // Scroll suave para o formulário
-    document.getElementById('formularioEdicao').scrollIntoView({ 
-        behavior: 'smooth', 
-        block: 'start' 
-    });
-    
-    // Focar no primeiro campo
-    setTimeout(() => {
-        document.getElementById('editarNomeTransportadora').focus();
-    }, 300);
-}
-
-function ocultarFormularioEdicao() {
-    document.getElementById('formularioEdicao').style.display = 'none';
-    document.getElementById('editarTransportadoraForm').reset();
-}
-
-// Processar criação de transportadora
+    // Processar criação de transportadora
     document.getElementById('criarTransportadoraForm').addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -524,8 +469,61 @@ function ocultarFormularioEdicao() {
             salvarBtn.disabled = false;
         });
     });
-});
+    
+    // Funções para mostrar/esconder formulários
+    window.mostrarFormularioCriacao = function() {
+        // Esconder formulário de edição se estiver visível
+        document.getElementById('formularioEdicao').style.display = 'none';
+        
+        // Mostrar formulário de criação
+        document.getElementById('formularioCriacao').style.display = 'block';
+        
+        // Scroll suave para o formulário
+        document.getElementById('formularioCriacao').scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+        
+        // Focar no primeiro campo
+        setTimeout(() => {
+            document.getElementById('nomeTransportadora').focus();
+        }, 300);
+    };
 
+    window.ocultarFormularioCriacao = function() {
+        document.getElementById('formularioCriacao').style.display = 'none';
+        document.getElementById('criarTransportadoraForm').reset();
+    };
+
+    window.mostrarFormularioEdicao = function(id, nome, email) {
+        // Esconder formulário de criação se estiver visível
+        document.getElementById('formularioCriacao').style.display = 'none';
+        
+        // Preencher dados no formulário de edição
+        document.getElementById('editarTransportadoraId').value = id;
+        document.getElementById('editarNomeTransportadora').value = nome;
+        document.getElementById('editarEmailTransportadora').value = email;
+        
+        // Mostrar formulário de edição
+        document.getElementById('formularioEdicao').style.display = 'block';
+        
+        // Scroll suave para o formulário
+        document.getElementById('formularioEdicao').scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+        });
+        
+        // Focar no primeiro campo
+        setTimeout(() => {
+            document.getElementById('editarNomeTransportadora').focus();
+        }, 300);
+    };
+
+    window.ocultarFormularioEdicao = function() {
+        document.getElementById('formularioEdicao').style.display = 'none';
+        document.getElementById('editarTransportadoraForm').reset();
+    };
+});
 
 function excluirTransportadora(id, nome) {
     if (!confirm(`Tem certeza que deseja excluir a transportadora "${nome}"?\n\nEsta ação não pode ser desfeita e todos os usuários associados serão desvinculados.`)) {
